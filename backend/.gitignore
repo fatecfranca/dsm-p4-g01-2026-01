@@ -1,0 +1,59 @@
+# Dependências
+node_modules/
+**/node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Ambiente
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env*.local
+
+# Build / dist
+dist/
+build/
+out/
+
+# Cache
+.npm/
+.cache/
+.parcel-cache/
+.eslintcache
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Lock files alternativos (manter apenas o do projeto)
+# yarn.lock
+# pnpm-lock.yaml
+
+# Cobertura de testes
+coverage/
+*.lcov
+
+# Temporários
+tmp/
+temp/
+
+#Prisma
+/generated/prisma
