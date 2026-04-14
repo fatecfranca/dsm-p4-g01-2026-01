@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Sensor {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  nome        String
+  localizacao String
+  logs        LogEnergia[]
+  createdAt   DateTime     @default(now())
+}
+
+model LogEnergia {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  sensor      Sensor   @relation(fields: [sensorId], references: [id])
+  sensorId    String   @db.ObjectId
+  
+  voltagem    Float
+  corrente    Float
+  potencia    Float
+  
+  consumokWh  Float?
+  custoReais  Float?
+  
+  timestamp   DateTime @default(now())
+}
