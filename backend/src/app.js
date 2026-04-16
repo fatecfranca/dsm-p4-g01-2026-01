@@ -1,9 +1,12 @@
+import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 
 // Importação das rotas
 import telemetriaRoutes from "./routes/telemetriaRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+
+dotenv.config();
 
 const app = express();
 
