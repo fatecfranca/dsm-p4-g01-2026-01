@@ -11,25 +11,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Sensor {
-  id          String       @id @default(auto()) @map("_id") @db.ObjectId
-  nome        String
-  localizacao String
-  logs        LogEnergia[]
-  createdAt   DateTime     @default(now())
+model Telemetria {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  dispositivoId    String   // Ex: "ESP32_SALA_01" ou MAC Address
+  voltagem         Float    // Tensão instantânea em Volts (V)
+  corrente         Float    // Corrente instantânea em Amperes (A)
+  potenciaAtiva    Float    // O que realmente gera trabalho (Watts)
+  potenciaAparente Float?   // Voltagem * Corrente (VA)
+  potenciaReativa  Float?   // Energia "perdida" em motores/indutores (VAR)
+  fatorPotencia    Float?   // Eficiência do uso da energia (de 0.0 a 1.0)
+  frequencia       Float?   // Frequência da rede (Hz) - ideal 60Hz
+  consumokWh       Float?   // Consumo em kWh daquela leitura
+  custoReais       Float?   // Previsão de custo baseada no kWh
+  timestamp        DateTime @default(now()) // Tempo exato da leitura
 }
 
-model LogEnergia {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  sensor      Sensor   @relation(fields: [sensorId], references: [id])
-  sensorId    String   @db.ObjectId
-  
-  voltagem    Float
-  corrente    Float
-  potencia    Float
-  
-  consumokWh  Float?
-  custoReais  Float?
-  
-  timestamp   DateTime @default(now())
+model Usuario {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  nome      String
+  email     String   @unique
+  senha     String
+  createdAt DateTime @default(now())
 }
