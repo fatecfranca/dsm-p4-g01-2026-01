@@ -11,6 +11,10 @@ const options = {
     },
     servers: [
       {
+        url: "https://dsm-p4-g01-2026-01.onrender.com/api",
+        description: "Servidor de Produção (Render)",
+      },
+      {
         url: "http://localhost:3000/api",
         description: "Servidor Local (Desenvolvimento)",
       },
