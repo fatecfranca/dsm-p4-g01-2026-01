@@ -67,10 +67,8 @@ export const obterTelemetria = async (req, res) => {
   try {
     const { dispositivoId } = req.params;
 
-    // Pega o limite de registros pela URL (ex: /api/telemetria/ESP32_01?limite=50)
     const limite = req.query.limite ? parseInt(req.query.limite) : 100;
 
-    // Busca os dados no MongoDB ordenados do mais recente para o mais antigo
     const leituras = await prisma.telemetria.findMany({
       where: { dispositivoId },
       orderBy: { timestamp: "desc" },
@@ -83,7 +81,22 @@ export const obterTelemetria = async (req, res) => {
         .json({ message: "Nenhuma leitura encontrada para este dispositivo." });
     }
 
-    return res.status(200).json({ data: leituras });
+    const leiturasFormatadas = leituras.map((leitura) => {
+      return {
+        ...leitura,
+        dataHoraBrasil: new Date(leitura.timestamp).toLocaleString("pt-BR", {
+          timeZone: "America/Sao_Paulo",
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }),
+      };
+    });
+
+    return res.status(200).json({ data: leiturasFormatadas });
   } catch (error) {
     console.error("Erro ao buscar dados:", error);
     return res
