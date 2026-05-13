@@ -4,6 +4,20 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
+:root {
+  --color-primary: #22C55E;
+  --color-secondary: #3B82F6;
+  --color-background: #0F172A;
+  --color-surface: #1E293B;
+  --color-border: #334155;
+  --color-text-primary: #E2E8F0;
+  --color-text-secondary: #94A3B8;
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #06B6D4;
+}
+
 *,
 *::before,
 *::after {
@@ -20,8 +34,8 @@ html {
 
 body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
-  background-color: #0f172a;
-  color: #e2e8f0;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
   line-height: 1.6;
   min-height: 100vh;
 }
