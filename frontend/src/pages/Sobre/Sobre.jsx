@@ -25,13 +25,13 @@ const members = [
   {
     initials: "PC",
     name: "Pedro Henrique Xavier Constancio",
-    role: "Desenvolvedor Backend",
+    role: "Desenvolvedor Back-end / IoT",
     color: "var(--color-secondary)",
   },
   {
     initials: "KR",
     name: "Kaio Leandro Rissato",
-    role: "Desenvolvedor Frontend",
+    role: "Desenvolvedor Mobile / IoT",
     color: "var(--color-info)",
   },
 ];
