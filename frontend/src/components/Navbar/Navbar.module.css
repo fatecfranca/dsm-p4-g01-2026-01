@@ -13,7 +13,6 @@
 .nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   max-width: 1200px;
   margin: 0 auto;
   height: 76px;
@@ -24,6 +23,7 @@
   align-items: center;
   text-decoration: none;
   flex-shrink: 0;
+  margin-right: 2.5rem;
 }
 
 .logo {
@@ -33,8 +33,10 @@
 }
 
 .desktopLinks {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.25rem;
 }
 
@@ -82,16 +84,21 @@
 }
 
 /* ===========================
-   AUTH LINKS
+   RIGHT GROUP
    =========================== */
+
+.desktopRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+  margin-left: 2.5rem;
+}
 
 .desktopAuth {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  margin-right: 0.5rem;
-  padding-right: 0.75rem;
-  border-right: 1px solid rgba(51, 65, 85, 0.3);
+  gap: 0.125rem;
 }
 
 .authLink {
@@ -256,8 +263,7 @@
   }
 
   .desktopLinks,
-  .desktopAuth,
-  .desktopCta {
+  .desktopRight {
     display: none;
   }
 

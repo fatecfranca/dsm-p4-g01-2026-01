@@ -73,26 +73,28 @@ export default function Navbar() {
           ))}
         </div>
 
-        <div className={styles.desktopAuth}>
-          <Link to="/login" className={styles.authLink}>
-            Entrar
-          </Link>
-          <Link to="/cadastro" className={styles.authLink}>
-            Cadastrar
-          </Link>
-        </div>
+        <div className={styles.desktopRight}>
+          <div className={styles.desktopAuth}>
+            <Link to="/login" className={styles.authLink}>
+              Entrar
+            </Link>
+            <Link to="/cadastro" className={styles.authLink}>
+              Cadastrar
+            </Link>
+          </div>
 
-        <motion.div
-          className={styles.desktopCta}
-          custom={3}
-          variants={linkVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <Link to="/dashboard" className={styles.cta}>
-            Monitorar Agora
-          </Link>
-        </motion.div>
+          <motion.div
+            className={styles.desktopCta}
+            custom={3}
+            variants={linkVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <Link to="/dashboard" className={styles.cta}>
+              Monitorar Agora
+            </Link>
+          </motion.div>
+        </div>
 
         <button
           className={`${styles.hamburger} ${open ? styles.hamburgerOpen : ""}`}
