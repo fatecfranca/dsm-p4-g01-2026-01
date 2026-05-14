@@ -82,6 +82,42 @@
 }
 
 /* ===========================
+   AUTH LINKS
+   =========================== */
+
+.desktopAuth {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-right: 0.5rem;
+  padding-right: 0.75rem;
+  border-right: 1px solid rgba(51, 65, 85, 0.3);
+}
+
+.authLink {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  border-radius: 8px;
+  transition: color 0.25s, background 0.25s;
+}
+
+.authLink:hover {
+  color: var(--color-text-primary);
+  background: rgba(148, 163, 184, 0.06);
+}
+
+.mobileDivider {
+  height: 1px;
+  background: rgba(51, 65, 85, 0.3);
+  margin: 0.5rem 0;
+}
+
+/* ===========================
    CTA BUTTON
    =========================== */
 
@@ -220,6 +256,7 @@
   }
 
   .desktopLinks,
+  .desktopAuth,
   .desktopCta {
     display: none;
   }

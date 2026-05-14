@@ -73,6 +73,15 @@ export default function Navbar() {
           ))}
         </div>
 
+        <div className={styles.desktopAuth}>
+          <Link to="/login" className={styles.authLink}>
+            Entrar
+          </Link>
+          <Link to="/cadastro" className={styles.authLink}>
+            Cadastrar
+          </Link>
+        </div>
+
         <motion.div
           className={styles.desktopCta}
           custom={3}
@@ -118,6 +127,24 @@ export default function Navbar() {
                 {link.label}
               </NavLink>
             ))}
+            <div className={styles.mobileDivider} />
+
+            <Link
+              to="/login"
+              className={styles.mobileLink}
+              onClick={() => setOpen(false)}
+            >
+              Entrar
+            </Link>
+
+            <Link
+              to="/cadastro"
+              className={styles.mobileLink}
+              onClick={() => setOpen(false)}
+            >
+              Cadastrar
+            </Link>
+
             <Link
               to="/dashboard"
               className={styles.mobileCta}
