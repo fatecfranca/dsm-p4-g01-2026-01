@@ -5,7 +5,6 @@ import styles from "./GaugeSection.module.css";
 
 function Gauge({ label, value, unit, min, max, color }) {
   const normalized = Math.max(0, Math.min(1, (value - min) / (max - min)));
-  const progressAngle = -180 + normalized * 180;
 
   const polarToCartesian = (cx, cy, r, angleDeg) => {
     const rad = (angleDeg * Math.PI) / 180;
@@ -23,7 +22,9 @@ function Gauge({ label, value, unit, min, max, color }) {
   const cy = 100;
   const r = 72;
   const trackArc = describeArc(cx, cy, r, -180, 0);
-  const progressArc = describeArc(cx, cy, r, -180, progressAngle);
+  const fullArc = describeArc(cx, cy, r, -180, 0);
+
+  const displayValue = typeof value === 'number' ? value.toFixed(2) : value;
 
   return (
     <motion.div
@@ -32,30 +33,57 @@ function Gauge({ label, value, unit, min, max, color }) {
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <svg viewBox="0 0 200 130" className={styles.svg}>
-        <path d={trackArc} fill="none" stroke="#2a3a4f" strokeWidth="10" strokeLinecap="round" />
+      <svg viewBox="0 0 200 135" className={styles.svg}>
+        <path
+          d={trackArc}
+          fill="none"
+          stroke="#2a3a4f"
+          strokeWidth="10"
+          strokeLinecap="round"
+        />
+
         <motion.path
-          d={progressArc}
+          d={fullArc}
           fill="none"
           stroke={color}
           strokeWidth="10"
           strokeLinecap="round"
-          initial={{ pathLength: 0 }}
-          animate={{ pathLength: normalized }}
+          strokeDasharray="300"
+          initial={{ strokeDashoffset: 300 }}
+          animate={{ strokeDashoffset: 300 - normalized * 300 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
           style={{
             filter: `drop-shadow(0 0 6px ${color}60)`,
           }}
         />
-        <text x={cx} y={cy - 6} textAnchor="middle" fill={colors.textPrimary} fontSize="26" fontWeight="700" fontFamily="Inter">
-          {value}
+
+        <text
+          x={cx}
+          y={cy - 8}
+          textAnchor="middle"
+          fill={colors.textPrimary}
+          fontSize="24"
+          fontWeight="700"
+          fontFamily="Inter"
+        >
+          {displayValue}
         </text>
+
         {unit && (
-          <text x={cx} y={cy + 16} textAnchor="middle" fill={colors.textSecondary} fontSize="12" fontWeight="500" fontFamily="Inter">
+          <text
+            x={cx}
+            y={cy + 14}
+            textAnchor="middle"
+            fill={colors.textSecondary}
+            fontSize="11"
+            fontWeight="500"
+            fontFamily="Inter"
+          >
             {unit}
           </text>
         )}
       </svg>
+
       <span className={styles.label}>{label}</span>
     </motion.div>
   );

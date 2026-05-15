@@ -13,6 +13,9 @@ import styles from "./LineChart.module.css";
 
 export default function LineChart() {
   const data = powerTimeSeries;
+  const tickValues = data.filter((_, i) => i % 4 === 0).map(d => d.time);
+  const yMax = Math.max(...data.map(d => d.power));
+  const yTicks = [0, Math.round(yMax / 2), yMax];
 
   return (
     <motion.div
@@ -27,50 +30,45 @@ export default function LineChart() {
       </div>
 
       <div className={styles.chartWrapper}>
-        <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-          <defs>
-            <linearGradient id="powerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor={colors.primary} stopOpacity={0.3} />
-              <stop offset="100%" stopColor={colors.primary} stopOpacity={0.02} />
-            </linearGradient>
-          </defs>
-        </svg>
-
         <VictoryChart
           height={260}
-          padding={{ top: 20, bottom: 30, left: 50, right: 20 }}
+          padding={{ top: 10, bottom: 45, left: 50, right: 20 }}
           containerComponent={
             <VictoryVoronoiContainer
               labels={({ datum }) => `${datum.power}W`}
               labelComponent={
                 <VictoryTooltip
-                  style={{ fill: colors.textPrimary, fontSize: 11, fontFamily: 'Inter' }}
+                  style={{ fill: colors.textPrimary, fontSize: 10, fontFamily: 'Inter' }}
                   flyoutStyle={{
                     fill: colors.surface,
                     stroke: colors.border,
                     strokeWidth: 1,
                   }}
+                  flyoutPadding={{ top: 4, bottom: 4, left: 8, right: 8 }}
+                  pointerLength={6}
                 />
               }
             />
           }
         >
           <VictoryAxis
-            tickValues={data.filter((_, i) => i % 3 === 0).map(d => d.time)}
+            tickValues={tickValues}
             tickFormat={(t) => t}
             style={{
               axis: { stroke: colors.border, strokeWidth: 1 },
-              tickLabels: { fill: colors.textSecondary, fontSize: 10, fontFamily: 'Inter' },
-              grid: { stroke: '#1E293B', strokeWidth: 1 },
+              axisLabel: { padding: 30 },
+              tickLabels: { fill: colors.textSecondary, fontSize: 9, fontFamily: 'Inter', padding: 6 },
+              grid: { stroke: 'transparent' },
             }}
           />
 
           <VictoryAxis
             dependentAxis
-            tickFormat={(t) => `${t}W`}
+            tickValues={yTicks}
+            tickFormat={(t) => `${t}`}
             style={{
               axis: { stroke: 'transparent' },
-              tickLabels: { fill: colors.textSecondary, fontSize: 10, fontFamily: 'Inter' },
+              tickLabels: { fill: colors.textSecondary, fontSize: 9, fontFamily: 'Inter', padding: 4 },
               grid: { stroke: '#1E293B', strokeWidth: 1 },
             }}
           />
@@ -79,6 +77,7 @@ export default function LineChart() {
             data={data}
             x="time"
             y="power"
+            interpolation="monotoneX"
             style={{
               data: {
                 fill: 'url(#powerGradient)',
@@ -90,6 +89,7 @@ export default function LineChart() {
             data={data}
             x="time"
             y="power"
+            interpolation="monotoneX"
             style={{
               data: {
                 stroke: colors.primary,

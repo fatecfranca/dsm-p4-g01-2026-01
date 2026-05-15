@@ -11,6 +11,12 @@
   margin-bottom: 1.25rem;
 }
 
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1.25rem;
