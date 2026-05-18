@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
+import DashboardScreen from '../screens/DashboardScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -56,7 +57,7 @@ export default function MainTabs() {
       />
       <Tab.Screen
         name="Dashboard"
-        children={() => <PlaceholderScreen title="Dashboard" emoji={'\uD83D\uDCCA'} />}
+        component={DashboardScreen}
         options={{
           tabBarLabel: 'Dashboard',
           tabBarIcon: ({ focused }) => <TabIcon icon={'\uD83D\uDCCA'} focused={focused} />,
