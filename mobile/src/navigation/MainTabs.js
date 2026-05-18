@@ -3,18 +3,9 @@ import { View, Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
 import DashboardScreen from '../screens/DashboardScreen';
+import AboutScreen from '../screens/AboutScreen';
 
 const Tab = createBottomTabNavigator();
-
-function PlaceholderScreen({ title, emoji }) {
-  return (
-    <View style={phStyles.container}>
-      <Text style={phStyles.emoji}>{emoji}</Text>
-      <Text style={phStyles.title}>{title}</Text>
-      <Text style={phStyles.sub}>Em desenvolvimento</Text>
-    </View>
-  );
-}
 
 function TabIcon({ icon, focused }) {
   return (
@@ -65,7 +56,7 @@ export default function MainTabs() {
       />
       <Tab.Screen
         name="About"
-        children={() => <PlaceholderScreen title="Sobre" emoji={'\u2139\uFE0F'} />}
+        component={AboutScreen}
         options={{
           tabBarLabel: 'Sobre',
           tabBarIcon: ({ focused }) => <TabIcon icon={'\u2139\uFE0F'} focused={focused} />,
@@ -74,30 +65,6 @@ export default function MainTabs() {
     </Tab.Navigator>
   );
 }
-
-const phStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0F172A',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-  },
-  emoji: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginBottom: 8,
-  },
-  sub: {
-    fontSize: 14,
-    color: '#64748B',
-  },
-});
 
 const tabStyles = StyleSheet.create({
   iconWrap: {
