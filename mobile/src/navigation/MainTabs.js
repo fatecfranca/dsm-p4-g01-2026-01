@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import HomeScreen from '../screens/HomeScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -47,7 +48,7 @@ export default function MainTabs() {
     >
       <Tab.Screen
         name="Home"
-        children={() => <PlaceholderScreen title="Início" emoji={'\u2302'} />}
+        component={HomeScreen}
         options={{
           tabBarLabel: 'Início',
           tabBarIcon: ({ focused }) => <TabIcon icon={'\u2302'} focused={focused} />,
