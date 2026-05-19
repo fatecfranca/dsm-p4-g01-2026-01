@@ -11,6 +11,10 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
+import FadeInView from '../components/FadeInView';
+import PulseDot from '../components/PulseDot';
+import AnimatedBar from '../components/AnimatedBar';
+import { colors } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
 const isSmall = width < 380;
@@ -18,39 +22,39 @@ const isSmall = width < 380;
 const whyCards = [
   {
     icon: '\u26A1',
-    color: '#23C55E',
-    bg: 'rgba(35,197,94,0.12)',
+    color: colors.primary,
+    bg: colors.successBg,
     title: 'Monitoramento em Tempo Real',
     desc: 'Acompanhe o consumo de energia elétrica instantaneamente com dados atualizados a cada segundo.',
   },
   {
     icon: '\uD83D\uDCCA',
-    color: '#3B82F6',
-    bg: 'rgba(59,130,246,0.12)',
+    color: colors.secondary,
+    bg: colors.secondaryBg,
     title: 'Análise de Consumo',
     desc: 'Visualize gráficos detalhados e relatórios inteligentes sobre o uso de energia.',
   },
   {
     icon: '\uD83D\uDD14',
-    color: '#F59E0B',
-    bg: 'rgba(245,158,11,0.12)',
+    color: colors.warning,
+    bg: colors.warningBg,
     title: 'Alertas Inteligentes',
     desc: 'Receba notificações quando o consumo ultrapassar limites pré-definidos.',
   },
   {
     icon: '\uD83C\uDF31',
-    color: '#8B5CF6',
-    bg: 'rgba(139,92,246,0.12)',
+    color: colors.purple,
+    bg: colors.purpleBg,
     title: 'Eficiência Energética',
     desc: 'Identifique desperdícios e receba sugestões para reduzir sua conta de luz.',
   },
 ];
 
 const dashboardMetrics = [
-  { icon: '\u26A1', bg: 'rgba(35,197,94,0.12)', label: 'Consumo Atual', value: '3.2 kWh', sub: '+12% que ontem' },
-  { icon: '\uD83D\uDCB0', bg: 'rgba(59,130,246,0.12)', label: 'Economia Hoje', value: 'R$ 2,45', sub: 'Meta: R$ 3,00' },
-  { icon: '\uD83D\uDCF1', bg: 'rgba(245,158,11,0.12)', label: 'Dispositivos', value: '8 ativos', sub: '2 offline' },
-  { icon: '\u26A0\uFE0F', bg: 'rgba(239,68,68,0.12)', label: 'Alertas Hoje', value: '3', sub: '1 crítico' },
+  { icon: '\u26A1', bg: colors.successBg, label: 'Consumo Atual', value: '3.2 kWh', sub: '+12% que ontem' },
+  { icon: '\uD83D\uDCB0', bg: colors.secondaryBg, label: 'Economia Hoje', value: 'R$ 2,45', sub: 'Meta: R$ 3,00' },
+  { icon: '\uD83D\uDCF1', bg: colors.warningBg, label: 'Dispositivos', value: '8 ativos', sub: '2 offline' },
+  { icon: '\u26A0\uFE0F', bg: colors.dangerBg, label: 'Alertas Hoje', value: '3', sub: '1 crítico' },
 ];
 
 const devices = [
@@ -62,40 +66,6 @@ const devices = [
 ];
 
 const chartHeights = [65, 45, 80, 55, 90, 40, 70, 50, 75, 60, 85, 35];
-
-function AnimatedBar({ height: h, index }) {
-  const anim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(anim, {
-      toValue: 1,
-      duration: 800,
-      delay: index * 60,
-      useNativeDriver: false,
-    }).start();
-  }, []);
-
-  const barHeight = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, h],
-  });
-
-  return (
-    <Animated.View
-      style={{
-        flex: 1,
-        height: '100%',
-        borderRadius: 4,
-        borderBottomLeftRadius: 0,
-        borderBottomRightRadius: 0,
-        backgroundColor: index % 3 === 1 ? '#3B82F6' : '#23C55E',
-        opacity: anim,
-        transform: [{ scaleY: anim }],
-        maxHeight: barHeight,
-      }}
-    />
-  );
-}
 
 function AnimatedDeviceBar({ pct, delay }) {
   const anim = useRef(new Animated.Value(0)).current;
@@ -126,51 +96,7 @@ function AnimatedDeviceBar({ pct, delay }) {
   );
 }
 
-function FadeInView({ children, delay = 0, style }) {
-  const anim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    Animated.timing(anim, {
-      toValue: 1,
-      duration: 500,
-      delay,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  return (
-    <Animated.View style={[style, { opacity: anim, transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }] }]}>
-      {children}
-    </Animated.View>
-  );
-}
-
-function PulseDot() {
-  const anim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(anim, { toValue: 0.4, duration: 1000, useNativeDriver: true }),
-        Animated.timing(anim, { toValue: 1, duration: 1000, useNativeDriver: true }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, []);
-
-  return (
-    <Animated.View
-      style={{
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#23C55E',
-        opacity: anim,
-      }}
-    />
-  );
-}
 
 export default function HomeScreen({ navigation }) {
   return (

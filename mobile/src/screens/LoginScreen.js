@@ -14,70 +14,11 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
+import FadeInView from '../components/FadeInView';
+import PulseDot from '../components/PulseDot';
 
 const { width } = Dimensions.get('window');
 const isSmall = width < 380;
-
-function FadeInView({ children, delay = 0, style }) {
-  const anim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.timing(anim, {
-      toValue: 1,
-      duration: 500,
-      delay,
-      useNativeDriver: true,
-    }).start();
-  }, []);
-
-  return (
-    <Animated.View
-      style={[
-        style,
-        {
-          opacity: anim,
-          transform: [
-            {
-              translateY: anim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [30, 0],
-              }),
-            },
-          ],
-        },
-      ]}
-    >
-      {children}
-    </Animated.View>
-  );
-}
-
-function PulseDot() {
-  const anim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(anim, { toValue: 0.4, duration: 1000, useNativeDriver: true }),
-        Animated.timing(anim, { toValue: 1, duration: 1000, useNativeDriver: true }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, []);
-
-  return (
-    <Animated.View
-      style={{
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: '#23C55E',
-        opacity: anim,
-      }}
-    />
-  );
-}
 
 function FloatingLabelInput({ label, icon, secureTextEntry, value, onChangeText }) {
   const [focused, setFocused] = useState(false);
