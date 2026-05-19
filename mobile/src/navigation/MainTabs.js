@@ -1,49 +1,61 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import AboutScreen from '../screens/AboutScreen';
+import { colors } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
 
-function TabIcon({ icon, focused }) {
+function TabIcon({ name, focused }) {
   return (
     <View style={[tabStyles.iconWrap, focused && tabStyles.iconWrapActive]}>
-      <Text style={[tabStyles.icon, focused && tabStyles.iconActive]}>
-        {icon}
-      </Text>
+      <Ionicons
+        name={focused ? name : `${name}-outline`}
+        size={22}
+        color={focused ? colors.primary : colors.textInactive}
+      />
     </View>
   );
 }
 
 export default function MainTabs() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: '#0A1120',
-          borderTopColor: 'rgba(59,130,246,0.15)',
+          backgroundColor: colors.backgroundAlt,
+          borderTopColor: colors.borderBlue,
           borderTopWidth: 1,
-          height: 64,
-          paddingBottom: 8,
+          height: 56 + insets.bottom + 4,
+          paddingBottom: insets.bottom + 6,
           paddingTop: 8,
+          elevation: 0,
         },
-        tabBarActiveTintColor: '#23C55E',
-        tabBarInactiveTintColor: '#475569',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textInactive,
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '600',
+          marginTop: 2,
         },
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: 'Início',
-          tabBarIcon: ({ focused }) => <TabIcon icon={'\u2302'} focused={focused} />,
+          tabBarLabel: 'In\u00edcio',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="home" focused={focused} />
+          ),
         }}
       />
       <Tab.Screen
@@ -51,7 +63,9 @@ export default function MainTabs() {
         component={DashboardScreen}
         options={{
           tabBarLabel: 'Dashboard',
-          tabBarIcon: ({ focused }) => <TabIcon icon={'\uD83D\uDCCA'} focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="grid" focused={focused} />
+          ),
         }}
       />
       <Tab.Screen
@@ -59,7 +73,9 @@ export default function MainTabs() {
         component={AboutScreen}
         options={{
           tabBarLabel: 'Sobre',
-          tabBarIcon: ({ focused }) => <TabIcon icon={'\u2139\uFE0F'} focused={focused} />,
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="information-circle" focused={focused} />
+          ),
         }}
       />
     </Tab.Navigator>
@@ -68,19 +84,13 @@ export default function MainTabs() {
 
 const tabStyles = StyleSheet.create({
   iconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconWrapActive: {
-    backgroundColor: 'rgba(35,197,94,0.12)',
-  },
-  icon: {
-    fontSize: 18,
-  },
-  iconActive: {
-    color: '#23C55E',
+    backgroundColor: colors.successBg,
   },
 });
