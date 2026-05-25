@@ -5,11 +5,18 @@ import { colors } from '../../theme/colors';
 
 const screenWidth = Dimensions.get('window').width;
 
-export default function LineChartWidget({ data, peakIndex }) {
+export default function LineChartWidget({
+  data,
+  peakIndex,
+  title = 'Gráfico',
+  unit = '',
+  lineColor = colors.primary,
+  peakLabel = 'Pico',
+}) {
   if (!data || data.length === 0) return null;
 
   const labels = data.map((d) => d.time);
-  const values = data.map((d) => d.watts);
+  const values = data.map((d) => d.value);
   const peakValue = values[peakIndex];
 
   const chartData = {
@@ -17,7 +24,7 @@ export default function LineChartWidget({ data, peakIndex }) {
     datasets: [
       {
         data: values,
-        color: () => colors.primary,
+        color: () => lineColor,
         strokeWidth: 2,
       },
     ],
@@ -26,9 +33,11 @@ export default function LineChartWidget({ data, peakIndex }) {
   return (
     <View style={styles.wrapper}>
       <View style={styles.header}>
-        <Text style={styles.title}>Potência em Tempo Real</Text>
-        <View style={styles.peakBadge}>
-          <Text style={styles.peakText}>Pico: {peakValue}W</Text>
+        <Text style={styles.title}>{title}</Text>
+        <View style={[styles.peakBadge, { backgroundColor: `${lineColor}20` }]}>
+          <Text style={[styles.peakText, { color: lineColor }]}>
+            {peakLabel}: {peakValue}{unit}
+          </Text>
         </View>
       </View>
 
@@ -36,19 +45,19 @@ export default function LineChartWidget({ data, peakIndex }) {
         data={chartData}
         width={screenWidth - 40}
         height={200}
-        yAxisSuffix="W"
+        yAxisSuffix={unit}
         yAxisInterval={1}
         chartConfig={{
           backgroundColor: 'transparent',
           backgroundGradientFrom: '#0F172A',
           backgroundGradientTo: '#0A1120',
-          decimalCount: 0,
-          color: () => colors.primary,
+          decimalCount: 1,
+          color: () => lineColor,
           labelColor: () => colors.textMuted,
           propsForDots: {
             r: '3',
             strokeWidth: '1',
-            stroke: colors.primary,
+            stroke: lineColor,
           },
           propsForBackgroundLines: {
             strokeDasharray: '4 4',
@@ -66,7 +75,6 @@ export default function LineChartWidget({ data, peakIndex }) {
         withHorizontalLabels
         fromZero={false}
         segments={4}
-        onDataPointClick={({ value, index }) => {}}
       />
     </View>
   );
@@ -94,7 +102,6 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
   },
   peakBadge: {
-    backgroundColor: colors.dangerBg,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
@@ -102,7 +109,6 @@ const styles = StyleSheet.create({
   peakText: {
     fontSize: 11,
     fontWeight: '700',
-    color: colors.danger,
   },
   chart: {
     borderRadius: 12,

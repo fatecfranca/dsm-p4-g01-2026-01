@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import FadeInView from '../components/FadeInView';
 import StatusBadge from '../components/StatusBadge';
 import KpiCard from '../components/cards/KpiCard';
@@ -11,22 +10,25 @@ import GaugeWidget from '../components/charts/GaugeWidget';
 import useMockData from '../hooks/useMockData';
 import { colors } from '../theme/colors';
 
-const { width } = Dimensions.get('window');
-const isSmall = width < 380;
-
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const {
     powerData,
+    voltageData,
+    currentData,
     dailyData,
+    financialData,
     voltage,
     current,
     power,
     monthlyCost,
     frequency,
     powerFactor,
-    peakIndex,
+    peakPowerIndex,
+    peakVoltageIndex,
+    peakCurrentIndex,
     maxKwhIndex,
+    maxCostIndex,
   } = useMockData();
 
   return (
@@ -100,23 +102,68 @@ export default function DashboardScreen() {
           </FadeInView>
         </View>
 
-        {/* LINE CHART */}
+        {/* POWER CHART */}
         <FadeInView delay={320}>
-          <LineChartWidget data={powerData} peakIndex={peakIndex} />
+          <LineChartWidget
+            data={powerData}
+            peakIndex={peakPowerIndex}
+            title="Potência em Tempo Real"
+            unit="W"
+            lineColor={colors.primary}
+          />
         </FadeInView>
 
-        {/* BAR CHART */}
-        <FadeInView delay={400}>
-          <BarChartWidget data={dailyData} maxKwhIndex={maxKwhIndex} />
+        {/* VOLTAGE CHART */}
+        <FadeInView delay={380}>
+          <LineChartWidget
+            data={voltageData}
+            peakIndex={peakVoltageIndex}
+            title="Tensão da Rede"
+            unit="V"
+            lineColor={colors.warning}
+          />
+        </FadeInView>
+
+        {/* CURRENT CHART */}
+        <FadeInView delay={440}>
+          <LineChartWidget
+            data={currentData}
+            peakIndex={peakCurrentIndex}
+            title="Corrente Elétrica"
+            unit="A"
+            lineColor={colors.secondary}
+          />
+        </FadeInView>
+
+        {/* CONSUMPTION BAR CHART */}
+        <FadeInView delay={500}>
+          <BarChartWidget
+            data={dailyData}
+            maxIndex={maxKwhIndex}
+            title="Consumo Diário (kWh)"
+            unit=""
+            barColor={colors.primary}
+          />
+        </FadeInView>
+
+        {/* FINANCIAL BAR CHART */}
+        <FadeInView delay={560}>
+          <BarChartWidget
+            data={financialData}
+            maxIndex={maxCostIndex}
+            title="Custo Diário (R$)"
+            unit="R$"
+            barColor={colors.purple}
+          />
         </FadeInView>
 
         {/* GAUGE */}
-        <FadeInView delay={480}>
+        <FadeInView delay={620}>
           <GaugeWidget frequency={frequency} powerFactor={powerFactor} />
         </FadeInView>
 
         {/* FOOTER */}
-        <FadeInView delay={560} style={styles.footer}>
+        <FadeInView delay={680} style={styles.footer}>
           <Text style={styles.footerText}>
             EcoSense © {new Date().getFullYear()} — Monitoramento Inteligente de
             Energia
