@@ -148,7 +148,7 @@ const s = StyleSheet.create({
   },
   headerGradient: {
     paddingTop: 50,
-    paddingBottom: 40,
+    paddingBottom: 172,
     paddingHorizontal: 24,
   },
 
@@ -270,7 +270,6 @@ const s = StyleSheet.create({
   footer: {
     paddingVertical: 24,
     alignItems: 'center',
-    marginTop: 'auto',
   },
   footerText: {
     fontSize: 12,
