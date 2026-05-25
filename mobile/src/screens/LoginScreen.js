@@ -270,6 +270,7 @@ const s = StyleSheet.create({
   footer: {
     paddingVertical: 24,
     alignItems: 'center',
+    marginTop: 'auto',
   },
   footerText: {
     fontSize: 12,
