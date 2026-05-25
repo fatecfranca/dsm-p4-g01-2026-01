@@ -116,15 +116,6 @@ export default function LoginScreen({ navigation }) {
             >
               <Text style={s.btnPrimaryText}>Entrar</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity
-              style={s.forgotBtn}
-              activeOpacity={0.6}
-              onPress={() => {}}
-            >
-              <Text style={s.forgotText}>Esqueci minha senha</Text>
-            </TouchableOpacity>
-
             <View style={s.signupWrap}>
               <Text style={s.signupText}>Ainda não tem conta? </Text>
               <TouchableOpacity
@@ -258,15 +249,6 @@ const s = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
-  },
-  forgotBtn: {
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  forgotText: {
-    color: '#3B82F6',
-    fontSize: 14,
-    fontWeight: '500',
   },
   signupWrap: {
     flexDirection: 'row',
