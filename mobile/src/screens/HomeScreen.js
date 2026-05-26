@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Animated,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -18,6 +19,7 @@ import PulseDot from '../components/PulseDot';
 import InfoCard from '../components/InfoCard';
 import StatusBadge from '../components/StatusBadge';
 import { colors } from '../theme/colors';
+import useTelemetryData from '../hooks/useTelemetryData';
 
 const { width } = Dimensions.get('window');
 const isSmall = width < 380;
@@ -91,6 +93,20 @@ const whyCards = [
 
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const {
+    voltage,
+    current,
+    power,
+    monthlyCost,
+    powerFactor,
+    loading,
+    error,
+  } = useTelemetryData();
+
+  const online = !error && !loading;
+  const costToday = monthlyCost > 0 ? `R$ ${(monthlyCost / 30).toFixed(2)}` : '---';
+  const powerKW = power ? (power / 1000).toFixed(1) : '---';
+  const powerUnit = power ? `${powerKW} kW` : '---';
 
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>
@@ -141,52 +157,58 @@ export default function HomeScreen({ navigation }) {
             <View style={s.panelGlow} pointerEvents="none" />
             <Text style={s.panelTitle}>Monitoramento ao Vivo</Text>
 
-            <View style={s.metricsGrid}>
-              <FadeInView delay={400} style={{ width: cardWidth }}>
-                <InfoCard
-                  icon="flash"
-                  iconColor={colors.warning}
-                  bgColor={colors.warningBg}
-                  label="Consumo Atual"
-                  value="3.2 kWh"
-                  subtitle={'\u2191 12% que ontem'}
-                  subtitleColor={colors.danger}
-                />
-              </FadeInView>
-              <FadeInView delay={460} style={{ width: cardWidth }}>
-                <InfoCard
-                  icon="flash-outline"
-                  iconColor={colors.secondary}
-                  bgColor={colors.secondaryBg}
-                  label="Tensão"
-                  value="220 V"
-                  subtitle="Estável"
-                  subtitleColor={colors.success}
-                />
-              </FadeInView>
-              <FadeInView delay={520} style={{ width: cardWidth }}>
-                <InfoCard
-                  icon="speedometer-outline"
-                  iconColor={colors.purple}
-                  bgColor={colors.purpleBg}
-                  label="Corrente"
-                  value="14.5 A"
-                  subtitle="Carga normal"
-                  subtitleColor={colors.success}
-                />
-              </FadeInView>
-              <FadeInView delay={580} style={{ width: cardWidth }}>
-                <InfoCard
-                  icon="pulse-outline"
-                  iconColor={colors.primary}
-                  bgColor={colors.successBg}
-                  label="Potência"
-                  value="4.1 kW"
-                  subtitle="Demanda atual"
-                  subtitleColor={colors.textSecondary}
-                />
-              </FadeInView>
-            </View>
+            {loading ? (
+              <ActivityIndicator color={colors.primary} style={{ marginTop: 20 }} />
+            ) : error ? (
+              <Text style={s.panelError}>{error}</Text>
+            ) : (
+              <View style={s.metricsGrid}>
+                <FadeInView delay={400} style={{ width: cardWidth }}>
+                  <InfoCard
+                    icon="flash"
+                    iconColor={colors.warning}
+                    bgColor={colors.warningBg}
+                    label="Tensão"
+                    value={`${voltage} V`}
+                    subtitle="Rede elétrica"
+                    subtitleColor={colors.textSecondary}
+                  />
+                </FadeInView>
+                <FadeInView delay={460} style={{ width: cardWidth }}>
+                  <InfoCard
+                    icon="speedometer-outline"
+                    iconColor={colors.purple}
+                    bgColor={colors.purpleBg}
+                    label="Corrente"
+                    value={`${current} A`}
+                    subtitle="Carga atual"
+                    subtitleColor={colors.textSecondary}
+                  />
+                </FadeInView>
+                <FadeInView delay={520} style={{ width: cardWidth }}>
+                  <InfoCard
+                    icon="flash-outline"
+                    iconColor={colors.secondary}
+                    bgColor={colors.secondaryBg}
+                    label="Potência"
+                    value={powerUnit}
+                    subtitle="Demanda atual"
+                    subtitleColor={colors.textSecondary}
+                  />
+                </FadeInView>
+                <FadeInView delay={580} style={{ width: cardWidth }}>
+                  <InfoCard
+                    icon="pulse-outline"
+                    iconColor={colors.primary}
+                    bgColor={colors.successBg}
+                    label="Fator Potência"
+                    value={powerFactor ? powerFactor.toFixed(2) : '---'}
+                    subtitle="Qualidade"
+                    subtitleColor={powerFactor >= 0.92 ? colors.success : colors.danger}
+                  />
+                </FadeInView>
+              </View>
+            )}
           </FadeInView>
         </LinearGradient>
 
@@ -198,21 +220,15 @@ export default function HomeScreen({ navigation }) {
 
           <FadeInView delay={100} style={s.statusCard}>
             <View style={s.statusHeader}>
-              <StatusBadge online label="Sistema Online" />
-            </View>
-
-            <View style={s.statusRow}>
-              <Ionicons name="time-outline" size={16} color={colors.textMuted} />
-              <Text style={s.statusLabel}>Ultima atualização</Text>
-              <Text style={s.statusValue}>há 2 minutos</Text>
+              <StatusBadge online={online} label={online ? 'Sistema Online' : 'Sem conexão'} />
             </View>
 
             <View style={s.statusRow}>
               <Ionicons name="hardware-chip-outline" size={16} color={colors.textMuted} />
               <Text style={s.statusLabel}>Conexão ESP32</Text>
               <View style={s.statusIndicator}>
-                <PulseDot size={6} color={colors.success} />
-                <Text style={s.statusValue}>Conectado</Text>
+                <PulseDot size={6} color={online ? colors.success : colors.danger} />
+                <Text style={s.statusValue}>{online ? 'Conectado' : 'Desconectado'}</Text>
               </View>
             </View>
 
@@ -220,8 +236,8 @@ export default function HomeScreen({ navigation }) {
               <Ionicons name="cloud-outline" size={16} color={colors.textMuted} />
               <Text style={s.statusLabel}>API</Text>
               <View style={s.statusIndicator}>
-                <PulseDot size={6} color={colors.success} />
-                <Text style={s.statusValue}>Online</Text>
+                <PulseDot size={6} color={online ? colors.success : colors.danger} />
+                <Text style={s.statusValue}>{online ? 'Online' : 'Offline'}</Text>
               </View>
             </View>
           </FadeInView>
@@ -230,7 +246,7 @@ export default function HomeScreen({ navigation }) {
         {/* ===== ENERGY SAVINGS ===== */}
         <View style={s.savingsSection}>
           <FadeInView>
-            <Text style={s.sectionTag}>Economia Energética</Text>
+            <Text style={s.sectionTag}>Resumo Financeiro</Text>
           </FadeInView>
 
           <FadeInView delay={100} style={s.savingsCard}>
@@ -239,31 +255,30 @@ export default function HomeScreen({ navigation }) {
                 <Ionicons name="wallet-outline" size={24} color={colors.success} />
               </View>
               <View style={s.savingsHeaderText}>
-                <Text style={s.savingsValue}>R$ 2,45</Text>
-                <Text style={s.savingsLabel}>Economia hoje</Text>
+                <Text style={s.savingsValue}>{costToday}</Text>
+                <Text style={s.savingsLabel}>Custo estimado hoje</Text>
               </View>
             </View>
 
-            <View style={s.savingsDivider} />
+            {online && (
+              <>
+                <View style={s.savingsDivider} />
 
-            <View style={s.savingsRow}>
-              <Ionicons name="trending-down-outline" size={18} color={colors.success} />
-              <Text style={s.savingsRowText}>
-                <Text style={{ color: colors.success }}>8%</Text> de redução esse mês
-              </Text>
-            </View>
+                <View style={s.savingsRow}>
+                  <Ionicons name="flash-outline" size={18} color={colors.warning} />
+                  <Text style={s.savingsRowText}>
+                    Consumo atual: <Text style={{ color: colors.warning }}>{power} W</Text>
+                  </Text>
+                </View>
 
-            <View style={s.savingsRow}>
-              <Ionicons name="flag-outline" size={18} color={colors.warning} />
-              <Text style={s.savingsRowText}>
-                Meta semanal: <Text style={{ color: colors.warning }}>R$ 12,00</Text>
-              </Text>
-            </View>
-
-            <View style={s.progressTrack}>
-              <View style={[s.progressFill, { width: '32%' }]} />
-            </View>
-            <Text style={s.progressLabel}>32% da meta atingida</Text>
+                <View style={s.savingsRow}>
+                  <Ionicons name="flag-outline" size={18} color={colors.primary} />
+                  <Text style={s.savingsRowText}>
+                    Projeção mensal: <Text style={{ color: colors.primary }}>R$ {monthlyCost.toFixed(2)}</Text>
+                  </Text>
+                </View>
+              </>
+            )}
           </FadeInView>
         </View>
 
@@ -433,6 +448,12 @@ const s = StyleSheet.create({
     letterSpacing: 1,
     textTransform: 'uppercase',
     marginBottom: 16,
+  },
+  panelError: {
+    fontSize: 13,
+    color: colors.danger,
+    textAlign: 'center',
+    paddingVertical: 20,
   },
   metricsGrid: {
     flexDirection: 'row',

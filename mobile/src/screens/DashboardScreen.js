@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FadeInView from '../components/FadeInView';
 import StatusBadge from '../components/StatusBadge';
@@ -29,7 +29,11 @@ export default function DashboardScreen() {
     peakCurrentIndex,
     maxKwhIndex,
     maxCostIndex,
+    loading,
+    error,
   } = useTelemetryData();
+
+  const online = !error && !loading;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -44,9 +48,20 @@ export default function DashboardScreen() {
               <Text style={styles.greeting}>Dashboard</Text>
               <Text style={styles.subtitle}>Monitoramento em Tempo Real</Text>
             </View>
-            <StatusBadge online label="Online" />
+            <StatusBadge online={online} label={online ? 'Online' : 'Offline'} />
           </View>
         </FadeInView>
+
+        {loading ? (
+          <View style={styles.centerBox}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={styles.centerText}>Carregando dados...</Text>
+          </View>
+        ) : error ? (
+          <View style={styles.centerBox}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : (
 
         {/* KPI CARDS */}
         <View style={styles.kpiRow}>
@@ -169,6 +184,8 @@ export default function DashboardScreen() {
             Energia
           </Text>
         </FadeInView>
+        </>)}
+
       </ScrollView>
     </View>
   );
@@ -215,6 +232,26 @@ const styles = StyleSheet.create({
   },
   kpiWrapper: {
     flex: 1,
+  },
+
+  /* CENTER / ERROR */
+  centerBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 80,
+    paddingHorizontal: 20,
+  },
+  centerText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  errorText: {
+    fontSize: 14,
+    color: colors.danger,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 
   /* FOOTER */

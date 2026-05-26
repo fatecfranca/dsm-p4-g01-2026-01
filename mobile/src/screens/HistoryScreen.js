@@ -30,14 +30,17 @@ export default function HistoryScreen() {
   const insets = useSafeAreaInsets();
   const [readings, setReadings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     (async () => {
       try {
         const response = await getTelemetria('ESP32-001', 100);
         setReadings(response.data || []);
-      } catch {
+        setError(null);
+      } catch (err) {
         setReadings([]);
+        setError(err.message || 'Falha ao carregar histórico');
       } finally {
         setLoading(false);
       }
@@ -142,6 +145,8 @@ export default function HistoryScreen() {
 
           {loading ? (
             <ActivityIndicator color={colors.primary} style={{ marginTop: 20 }} />
+          ) : error ? (
+            <Text style={styles.errorText}>{error}</Text>
           ) : readings.length === 0 ? (
             <Text style={styles.emptyText}>Nenhuma leitura disponível</Text>
           ) : (
@@ -311,6 +316,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 13,
     color: colors.textMuted,
+    textAlign: 'center',
+    paddingVertical: 20,
+  },
+  errorText: {
+    fontSize: 13,
+    color: colors.danger,
     textAlign: 'center',
     paddingVertical: 20,
   },
