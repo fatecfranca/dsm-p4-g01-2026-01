@@ -1,12 +1,9 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import Svg, { Path, G, Text as SvgText, Line, Circle } from 'react-native-svg';
 import { colors } from '../../theme/colors';
 
-const SIZE = Dimensions.get('window').width * 0.7;
 const STROKE = 18;
-const RADIUS = (SIZE - STROKE) / 2;
-const CENTER = SIZE / 2;
 const START_ANGLE = -180;
 const END_ANGLE = 0;
 
@@ -35,6 +32,11 @@ function getGaugeColor(value) {
 }
 
 export default function GaugeWidget({ frequency = 60, powerFactor = 0.95 }) {
+  const { width } = useWindowDimensions();
+  const SIZE = width * 0.7;
+  const RADIUS = (SIZE - STROKE) / 2;
+  const CENTER = SIZE / 2;
+
   const clampedPf = Math.min(1, Math.max(0, powerFactor));
   const fillAngle = START_ANGLE + (END_ANGLE - START_ANGLE) * clampedPf;
   const gaugeColor = getGaugeColor(clampedPf);
@@ -127,6 +129,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 16,
     alignItems: 'center',
+    overflow: 'hidden',
   },
   title: {
     fontSize: 14,

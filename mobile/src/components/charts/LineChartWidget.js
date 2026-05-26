@@ -1,9 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { colors } from '../../theme/colors';
-
-const screenWidth = Dimensions.get('window').width;
 
 export default function LineChartWidget({
   data,
@@ -14,6 +12,9 @@ export default function LineChartWidget({
   peakLabel = 'Pico',
 }) {
   if (!data || data.length === 0) return null;
+
+  const { width } = useWindowDimensions();
+  const chartWidth = width - 72;
 
   const labels = data.map((d) => d.time);
   const values = data.map((d) => d.value);
@@ -43,7 +44,7 @@ export default function LineChartWidget({
 
       <LineChart
         data={chartData}
-        width={screenWidth - 40}
+        width={chartWidth}
         height={200}
         yAxisSuffix={unit}
         yAxisInterval={1}
@@ -89,6 +90,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginHorizontal: 20,
     marginTop: 16,
+    overflow: 'hidden',
   },
   header: {
     flexDirection: 'row',

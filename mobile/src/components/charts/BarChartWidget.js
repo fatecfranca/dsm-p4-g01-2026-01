@@ -1,9 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import { BarChart } from 'react-native-chart-kit';
 import { colors } from '../../theme/colors';
-
-const screenWidth = Dimensions.get('window').width;
 
 export default function BarChartWidget({
   data,
@@ -15,6 +13,9 @@ export default function BarChartWidget({
   formatTopValue,
 }) {
   if (!data || data.length === 0) return null;
+
+  const { width } = useWindowDimensions();
+  const chartWidth = width - 72;
 
   const labels = data.map((d) => d.day);
   const values = data.map((d) => d.value);
@@ -46,7 +47,7 @@ export default function BarChartWidget({
 
       <BarChart
         data={chartData}
-        width={screenWidth - 40}
+        width={chartWidth}
         height={200}
         yAxisSuffix={unit}
         yAxisLabel=""
@@ -86,6 +87,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginHorizontal: 20,
     marginTop: 16,
+    overflow: 'hidden',
   },
   header: {
     marginBottom: 12,
