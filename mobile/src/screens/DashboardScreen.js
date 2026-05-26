@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FadeInView from '../components/FadeInView';
@@ -7,7 +7,7 @@ import KpiCard from '../components/cards/KpiCard';
 import LineChartWidget from '../components/charts/LineChartWidget';
 import BarChartWidget from '../components/charts/BarChartWidget';
 import GaugeWidget from '../components/charts/GaugeWidget';
-import useMockData from '../hooks/useMockData';
+import useTelemetryData from '../hooks/useTelemetryData';
 import { colors } from '../theme/colors';
 
 export default function DashboardScreen() {
@@ -29,7 +29,7 @@ export default function DashboardScreen() {
     peakCurrentIndex,
     maxKwhIndex,
     maxCostIndex,
-  } = useMockData();
+  } = useTelemetryData();
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>

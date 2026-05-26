@@ -11,11 +11,13 @@ import {
   Platform,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import FadeInView from '../components/FadeInView';
 import PulseDot from '../components/PulseDot';
+import { useAuth } from '../contexts/AuthContext';
 
 const { width } = Dimensions.get('window');
 const isSmall = width < 380;
@@ -56,8 +58,29 @@ function FloatingLabelInput({ label, icon, secureTextEntry, value, onChangeText 
 }
 
 export default function LoginScreen({ navigation }) {
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleLogin() {
+    if (!email || !password) {
+      setError('Preencha todos os campos.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      await login(email, password);
+      navigation?.navigate('MainTabs');
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Erro ao fazer login. Verifique suas credenciais.';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <KeyboardAvoidingView
@@ -109,12 +132,23 @@ export default function LoginScreen({ navigation }) {
               onChangeText={setPassword}
             />
 
+            {error ? (
+              <View style={s.errorBox}>
+                <Text style={s.errorText}>{error}</Text>
+              </View>
+            ) : null}
+
             <TouchableOpacity
-              style={s.btnPrimary}
+              style={[s.btnPrimary, loading && s.btnDisabled]}
               activeOpacity={0.8}
-              onPress={() => navigation?.navigate('MainTabs')}
+              onPress={handleLogin}
+              disabled={loading}
             >
-              <Text style={s.btnPrimaryText}>Entrar</Text>
+              {loading ? (
+                <ActivityIndicator color="#0F172A" size="small" />
+              ) : (
+                <Text style={s.btnPrimaryText}>Entrar</Text>
+              )}
             </TouchableOpacity>
             <View style={s.signupWrap}>
               <Text style={s.signupText}>Ainda não tem conta? </Text>
@@ -245,10 +279,26 @@ const s = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
+  btnDisabled: {
+    opacity: 0.7,
+  },
   btnPrimaryText: {
-    color: '#FFFFFF',
+    color: '#0F172A',
     fontSize: 16,
     fontWeight: '700',
+  },
+  errorBox: {
+    padding: 12,
+    backgroundColor: 'rgba(239,68,68,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.25)',
+    borderRadius: 10,
+  },
+  errorText: {
+    fontSize: 13,
+    color: '#EF4444',
+    textAlign: 'center',
+    fontWeight: '500',
   },
   signupWrap: {
     flexDirection: 'row',
