@@ -87,7 +87,7 @@ const techs = [
   { name: 'MongoDB', icon: '\uD83C\uDF33', color: '#1EA454' },
   { name: 'ESP32', icon: '\uD83D\uDEE0\uFE0F', color: '#F59E0B' },
   { name: 'IoT', icon: '\uD83C\uDF10', color: '#8B5CF6' },
-  { name: 'Gr\u00E1ficos', icon: '\uD83D\uDCC8', color: '#EC4899' },
+  { name: 'Gráficos', icon: '\uD83D\uDCC8', color: '#EC4899' },
 ];
 
 const team = [
@@ -114,10 +114,10 @@ export default function AboutScreen({ navigation }) {
             Transformando dados em{'\n'}energia inteligente
           </Text>
           <Text style={s.heroSub}>
-            O EcoSense \u00E9 uma plataforma IoT de monitoramento energ\u00E9tico que
-            combina sensores de corrente e tens\u00E3o, microcontroladores ESP32 e
+            O EcoSense é uma plataforma IoT de monitoramento energético que
+            combina sensores de corrente e tensão, microcontroladores ESP32 e
             uma dashboard interativa para fornecer insights precisos sobre o
-            consumo de energia el\u00E9trica em tempo real.
+            consumo de energia elétrica em tempo real.
           </Text>
         </FadeInView>
 
@@ -150,7 +150,7 @@ export default function AboutScreen({ navigation }) {
             </View>
             <View style={s.iotStat}>
               <Text style={s.iotStatValue}>ZMPT101B</Text>
-              <Text style={s.iotStatLabel}>Tens\u00E3o</Text>
+              <Text style={s.iotStatLabel}>Tensão</Text>
             </View>
           </View>
         </FadeInView>
@@ -161,10 +161,10 @@ export default function AboutScreen({ navigation }) {
         <FadeInView style={s.sectionHeader}>
           <Text style={s.sectionTag}>Sobre o Projeto</Text>
           <Text style={s.sectionTitle}>
-            Tecnologia a servi\u00E7o da efici\u00EAncia
+            Tecnologia a serviço da eficiência
           </Text>
           <Text style={s.sectionSub}>
-            Conhe\u00E7a os pilares que sustentam a plataforma EcoSense
+            Conheça os pilares que sustentam a plataforma EcoSense
           </Text>
         </FadeInView>
 
@@ -211,7 +211,7 @@ export default function AboutScreen({ navigation }) {
           <Text style={s.sectionTag}>Equipe</Text>
           <Text style={s.sectionTitle}>Quem faz o EcoSense</Text>
           <Text style={s.sectionSub}>
-            Conhe\u00E7a os desenvolvedores por tr\u00E1s do projeto
+            Conheça os desenvolvedores por trás do projeto
           </Text>
         </FadeInView>
 
@@ -233,7 +233,7 @@ export default function AboutScreen({ navigation }) {
       {/* FOOTER */}
       <View style={s.footer}>
         <Text style={s.footerText}>
-          EcoSense \u00A9 {new Date().getFullYear()} — Monitoramento Inteligente de Energia
+          EcoSense © {new Date().getFullYear()} — Monitoramento Inteligente de Energia
         </Text>
       </View>
     </ScrollView>

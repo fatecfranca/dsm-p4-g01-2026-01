@@ -64,28 +64,28 @@ const whyCards = [
     color: colors.primary,
     bg: colors.successBg,
     title: 'Monitoramento em Tempo Real',
-    desc: 'Acompanhe o consumo de energia el\u00e9trica instantaneamente com dados atualizados a cada segundo.',
+    desc: 'Acompanhe o consumo de energia elétrica instantaneamente com dados atualizados a cada segundo.',
   },
   {
     icon: '\uD83D\uDCCA',
     color: colors.secondary,
     bg: colors.secondaryBg,
-    title: 'An\u00e1lise de Consumo',
-    desc: 'Visualize gr\u00e1ficos detalhados e relat\u00f3rios inteligentes sobre o uso de energia.',
+    title: 'Análise de Consumo',
+    desc: 'Visualize gráficos detalhados e relatórios inteligentes sobre o uso de energia.',
   },
   {
     icon: '\uD83D\uDD14',
     color: colors.warning,
     bg: colors.warningBg,
     title: 'Alertas Inteligentes',
-    desc: 'Receba notifica\u00e7\u00f5es quando o consumo ultrapassar limites pr\u00e9-definidos.',
+    desc: 'Receba notificações quando o consumo ultrapassar limites pré-definidos.',
   },
   {
     icon: '\uD83C\uDF31',
     color: colors.purple,
     bg: colors.purpleBg,
-    title: 'Efici\u00eancia Energ\u00e9tica',
-    desc: 'Identifique desperd\u00edcios e receba sugest\u00f5es para reduzir sua conta de luz.',
+    title: 'Eficiência Energética',
+    desc: 'Identifique desperdícios e receba sugestões para reduzir sua conta de luz.',
   },
 ];
 
@@ -112,12 +112,12 @@ export default function HomeScreen({ navigation }) {
             </View>
 
             <Text style={s.heroTitle}>
-              Efici\u00eancia Energ\u00e9tica em{'\n'}
+              Eficiência Energética em{'\n'}
               <Text style={s.heroGradient}>tempo real</Text>
             </Text>
 
             <Text style={s.heroSub}>
-              Monitore o consumo de energia da sua resid\u00eancia ou empresa com sensores IoT inteligentes.
+              Monitore o consumo de energia da sua residência ou empresa com sensores IoT inteligentes.
             </Text>
 
             {/* CTA Button */}
@@ -133,7 +133,7 @@ export default function HomeScreen({ navigation }) {
                 <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
               </LinearGradient>
             </PressScaleButton>
-            <Text style={s.ctaDesc}>Acompanhe m\u00e9tricas energ\u00e9ticas em tempo real</Text>
+            <Text style={s.ctaDesc}>Acompanhe métricas energéticas em tempo real</Text>
           </FadeInView>
 
           {/* MONITORING PANEL */}
@@ -158,9 +158,9 @@ export default function HomeScreen({ navigation }) {
                   icon="flash-outline"
                   iconColor={colors.secondary}
                   bgColor={colors.secondaryBg}
-                  label="Tens\u00e3o"
+                  label="Tensão"
                   value="220 V"
-                  subtitle="Est\u00e1vel"
+                  subtitle="Estável"
                   subtitleColor={colors.success}
                 />
               </FadeInView>
@@ -180,7 +180,7 @@ export default function HomeScreen({ navigation }) {
                   icon="pulse-outline"
                   iconColor={colors.primary}
                   bgColor={colors.successBg}
-                  label="Pot\u00eancia"
+                  label="Potência"
                   value="4.1 kW"
                   subtitle="Demanda atual"
                   subtitleColor={colors.textSecondary}
@@ -203,13 +203,13 @@ export default function HomeScreen({ navigation }) {
 
             <View style={s.statusRow}>
               <Ionicons name="time-outline" size={16} color={colors.textMuted} />
-              <Text style={s.statusLabel}>Ultima atualiza\u00e7\u00e3o</Text>
-              <Text style={s.statusValue}>h\u00e1 2 minutos</Text>
+              <Text style={s.statusLabel}>Ultima atualização</Text>
+              <Text style={s.statusValue}>há 2 minutos</Text>
             </View>
 
             <View style={s.statusRow}>
               <Ionicons name="hardware-chip-outline" size={16} color={colors.textMuted} />
-              <Text style={s.statusLabel}>Conex\u00e3o ESP32</Text>
+              <Text style={s.statusLabel}>Conexão ESP32</Text>
               <View style={s.statusIndicator}>
                 <PulseDot size={6} color={colors.success} />
                 <Text style={s.statusValue}>Conectado</Text>
@@ -230,7 +230,7 @@ export default function HomeScreen({ navigation }) {
         {/* ===== ENERGY SAVINGS ===== */}
         <View style={s.savingsSection}>
           <FadeInView>
-            <Text style={s.sectionTag}>Economia Energ\u00e9tica</Text>
+            <Text style={s.sectionTag}>Economia Energética</Text>
           </FadeInView>
 
           <FadeInView delay={100} style={s.savingsCard}>
@@ -249,7 +249,7 @@ export default function HomeScreen({ navigation }) {
             <View style={s.savingsRow}>
               <Ionicons name="trending-down-outline" size={18} color={colors.success} />
               <Text style={s.savingsRowText}>
-                <Text style={{ color: colors.success }}>8%</Text> de redu\u00e7\u00e3o esse m\u00eas
+                <Text style={{ color: colors.success }}>8%</Text> de redução esse mês
               </Text>
             </View>
 
@@ -273,7 +273,7 @@ export default function HomeScreen({ navigation }) {
             <Text style={s.sectionTag}>Por que EcoSense?</Text>
             <Text style={s.sectionTitle}>Tecnologia inteligente para sua economia</Text>
             <Text style={s.sectionSub}>
-              Nossa plataforma combina sensores IoT, an\u00e1lise de dados e alertas para transformar a forma como voc\u00ea consome energia.
+              Nossa plataforma combina sensores IoT, análise de dados e alertas para transformar a forma como você consome energia.
             </Text>
           </FadeInView>
 
@@ -305,7 +305,7 @@ export default function HomeScreen({ navigation }) {
               </View>
               <Text style={s.ctaCardTitle}>Dashboard Completo</Text>
               <Text style={s.ctaCardDesc}>
-                Acompanhe m\u00e9tricas energ\u00e9ticas em tempo real com gr\u00e1ficos e indicadores
+                Acompanhe métricas energéticas em tempo real com gráficos e indicadores
               </Text>
               <View style={s.ctaCardAction}>
                 <Text style={s.ctaCardActionText}>Acessar Dashboard</Text>
@@ -318,7 +318,7 @@ export default function HomeScreen({ navigation }) {
         {/* ===== FOOTER ===== */}
         <View style={s.footer}>
           <Text style={s.footerText}>
-            EcoSense \u00a9 {new Date().getFullYear()} — Monitoramento Inteligente de Energia
+            EcoSense © {new Date().getFullYear()} — Monitoramento Inteligente de Energia
           </Text>
         </View>
       </ScrollView>

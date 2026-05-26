@@ -52,7 +52,7 @@ export default function MainTabs() {
         name="Home"
         component={HomeScreen}
         options={{
-          tabBarLabel: 'In\u00edcio',
+          tabBarLabel: 'Início',
           tabBarIcon: ({ focused }) => (
             <TabIcon name="home" focused={focused} />
           ),
