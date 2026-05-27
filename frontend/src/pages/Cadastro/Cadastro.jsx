@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { cadastro } from "../../services/authService";
 import styles from "./Cadastro.module.css";
 
 export default function Cadastro() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [form, setForm] = useState({
     nome: "",
     email: "",
@@ -38,7 +39,7 @@ export default function Cadastro() {
     try {
       const data = await cadastro(form.nome, form.email, form.senha);
       localStorage.setItem("token", data.token);
-      navigate("/dashboard");
+      navigate(searchParams.get("redirect") || "/dashboard");
     } catch {
       setError("Erro ao criar conta. Tente novamente.");
     } finally {

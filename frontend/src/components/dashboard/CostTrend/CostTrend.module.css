@@ -2,7 +2,8 @@
   background: var(--color-surface);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
-  padding: 1.25rem 0.75rem 0.5rem;
+  padding: 1rem 0.75rem 0.5rem;
+  height: 100%;
 }
 
 .header {
@@ -20,15 +21,27 @@
 }
 
 .title {
-  font-size: 0.9375rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 .subtitle {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: var(--color-text-secondary);
   font-weight: 500;
+}
+
+.badge {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--color-danger);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 .chart {
@@ -37,16 +50,14 @@
 }
 
 .empty {
-  padding: 3rem 1rem;
+  padding: 2rem 1rem;
   text-align: center;
   color: var(--color-text-secondary);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
-/* Skeleton */
-
 .skeletonTitle {
-  height: 14px;
+  height: 12px;
   width: 140px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 4px;
@@ -54,27 +65,23 @@
 }
 
 .skeletonChart {
-  padding: 1rem 0;
+  padding: 0.75rem 0;
 }
 
-.skeletonBars {
-  height: 150px;
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  padding: 0 0.5rem;
-}
-
-.skeletonBars::before {
-  content: '';
-  flex: 1;
-  height: 100%;
-  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
-  border-radius: 4px 4px 0 0;
-  animation: pulse 1.5s ease-in-out infinite;
+.skeletonLine {
+  height: 140px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 100%);
+  border-radius: 8px;
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 0.15; }
+}
+
+@keyframes shimmer {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0.3; }
 }

@@ -1,119 +1,116 @@
 import { motion } from "framer-motion";
-import { currentReadings } from "../../../mock/dashboardMockData";
+import { PieChart, Pie, Cell } from "recharts";
 import { colors } from "../../../theme/colors";
 import styles from "./GaugeSection.module.css";
 
-function Gauge({ label, value, unit, min, max, color }) {
+function Gauge({ label, value, min, max, unit, color }) {
   const normalized = Math.max(0, Math.min(1, (value - min) / (max - min)));
+  const displayValue = typeof value === "number" ? value.toFixed(2) : value;
 
-  const polarToCartesian = (cx, cy, r, angleDeg) => {
-    const rad = (angleDeg * Math.PI) / 180;
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-  };
-
-  const describeArc = (cx, cy, r, startAngle, endAngle) => {
-    const start = polarToCartesian(cx, cy, r, endAngle);
-    const end = polarToCartesian(cx, cy, r, startAngle);
-    const largeArc = endAngle - startAngle <= 180 ? "0" : "1";
-    return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y}`;
-  };
-
-  const cx = 100;
-  const cy = 100;
-  const r = 72;
-  const trackArc = describeArc(cx, cy, r, -180, 0);
-  const fullArc = describeArc(cx, cy, r, -180, 0);
-
-  const displayValue = typeof value === 'number' ? value.toFixed(2) : value;
+  const data = [
+    { name: "Valor", value: normalized },
+    { name: "Restante", value: 1 - normalized },
+  ];
 
   return (
     <motion.div
       className={styles.gauge}
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, delay: 0.2 }}
+      transition={{ duration: 0.4, delay: 0.15, ease: "easeOut" }}
     >
-      <svg viewBox="0 0 200 135" className={styles.svg}>
-        <path
-          d={trackArc}
-          fill="none"
-          stroke="#2a3a4f"
-          strokeWidth="10"
-          strokeLinecap="round"
-        />
-
-        <motion.path
-          d={fullArc}
-          fill="none"
-          stroke={color}
-          strokeWidth="10"
-          strokeLinecap="round"
-          strokeDasharray="300"
-          initial={{ strokeDashoffset: 300 }}
-          animate={{ strokeDashoffset: 300 - normalized * 300 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          style={{
-            filter: `drop-shadow(0 0 6px ${color}60)`,
-          }}
-        />
-
-        <text
-          x={cx}
-          y={cy - 8}
-          textAnchor="middle"
-          fill={colors.textPrimary}
-          fontSize="24"
-          fontWeight="700"
-          fontFamily="Inter"
-        >
-          {displayValue}
-        </text>
-
-        {unit && (
-          <text
-            x={cx}
-            y={cy + 14}
-            textAnchor="middle"
-            fill={colors.textSecondary}
-            fontSize="11"
-            fontWeight="500"
-            fontFamily="Inter"
+      <div className={styles.gaugeChartWrap}>
+        <PieChart width={180} height={180}>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="55%"
+            startAngle={180}
+            endAngle={0}
+            innerRadius={62}
+            outerRadius={80}
+            dataKey="value"
+            cornerRadius={6}
+            paddingAngle={1}
+            stroke="none"
           >
-            {unit}
-          </text>
-        )}
-      </svg>
+            {data.map((entry, index) => (
+              <Cell
+                key={index}
+                fill={entry.name === "Valor" ? color : colors.border}
+              />
+            ))}
+          </Pie>
+        </PieChart>
+        <div className={styles.gaugeOverlay}>
+          <span className={styles.gaugeNumber}>{displayValue}</span>
+          {unit && <span className={styles.gaugeUnit}>{unit}</span>}
+        </div>
+      </div>
 
-      <span className={styles.label}>{label}</span>
+      <span className={styles.gaugeLabel}>{label}</span>
     </motion.div>
   );
 }
 
-export default function GaugeSection() {
+function SkeletonGauge() {
+  return (
+    <div className={styles.gauge}>
+      <div className={styles.gaugeChartWrap}>
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <path
+            d="M 20 99 A 70 70 0 0 0 160 99"
+            fill="none"
+            stroke="rgba(255,255,255,0.04)"
+            strokeWidth="8"
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+      <div className={styles.skeletonLabel} />
+    </div>
+  );
+}
+
+export default function GaugeSection({ readings, loading }) {
+  if (loading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.skeletonTitle} />
+        <div className={styles.grid}>
+          <SkeletonGauge />
+          <SkeletonGauge />
+        </div>
+      </div>
+    );
+  }
+
+  const r = readings || {};
+
   return (
     <motion.div
       className={styles.container}
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.5 }}
+      transition={{ duration: 0.4, delay: 0.45, ease: "easeOut" }}
     >
       <h3 className={styles.title}>Status da Rede</h3>
 
-      <div className={styles.gauges}>
+      <div className={styles.grid}>
         <Gauge
           label="Frequência da Rede"
-          value={currentReadings.frequency}
-          unit="Hz"
+          value={r.frequencia ?? 0}
           min={57}
           max={63}
+          unit="Hz"
           color={colors.primary}
         />
         <Gauge
           label="Fator de Potência"
-          value={currentReadings.powerFactor}
-          unit=""
+          value={r.fatorPotencia ?? 0}
           min={0.7}
           max={1.0}
+          unit=""
           color={colors.info}
         />
       </div>

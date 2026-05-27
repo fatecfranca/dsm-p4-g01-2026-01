@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { login } from "../../services/authService";
 import styles from "./Login.module.css";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [form, setForm] = useState({ email: "", senha: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,7 +23,7 @@ export default function Login() {
     try {
       const data = await login(form.email, form.senha);
       localStorage.setItem("token", data.token);
-      navigate("/dashboard");
+      navigate(searchParams.get("redirect") || "/dashboard");
     } catch {
       setError("Email ou senha inválidos.");
     } finally {
