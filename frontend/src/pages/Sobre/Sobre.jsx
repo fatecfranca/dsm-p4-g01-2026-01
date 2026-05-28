@@ -42,7 +42,7 @@ const techs = [
   { name: "MongoDB", desc: "Banco de dados flexível", color: "var(--color-success)" },
   { name: "ESP32", desc: "Microcontrolador IoT", color: "var(--color-secondary)" },
   { name: "IoT", desc: "Sensores de corrente e tensão", color: "var(--color-warning)" },
-  { name: "Victory", desc: "Gráficos dinâmicos e interativos", color: "var(--color-primary)" },
+  { name: "Recharts", desc: "Gráficos dinâmicos e interativos", color: "var(--color-primary)" },
 ];
 
 function MemberCard({ member, index }) {
@@ -213,7 +213,7 @@ export default function Sobre() {
               </div>
               <h3 className={styles.cardTitle}>Tecnologia IoT</h3>
               <p className={styles.cardText}>
-                Sensores de corrente SCT-013 e voltagem ZMPT101B conectados a um
+                Sensores de corrente ACS712 20A e voltagem ZMPT101B conectados a um
                 ESP32 enviam dados em tempo real para processamento.
               </p>
             </motion.div>
