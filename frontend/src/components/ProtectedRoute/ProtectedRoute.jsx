@@ -1,10 +1,15 @@
 import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function ProtectedRoute({ children }) {
   const location = useLocation();
-  const token = localStorage.getItem("token");
+  const { isAuthenticated, ready } = useAuth();
 
-  if (!token) {
+  if (!ready) {
+    return null;
+  }
+
+  if (!isAuthenticated) {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
   }
 

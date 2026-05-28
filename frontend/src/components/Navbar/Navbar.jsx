@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { NavLink, Link } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../../contexts/AuthContext";
 import logoFull from "../../assets/images/logo-full.png";
+import UserMenu from "./UserMenu";
 import styles from "./Navbar.module.css";
 
 const linkVariants = {
@@ -36,6 +38,8 @@ const links = [
 ];
 
 export default function Navbar() {
+  const { isAuthenticated, user, logout } = useAuth();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
   return (
@@ -74,26 +78,32 @@ export default function Navbar() {
         </div>
 
         <div className={styles.desktopRight}>
-          <div className={styles.desktopAuth}>
-            <Link to="/login" className={styles.authLink}>
-              Entrar
-            </Link>
-            <Link to="/cadastro" className={styles.authLink}>
-              Cadastrar
-            </Link>
-          </div>
+          {isAuthenticated ? (
+            <UserMenu />
+          ) : (
+            <>
+              <div className={styles.desktopAuth}>
+                <Link to="/login" className={styles.authLink}>
+                  Entrar
+                </Link>
+                <Link to="/cadastro" className={styles.authLink}>
+                  Cadastrar
+                </Link>
+              </div>
 
-          <motion.div
-            className={styles.desktopCta}
-            custom={3}
-            variants={linkVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <Link to="/dashboard" className={styles.cta}>
-              Monitorar Agora
-            </Link>
-          </motion.div>
+              <motion.div
+                className={styles.desktopCta}
+                custom={3}
+                variants={linkVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                <Link to="/dashboard" className={styles.cta}>
+                  Monitorar Agora
+                </Link>
+              </motion.div>
+            </>
+          )}
         </div>
 
         <button
@@ -116,44 +126,85 @@ export default function Navbar() {
             animate="visible"
             exit="exit"
           >
-            {links.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.end}
-                className={({ isActive }) =>
-                  `${styles.mobileLink} ${isActive ? styles.mobileActive : ""}`
-                }
+          {isAuthenticated ? (
+            <>
+              <div className={styles.mobileUser}>
+                <span className={styles.mobileUserName}>{user.nome}</span>
+                <span className={styles.mobileUserEmail}>{user.email}</span>
+              </div>
+              <div className={styles.mobileDivider} />
+              <Link
+                to="/"
+                className={styles.mobileLink}
                 onClick={() => setOpen(false)}
               >
-                {link.label}
-              </NavLink>
-            ))}
-            <div className={styles.mobileDivider} />
+                Home
+              </Link>
+              <Link
+                to="/dashboard"
+                className={styles.mobileLink}
+                onClick={() => setOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/sobre"
+                className={styles.mobileLink}
+                onClick={() => setOpen(false)}
+              >
+                Sobre
+              </Link>
+              <div className={styles.mobileDivider} />
+              <button
+                type="button"
+                className={styles.mobileLink}
+                onClick={() => { setOpen(false); logout(); navigate("/"); }}
+              >
+                Sair
+              </button>
+            </>
+          ) : (
+            <>
+              {links.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  end={link.end}
+                  className={({ isActive }) =>
+                    `${styles.mobileLink} ${isActive ? styles.mobileActive : ""}`
+                  }
+                  onClick={() => setOpen(false)}
+                >
+                  {link.label}
+                </NavLink>
+              ))}
+              <div className={styles.mobileDivider} />
 
-            <Link
-              to="/login"
-              className={styles.mobileLink}
-              onClick={() => setOpen(false)}
-            >
-              Entrar
-            </Link>
+              <Link
+                to="/login"
+                className={styles.mobileLink}
+                onClick={() => setOpen(false)}
+              >
+                Entrar
+              </Link>
 
-            <Link
-              to="/cadastro"
-              className={styles.mobileLink}
-              onClick={() => setOpen(false)}
-            >
-              Cadastrar
-            </Link>
+              <Link
+                to="/cadastro"
+                className={styles.mobileLink}
+                onClick={() => setOpen(false)}
+              >
+                Cadastrar
+              </Link>
 
-            <Link
-              to="/dashboard"
-              className={styles.mobileCta}
-              onClick={() => setOpen(false)}
-            >
-              Monitorar Agora
-            </Link>
+              <Link
+                to="/dashboard"
+                className={styles.mobileCta}
+                onClick={() => setOpen(false)}
+              >
+                Monitorar Agora
+              </Link>
+            </>
+          )}
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { login } from "../../services/authService";
+import { useAuth } from "../../contexts/AuthContext";
+import { login as apiLogin } from "../../services/authService";
 import styles from "./Login.module.css";
 
 export default function Login() {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [form, setForm] = useState({ email: "", senha: "" });
@@ -21,8 +23,8 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      const data = await login(form.email, form.senha);
-      localStorage.setItem("token", data.token);
+      const data = await apiLogin(form.email, form.senha);
+      login(data.token, data.usuario);
       navigate(searchParams.get("redirect") || "/dashboard");
     } catch {
       setError("Email ou senha inválidos.");
