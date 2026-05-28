@@ -11,9 +11,11 @@ import {
 } from "recharts";
 import { colors } from "../../../theme/colors";
 
-function formatHour(ts) {
-  const d = new Date(ts);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+function formatTick(value) {
+  if (value >= 100) return value.toFixed(0);
+  if (value >= 1) return value.toFixed(1);
+  if (value >= 0.1) return value.toFixed(2);
+  return value.toFixed(3);
 }
 
 function computeDomain(values) {
@@ -159,8 +161,21 @@ export default function MetricChart({ readings, field, label, unit, color, thres
     const min = Math.min(...values);
     const max = Math.max(...values);
 
+    const first = filtered[0].timestamp;
+    const last = filtered[filtered.length - 1].timestamp;
+    const multiDay = first?.slice(0, 10) !== last?.slice(0, 10);
+
+    const formatTime = (ts) => {
+      const d = new Date(ts);
+      const hhmm = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      if (multiDay) {
+        return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")} ${hhmm}`;
+      }
+      return hhmm;
+    };
+
     const chartData = filtered.map(r => ({
-      time: formatHour(r.timestamp),
+      time: formatTime(r.timestamp),
       value: r[field],
     }));
 
@@ -230,6 +245,7 @@ export default function MetricChart({ readings, field, label, unit, color, thres
 
               <YAxis
                 domain={domain}
+                tickFormatter={formatTick}
                 tick={{ fill: colors.textSecondary, fontSize: 9, fontFamily: "Inter" }}
                 tickLine={false}
                 axisLine={false}
