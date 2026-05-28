@@ -37,7 +37,6 @@ export default function Cadastro() {
     setLoading(true);
     try {
       const data = await cadastro(form.nome, form.email, form.senha);
-      localStorage.setItem("token", data.token);
       navigate("/dashboard");
     } catch {
       setError("Erro ao criar conta. Tente novamente.");

@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createContext, useContext, useState } from 'react';
+import { setToken as setApiToken } from '../services/api';
 import { login as apiLogin, cadastro as apiCadastro } from '../services/authService';
 
 const AuthContext = createContext(null);
@@ -7,28 +7,11 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const storedToken = await AsyncStorage.getItem('@ecosense_token');
-        const storedUser = await AsyncStorage.getItem('@ecosense_user');
-        if (storedToken && storedUser) {
-          setToken(storedToken);
-          setUser(JSON.parse(storedUser));
-        }
-      } catch {
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const [loading] = useState(false);
 
   async function login(email, senha) {
     const data = await apiLogin(email, senha);
-    await AsyncStorage.setItem('@ecosense_token', data.token);
-    await AsyncStorage.setItem('@ecosense_user', JSON.stringify(data.usuario));
+    setApiToken(data.token);
     setToken(data.token);
     setUser(data.usuario);
     return data;
@@ -40,8 +23,7 @@ export function AuthProvider({ children }) {
   }
 
   async function logout() {
-    await AsyncStorage.removeItem('@ecosense_token');
-    await AsyncStorage.removeItem('@ecosense_user');
+    setApiToken(null);
     setToken(null);
     setUser(null);
   }

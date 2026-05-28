@@ -21,7 +21,6 @@ export default function Login() {
     setLoading(true);
     try {
       const data = await login(form.email, form.senha);
-      localStorage.setItem("token", data.token);
       navigate("/dashboard");
     } catch {
       setError("Email ou senha inválidos.");
