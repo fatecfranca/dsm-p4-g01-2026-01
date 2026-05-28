@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import DashboardHeader from "../../components/dashboard/DashboardHeader/DashboardHeader";
 import KPICards from "../../components/dashboard/KPICards/KPICards";
@@ -21,44 +21,6 @@ function inRange(ts, start, end) {
   return true;
 }
 
-function aggregateBy(readings, mode) {
-  if (!readings || readings.length === 0 || mode === "raw") return readings;
-
-  const groups = {};
-  readings.forEach(r => {
-    const key = mode === "hour"
-      ? r.timestamp.slice(0, 13)
-      : r.timestamp.slice(0, 10);
-
-    if (!groups[key]) {
-      groups[key] = {
-        ...r,
-        _count: 1,
-        _sumVoltagem: r.voltagem,
-        _sumCorrente: r.corrente,
-        _sumPotencia: r.potenciaAtiva,
-        _sumCusto: r.custoReais || 0,
-      };
-    } else {
-      const g = groups[key];
-      g._count++;
-      g._sumVoltagem += r.voltagem;
-      g._sumCorrente += r.corrente;
-      g._sumPotencia += r.potenciaAtiva;
-      g._sumCusto += r.custoReais || 0;
-    }
-  });
-
-  return Object.values(groups).map(g => ({
-    dispositivoId: g.dispositivoId,
-    voltagem: g._sumVoltagem / g._count,
-    corrente: g._sumCorrente / g._count,
-    potenciaAtiva: g._sumPotencia / g._count,
-    custoReais: g._sumCusto / g._count,
-    timestamp: g.timestamp,
-  }));
-}
-
 export default function Dashboard() {
   const [state, setState] = useState({
     loading: true,
@@ -67,7 +29,6 @@ export default function Dashboard() {
   });
 
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
-  const [granularity, setGranularity] = useState("raw");
 
   useEffect(() => {
     let mounted = true;
@@ -96,12 +57,11 @@ export default function Dashboard() {
   const lastUpdate = latest?.dataHoraBrasil || (latest?.timestamp ? formatTimeBR(latest.timestamp) : "—");
   const status = readings && readings.length > 0 ? "online" : "offline";
 
-  // Filter + aggregate
+  // Filter readings by date range
   const processedReadings = useMemo(() => {
     if (!readings || readings.length === 0) return [];
-    const filtered = readings.filter(r => inRange(r.timestamp, dateRange.start, dateRange.end));
-    return aggregateBy(filtered, granularity);
-  }, [readings, dateRange, granularity]);
+    return readings.filter(r => inRange(r.timestamp, dateRange.start, dateRange.end));
+  }, [readings, dateRange]);
 
   const visibleCount = processedReadings.length;
   const totalCount = readings?.length || 0;
@@ -137,9 +97,7 @@ export default function Dashboard() {
       <FilterBar
         readings={readings || []}
         dateRange={dateRange}
-        granularity={granularity}
         onDateRangeChange={setDateRange}
-        onGranularityChange={setGranularity}
       />
 
       {loading ? (
@@ -159,7 +117,6 @@ export default function Dashboard() {
             {visibleCount < totalCount && (
               <span className={styles.filterInfo}>
                 Mostrando {visibleCount} de {totalCount} leituras
-                {granularity !== "raw" && ` · Agrupado por ${granularity === "hour" ? "hora" : "dia"}`}
               </span>
             )}
           </div>

@@ -26,7 +26,7 @@ function monthLabel(ym) {
   return `${MONTHS[parseInt(m) - 1]}/${y}`;
 }
 
-export default function FilterBar({ readings, dateRange, granularity, onDateRangeChange, onGranularityChange }) {
+export default function FilterBar({ readings, dateRange, onDateRangeChange }) {
   const months = useMemo(() => extractMonths(readings), [readings]);
 
   const today = toDateInput(new Date().toISOString());
@@ -138,17 +138,6 @@ export default function FilterBar({ readings, dateRange, granularity, onDateRang
           />
         </div>
 
-        <div className={styles.divider} />
-
-        <select
-          className={styles.select}
-          value={granularity}
-          onChange={e => onGranularityChange(e.target.value)}
-        >
-          <option value="raw">Bruto</option>
-          <option value="hour">Média por hora</option>
-          <option value="day">Média por dia</option>
-        </select>
       </div>
     </motion.div>
   );
