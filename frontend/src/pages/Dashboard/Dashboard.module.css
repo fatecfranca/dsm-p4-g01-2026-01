@@ -4,6 +4,7 @@
   grid-template-areas:
     "header"
     "kpi"
+    "filter"
     "charts";
   gap: 1.25rem;
   padding: 2rem;
@@ -13,6 +14,7 @@
 
 .header  { grid-area: header; }
 .kpiRow  { grid-area: kpi; }
+.filter  { grid-area: filter; }
 .charts  { grid-area: charts; }
 
 /* ─── 3-col grid for Voltage × Current × Power ─────────────── */
@@ -76,4 +78,41 @@
 .errorDetail {
   font-size: 0.8125rem;
   color: var(--color-text-secondary);
+}
+
+/* ─── Empty state ────────────────────────────────────────────── */
+.emptyBox {
+  grid-column: 1 / -1;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.emptyText {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.emptyHint {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+/* ─── Filter info ────────────────────────────────────────────── */
+.chartInfo {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filterInfo {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
 }
