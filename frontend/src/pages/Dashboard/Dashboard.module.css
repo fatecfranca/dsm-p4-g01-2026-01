@@ -12,7 +12,9 @@
   margin: 0 auto;
 }
 
-.header  { grid-area: header; }
+.header  {
+  grid-area: header;
+}
 .kpiRow  { grid-area: kpi; }
 .filter  { grid-area: filter; }
 .charts  { grid-area: charts; }

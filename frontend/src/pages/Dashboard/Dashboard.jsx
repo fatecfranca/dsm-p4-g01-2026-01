@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import DashboardHeader from "../../components/dashboard/DashboardHeader/DashboardHeader";
 import KPICards from "../../components/dashboard/KPICards/KPICards";
@@ -30,23 +30,37 @@ export default function Dashboard() {
   });
 
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [refreshing, setRefreshing] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const data = await fetchTelemetria();
+      setState({ loading: false, error: null, readings: data });
+      if (import.meta.env.DEV) validateData(data);
+    } catch (err) {
+      setState(prev => ({
+        loading: false,
+        error: err.message || "Erro ao carregar dados",
+        readings: prev.readings,
+      }));
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
-    async function load() {
-      try {
-        const data = await fetchTelemetria();
-        if (!mounted) return;
-        setState({ loading: false, error: null, readings: data });
-        if (import.meta.env.DEV) validateData(data);
-      } catch (err) {
-        if (!mounted) return;
-        setState({ loading: false, error: err.message || "Erro ao carregar dados", readings: null });
-      }
-    }
-    load();
-    return () => { mounted = false; };
-  }, []);
+    (async () => {
+      await load();
+      if (!mounted) return;
+    })();
+    const interval = setInterval(load, 30000);
+    return () => { mounted = false; clearInterval(interval); };
+  }, [load]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
   const { loading, error, readings } = state;
 
@@ -91,7 +105,12 @@ export default function Dashboard() {
       transition={{ duration: 0.25 }}
     >
       <div className={styles.header}>
-        <DashboardHeader status={status} lastUpdate={lastUpdate} />
+        <DashboardHeader
+          status={status}
+          lastUpdate={lastUpdate}
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+        />
       </div>
 
       <KPICards readings={latest} loading={loading} />

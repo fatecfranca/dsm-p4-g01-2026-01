@@ -37,14 +37,14 @@ export function ToastProvider({ children }) {
         }}
       >
         {toasts.map((t) => (
-          <ToastItem key={t.id} toast={t} onDismiss={() => remove(t.id)} />
+          <ToastItem key={t.id} toast={t} timers={timers} onDismiss={() => remove(t.id)} />
         ))}
       </div>
     </ToastContext.Provider>
   );
 }
 
-function ToastItem({ toast, onDismiss }) {
+function ToastItem({ toast, timers, onDismiss }) {
   const bg = {
     success: "#22C55E",
     error: "#EF4444",
@@ -95,8 +95,10 @@ function ToastItem({ toast, onDismiss }) {
         maxWidth: 400,
         animation: "toastIn 0.3s ease-out",
       }}
-      onMouseEnter={() => toast.timer && clearTimeout(toast.timer)}
-      onMouseLeave={() => {}}
+      onMouseEnter={() => { clearTimeout(timers.current[toast.id]); }}
+      onMouseLeave={() => {
+        timers.current[toast.id] = setTimeout(onDismiss, 4000);
+      }}
     >
       <div style={{ width: 28, height: 28, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         {icons[toast.type]}
