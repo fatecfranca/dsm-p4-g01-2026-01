@@ -2,11 +2,13 @@ import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAuth } from "../../contexts/AuthContext";
+import { useToast } from "../../contexts/ToastContext";
 import { login as apiLogin } from "../../services/authService";
 import styles from "./Login.module.css";
 
 export default function Login() {
   const { login } = useAuth();
+  const { add } = useToast();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [form, setForm] = useState({ email: "", senha: "" });
@@ -25,6 +27,7 @@ export default function Login() {
     try {
       const data = await apiLogin(form.email, form.senha);
       login(data.token, data.usuario);
+      add(`Bem-vindo de volta, ${data.usuario.nome.split(" ")[0]}!`, "success");
       navigate(searchParams.get("redirect") || "/dashboard");
     } catch {
       setError("Email ou senha inválidos.");
