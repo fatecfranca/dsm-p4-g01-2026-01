@@ -62,7 +62,7 @@ export default function DashboardScreen() {
             <Text style={styles.errorText}>{error}</Text>
           </View>
         ) : (
-
+          <>
         {/* KPI CARDS */}
         <View style={styles.kpiRow}>
           <FadeInView delay={80} style={styles.kpiWrapper}>
