@@ -6,6 +6,7 @@ import MetricChart from "../../components/dashboard/MetricChart/MetricChart";
 import FilterBar from "../../components/dashboard/FilterBar/FilterBar";
 import { fetchTelemetria } from "../../services/telemetriaService";
 import { colors } from "../../theme/colors";
+import { validateData } from "../../utils/validateData";
 import styles from "./Dashboard.module.css";
 
 function formatTimeBR(ts) {
@@ -37,6 +38,7 @@ export default function Dashboard() {
         const data = await fetchTelemetria();
         if (!mounted) return;
         setState({ loading: false, error: null, readings: data });
+        if (import.meta.env.DEV) validateData(data);
       } catch (err) {
         if (!mounted) return;
         setState({ loading: false, error: err.message || "Erro ao carregar dados", readings: null });
