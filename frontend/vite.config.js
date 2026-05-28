@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: process.env.VITE_PROXY_TARGET || 'https://dsm-p4-g01-2026-01.onrender.com',
         changeOrigin: true,
       },
     },
