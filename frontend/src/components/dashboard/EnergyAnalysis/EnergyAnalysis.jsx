@@ -142,7 +142,8 @@ export default function EnergyAnalysis({ readings, loading }) {
               tickLine={false}
               axisLine={{ stroke: colors.border, strokeWidth: 1 }}
               tickMargin={3}
-              domain={["auto", "auto"]}
+              domain={[0, 300]}
+              label={{ value: "V", position: "insideBottomRight", offset: -4, fill: colors.textSecondary, fontSize: 9 }}
             />
 
             <YAxis

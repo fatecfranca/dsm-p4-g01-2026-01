@@ -97,18 +97,20 @@ export default function GaugeSection({ readings, loading }) {
       <h3 className={styles.title}>Status da Rede</h3>
 
       <div className={styles.grid}>
+        {/* frequencia is 100% null in DB — show potenciaAparente instead */}
         <Gauge
-          label="Frequência da Rede"
-          value={r.frequencia ?? 0}
-          min={57}
-          max={63}
-          unit="Hz"
+          label="Potência Aparente"
+          value={r.potenciaAparente ?? 0}
+          min={0}
+          max={200}
+          unit="VA"
           color={colors.primary}
         />
+        {/* fatorPotencia can be negative (sensor polarity) — use abs value */}
         <Gauge
           label="Fator de Potência"
-          value={r.fatorPotencia ?? 0}
-          min={0.7}
+          value={Math.abs(r.fatorPotencia ?? 0)}
+          min={0}
           max={1.0}
           unit=""
           color={colors.info}

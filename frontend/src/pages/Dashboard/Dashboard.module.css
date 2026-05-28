@@ -1,37 +1,89 @@
+/* ─── Layout ────────────────────────────────────────────────── */
 .container {
+  display: grid;
+  grid-template-areas:
+    "header"
+    "kpi"
+    "primary"
+    "secondary"
+    "tertiary";
+  gap: 1.25rem;
   padding: 2rem;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
-.chartsRow {
+/* ─── Named areas ───────────────────────────────────────────── */
+.header    { grid-area: header; }
+.kpiRow    { grid-area: kpi; }
+.primary   { grid-area: primary; }
+.secondary { grid-area: secondary; }
+.tertiary  { grid-area: tertiary; }
+
+/* ─── KPI row: KPICards owns its internal grid ─────────────── */
+.kpiRow { /* just sets grid-area; KPICards renders its own 4-col grid */ }
+
+/* ─── Primary charts row: LineChart 2fr | right column 1fr ─── */
+.primary {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 1.25rem;
-  margin-bottom: 1.25rem;
+  align-items: stretch;
 }
 
 .analyticsCol {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 1.25rem;
 }
 
-@media (max-width: 768px) {
-  .container {
-    padding: 1.25rem;
+/* ─── Secondary charts row: GaugeSection 1fr | Distribution 1fr */
+.secondary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+/* ─── Chart stretch wrapper (no visual shell — component owns it) */
+.chartCard {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ─── Responsive: tablet (640–1023px) ──────────────────────── */
+@media (max-width: 1023px) {
+  .kpiRow {
+    grid-template-columns: repeat(2, 1fr);
   }
-  .chartsRow {
+
+  .primary {
+    grid-template-columns: 1fr;
+  }
+
+  .secondary {
     grid-template-columns: 1fr;
   }
 }
 
-@media (max-width: 480px) {
+/* ─── Responsive: mobile (<640px) ──────────────────────────── */
+@media (max-width: 639px) {
   .container {
     padding: 1rem;
+    gap: 1rem;
+  }
+
+  .kpiRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .chartCard {
+    padding: 0.5rem;
   }
 }
 
+/* ─── Error state ───────────────────────────────────────────── */
 .errorBox {
   background: rgba(239, 68, 68, 0.06);
   border: 1px solid rgba(239, 68, 68, 0.15);

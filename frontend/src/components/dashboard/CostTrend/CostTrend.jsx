@@ -83,8 +83,9 @@ export default function CostTrend({ data, loading }) {
       return { chartData: data || [], trendLineData: [], regression: null };
     }
 
-    const values = data.map(d => d.power);
-    const reg = linearRegression(values);
+    // Regression only on positive power — negative readings are inverted sensor polarity
+    const positiveValues = data.filter(d => d.power > 0).map(d => d.power);
+    const reg = positiveValues.length >= 2 ? linearRegression(positiveValues) : null;
 
     let trend = [];
     if (reg) {

@@ -33,8 +33,14 @@ export const cadastro = async (req, res) => {
     });
 
     const { senha: _, ...usuarioSemSenha } = novoUsuario;
+
+    const token = jwt.sign({ userId: novoUsuario.id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
     return res.status(201).json({
       message: "Usuário cadastrado com sucesso!",
+      token,
       usuario: usuarioSemSenha,
     });
   } catch (error) {

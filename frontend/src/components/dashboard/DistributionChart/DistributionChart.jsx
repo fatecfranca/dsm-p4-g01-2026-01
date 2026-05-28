@@ -79,7 +79,9 @@ function Skeleton() {
 export default function DistributionChart({ readings, loading }) {
   const bins = useMemo(() => {
     if (!readings || readings.length === 0) return [];
-    return buildBins(readings, "potenciaAtiva", 8);
+    // Filter only positive potenciaAtiva — negative values are inverted sensor readings
+    const positiveReadings = readings.filter(r => (r.potenciaAtiva ?? 0) > 0);
+    return buildBins(positiveReadings, "potenciaAtiva", 8);
   }, [readings]);
 
   const maxCount = Math.max(...bins.map(b => b.count), 1);
