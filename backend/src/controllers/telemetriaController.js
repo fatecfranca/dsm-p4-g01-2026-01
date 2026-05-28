@@ -71,7 +71,7 @@ export const obterTelemetria = async (req, res) => {
 
     const leituras = await prisma.telemetria.findMany({
       where: { dispositivoId },
-      orderBy: { timestamp: "desc" },
+      orderBy: { timestamp: "asc" },
       take: limite,
     });
 
