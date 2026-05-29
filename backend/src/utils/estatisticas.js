@@ -50,7 +50,7 @@ export const regressaoLinearCusto = (leituras) => {
 
   leituras.forEach((leitura, index) => {
     const x = index; // Representa a linha do tempo
-    const y = leitura.custoReais || 0;
+    const y = leitura.custoHora || 0;
     somaX += x;
     somaY += y;
     somaXY += x * y;
@@ -78,7 +78,7 @@ export const calcularEstratosPorTurno = (leituras) => {
 
   leituras.forEach((leitura) => {
     const hora = new Date(leitura.timestamp).getUTCHours();
-    const consumo = leitura.consumokWh || 0;
+    const consumo = leitura.potenciaKw || 0;
 
     if (hora >= 0 && hora < 6) estratos.madrugada += consumo;
     else if (hora >= 6 && hora < 12) estratos.manha += consumo;
