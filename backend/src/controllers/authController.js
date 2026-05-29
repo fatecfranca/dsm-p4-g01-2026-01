@@ -33,8 +33,14 @@ export const cadastro = async (req, res) => {
     });
 
     const { senha: _, ...usuarioSemSenha } = novoUsuario;
+
+    const token = jwt.sign({ userId: novoUsuario.id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
     return res.status(201).json({
       message: "Usuário cadastrado com sucesso!",
+      token,
       usuario: usuarioSemSenha,
     });
   } catch (error) {
@@ -72,7 +78,7 @@ export const login = async (req, res) => {
     return res.status(200).json({
       message: "Login realizado com sucesso!",
       token,
-      usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email },
+      usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, createdAt: usuario.createdAt },
     });
   } catch (error) {
     console.error("Erro no login:", error);

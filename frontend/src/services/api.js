@@ -4,11 +4,11 @@ async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
 
   const config = {
+    ...options,
     headers: {
       "Content-Type": "application/json",
       ...options.headers,
     },
-    ...options,
   };
 
   try {
@@ -23,8 +23,8 @@ async function request(endpoint, options = {}) {
   }
 }
 
-export function get(endpoint) {
-  return request(endpoint, { method: "GET" });
+export function get(endpoint, extraHeaders = {}) {
+  return request(endpoint, { method: "GET", headers: extraHeaders });
 }
 
 export function post(endpoint, data) {

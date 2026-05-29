@@ -18,6 +18,10 @@ const options = {
         url: "http://localhost:3000/api",
         description: "Servidor Local (Desenvolvimento)",
       },
+      {
+        url: "https://ecosense.chilecentral.cloudapp.azure.com/api",
+        description: "Servidor Azure (Produção)",
+      },
     ],
     components: {
       securitySchemes: {

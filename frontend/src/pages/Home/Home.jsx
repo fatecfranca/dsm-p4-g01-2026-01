@@ -31,7 +31,7 @@ export default function Home() {
               Plataforma IoT de Monitoramento
             </motion.span>
             <motion.h1 className={styles.heroTitle} variants={fadeUp}>
-              Eficiência energética em{" "}
+              Economia de energia em{" "}
               <span className={styles.heroGradient}>tempo real</span>
             </motion.h1>
             <motion.p className={styles.heroSubtitle} variants={fadeUp}>
@@ -198,7 +198,7 @@ export default function Home() {
                 <div className={styles.iconLeaf} />
                 <div className={styles.iconLeafInner} />
               </div>
-              <h3 className={styles.cardTitle}>Eficiência Energética</h3>
+              <h3 className={styles.cardTitle}>Economia de Energia</h3>
               <p className={styles.cardText}>
                 Recomendações personalizadas para otimizar o consumo e reduzir
                 custos.
