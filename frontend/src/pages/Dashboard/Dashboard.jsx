@@ -11,7 +11,7 @@ import styles from "./Dashboard.module.css";
 
 function formatTimeBR(ts) {
   const d = new Date(ts);
-  return d.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  return d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
 }
 
 function inRange(ts, start, end) {

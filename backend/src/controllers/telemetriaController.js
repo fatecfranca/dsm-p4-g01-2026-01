@@ -29,10 +29,9 @@ export const registrarTelemetria = async (req, res) => {
       });
     }
 
-    // Lógica de Eficiência: Calcular consumo em kWh e estimar custos em Reais
-    // O consumo em kWh para uma hora será (potência em Watts / 1000)
-    const consumokWh = potenciaAtiva / 1000;
-    const custoReais = consumokWh * TARIFA_KWH;
+    // Potência instantânea em quilowatts (kW) e custo por hora (R$/h)
+    const potenciaKw = potenciaAtiva / 1000;
+    const custoHora = potenciaKw * TARIFA_KWH;
 
     // Salva o documento final no MongoDB
     const novaLeitura = await prisma.telemetria.create({
@@ -45,8 +44,8 @@ export const registrarTelemetria = async (req, res) => {
         potenciaReativa,
         fatorPotencia,
         frequencia,
-        consumokWh,
-        custoReais,
+        potenciaKw,
+        custoHora,
         // O timestamp é gerado automaticamente pelo Prisma
       },
     });

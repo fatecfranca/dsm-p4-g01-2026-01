@@ -45,9 +45,10 @@ const cardConfig = [
   },
   {
     key: "cost",
-    label: "Custo Estimado",
+    label: "Custo (R$/h)",
     color: colors.danger,
-    valueKey: "custoReais",
+    valueKey: "custoHora",
+    fallbackKey: "custoReais",
     prefix: "R$ ",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -89,7 +90,7 @@ export default function KPICards({ readings, loading }) {
   return (
     <div className={styles.grid}>
       {cardConfig.map((card, index) => {
-        const raw = r[card.valueKey];
+        const raw = r[card.valueKey] ?? r[card.fallbackKey];
         const displayValue = raw !== undefined && raw !== null
           ? (typeof raw === "number" ? (Math.abs(raw) < 0.005 ? "0.00" : raw.toFixed(2)) : raw)
           : "—";

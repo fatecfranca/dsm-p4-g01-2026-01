@@ -47,9 +47,6 @@ float calibracaoCorrente = 1.55;
 // Calibração da tensão
 float calibracaoTensao = 234.26;
 
-// Divisor para ajuste da tensão RMS
-float divisorTensao = 1.4142;
-
 
 // ---------------------------------------------------------
 // 4. FUNÇÃO DE CONEXÃO WIFI
@@ -130,7 +127,7 @@ void loop() {
   emon1.calcVI(20, 2000);
 
   // Tensão RMS
-  float voltagem = emon1.Vrms / divisorTensao;
+  float voltagem = emon1.Vrms;
 
   // Corrente RMS
   float corrente = emon1.Irms;

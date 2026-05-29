@@ -278,7 +278,9 @@ export default function MetricChart({ readings, field, label, unit, color, thres
       {stats && chartData.length > 0 && (
         <p style={styles.insight}>
           {latest > stats.avg * 1.1
-            ? `Valor atual ${(latest / stats.avg - 1) * 100 > 0 ? "acima" : "abaixo"} da média.`
+            ? `Valor atual ${((latest / stats.avg - 1) * 100).toFixed(0)}% acima da média.`
+            : latest < stats.avg * 0.9
+            ? `Valor atual ${((1 - latest / stats.avg) * 100).toFixed(0)}% abaixo da média.`
             : `Operação dentro da faixa esperada (${stats.min.toFixed(0)}–${stats.max.toFixed(0)} ${unit}).`}
         </p>
       )}
