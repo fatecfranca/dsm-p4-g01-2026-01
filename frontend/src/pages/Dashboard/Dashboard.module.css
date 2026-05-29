@@ -4,82 +4,43 @@
   grid-template-areas:
     "header"
     "kpi"
-    "primary"
-    "secondary"
-    "tertiary";
+    "filter"
+    "charts";
   gap: 1.25rem;
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-/* ─── Named areas ───────────────────────────────────────────── */
-.header    { grid-area: header; }
-.kpiRow    { grid-area: kpi; }
-.primary   { grid-area: primary; }
-.secondary { grid-area: secondary; }
-.tertiary  { grid-area: tertiary; }
+.header  {
+  grid-area: header;
+}
+.kpiRow  { grid-area: kpi; }
+.filter  { grid-area: filter; }
+.charts  { grid-area: charts; }
 
-/* ─── KPI row: KPICards owns its internal grid ─────────────── */
-.kpiRow { /* just sets grid-area; KPICards renders its own 4-col grid */ }
-
-/* ─── Primary charts row: LineChart 2fr | right column 1fr ─── */
-.primary {
+/* ─── 3-col grid for Voltage × Current × Power ─────────────── */
+.chartsRow {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 1.25rem;
   align-items: stretch;
 }
 
-.analyticsCol {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-/* ─── Secondary charts row: GaugeSection 1fr | Distribution 1fr */
-.secondary {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  align-items: stretch;
-}
-
-/* ─── Chart stretch wrapper (no visual shell — component owns it) */
-.chartCard {
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-
-/* ─── Responsive: tablet (640–1023px) ──────────────────────── */
+/* ─── Responsive ────────────────────────────────────────────── */
 @media (max-width: 1023px) {
-  .kpiRow {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .primary {
-    grid-template-columns: 1fr;
-  }
-
-  .secondary {
-    grid-template-columns: 1fr;
+  .chartsRow {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
-/* ─── Responsive: mobile (<640px) ──────────────────────────── */
 @media (max-width: 639px) {
   .container {
     padding: 1rem;
     gap: 1rem;
   }
-
-  .kpiRow {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .chartCard {
-    padding: 0.5rem;
+  .chartsRow {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -119,4 +80,41 @@
 .errorDetail {
   font-size: 0.8125rem;
   color: var(--color-text-secondary);
+}
+
+/* ─── Empty state ────────────────────────────────────────────── */
+.emptyBox {
+  grid-column: 1 / -1;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.emptyText {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.emptyHint {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+}
+
+/* ─── Filter info ────────────────────────────────────────────── */
+.chartInfo {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filterInfo {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.25rem 0.625rem;
+  border-radius: 6px;
 }

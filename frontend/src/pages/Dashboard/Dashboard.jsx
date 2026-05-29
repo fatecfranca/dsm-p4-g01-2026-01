@@ -1,81 +1,25 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import DashboardHeader from "../../components/dashboard/DashboardHeader/DashboardHeader";
 import KPICards from "../../components/dashboard/KPICards/KPICards";
-import LineChart from "../../components/dashboard/LineChart/LineChart";
-import CostTrend from "../../components/dashboard/CostTrend/CostTrend";
-import EnergyAnalysis from "../../components/dashboard/EnergyAnalysis/EnergyAnalysis";
-import GaugeSection from "../../components/dashboard/GaugeSection/GaugeSection";
-import DistributionChart from "../../components/dashboard/DistributionChart/DistributionChart";
-import BarChart from "../../components/dashboard/BarChart/BarChart";
+import MetricChart from "../../components/dashboard/MetricChart/MetricChart";
+import FilterBar from "../../components/dashboard/FilterBar/FilterBar";
 import { fetchTelemetria } from "../../services/telemetriaService";
+import { colors } from "../../theme/colors";
+import { validateData } from "../../utils/validateData";
 import styles from "./Dashboard.module.css";
-
-function formatHour(ts) {
-  const d = new Date(ts);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
 
 function formatTimeBR(ts) {
   const d = new Date(ts);
   return d.toLocaleTimeString("pt-BR", { timeZone: "America/Sao_Paulo" });
 }
 
-const DAY_NAMES = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-
-// Outlier thresholds based on sensor analysis
-const OUTLIER_THRESHOLDS = {
-  voltagem: { max: 300 },
-  corrente: { max: 10 },
-  potenciaAtiva: { min: -100, max: 500 },
-};
-
-function isCleanReading(r) {
-  return (
-    (r.voltagem ?? 0) < OUTLIER_THRESHOLDS.voltagem.max &&
-    (r.corrente ?? 0) < OUTLIER_THRESHOLDS.corrente.max &&
-    (r.potenciaAtiva ?? 0) > OUTLIER_THRESHOLDS.potenciaAtiva.min &&
-    (r.potenciaAtiva ?? 0) < OUTLIER_THRESHOLDS.potenciaAtiva.max
-  );
-}
-
-function processReadings(readings) {
-  if (!readings || readings.length === 0) {
-    return { latest: {}, timeSeries: [], dailyConsumption: [], status: "offline", lastUpdate: "—" };
-  }
-
-  const sorted = [...readings].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-  // BUG FIX: use most-recent reading (last in ASC-sorted array), not readings[0]
-  const latest = sorted[sorted.length - 1];
-
-  const timeSeries = sorted.map((r) => ({
-    time: formatHour(r.timestamp),
-    power: r.potenciaAtiva ?? 0,
-  }));
-
-  const dailyMap = {};
-  readings.forEach((r) => {
-    const d = new Date(r.timestamp);
-    const day = DAY_NAMES[d.getDay()];
-    if (!dailyMap[day]) dailyMap[day] = [];
-    const kwh = r.consumokWh ?? 0;
-    if (kwh > 0) dailyMap[day].push(kwh); // only positive values
-  });
-
-  const dailyConsumption = DAY_NAMES.map((day) => {
-    const vals = dailyMap[day] || [];
-    const total = vals.reduce((a, b) => a + b, 0);
-    return { day, consumption: +total.toFixed(3) };
-  }).filter((d) => d.consumption > 0);
-
-  return {
-    latest,
-    timeSeries,
-    dailyConsumption,
-    status: "online",
-    lastUpdate: latest.dataHoraBrasil || formatTimeBR(latest.timestamp),
-  };
+function inRange(ts, start, end) {
+  if (!start && !end) return true;
+  const t = ts.slice(0, 10);
+  if (start && t < start) return false;
+  if (end && t > end) return false;
+  return true;
 }
 
 export default function Dashboard() {
@@ -83,52 +27,64 @@ export default function Dashboard() {
     loading: true,
     error: null,
     readings: null,
-    processed: null,
   });
+
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [refreshing, setRefreshing] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      const data = await fetchTelemetria();
+      setState({ loading: false, error: null, readings: data });
+      if (import.meta.env.DEV) validateData(data);
+    } catch (err) {
+      setState(prev => ({
+        loading: false,
+        error: err.message || "Erro ao carregar dados",
+        readings: prev.readings,
+      }));
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
+    (async () => {
+      await load();
+      if (!mounted) return;
+    })();
+    const interval = setInterval(load, 30000);
+    return () => { mounted = false; clearInterval(interval); };
+  }, [load]);
 
-    async function load() {
-      try {
-        const data = await fetchTelemetria();
-        if (!mounted) return;
-        setState({
-          loading: false,
-          error: null,
-          readings: data,
-          processed: processReadings(data),
-        });
-      } catch (err) {
-        if (!mounted) return;
-        setState({
-          loading: false,
-          error: err.message || "Erro ao carregar dados",
-          readings: null,
-          processed: null,
-        });
-      }
-    }
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await load();
+    setRefreshing(false);
+  }, [load]);
 
-    load();
-    return () => { mounted = false; };
-  }, []);
+  const { loading, error, readings } = state;
 
-  const { loading, error, processed, readings } = state;
+  const latest = useMemo(() => {
+    if (!readings || readings.length === 0) return {};
+    const sorted = [...readings].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    return sorted[sorted.length - 1];
+  }, [readings]);
 
-  // Cleaned readings: outliers removed for charts that use raw readings
-  const cleanedReadings = useMemo(
-    () => (readings ? readings.filter(isCleanReading) : []),
-    [readings]
-  );
+  const lastUpdate = latest?.dataHoraBrasil || (latest?.timestamp ? formatTimeBR(latest.timestamp) : "—");
+  const status = readings && readings.length > 0 ? "online" : "offline";
+
+  // Filter readings by date range
+  const processedReadings = useMemo(() => {
+    if (!readings || readings.length === 0) return [];
+    return readings.filter(r => inRange(r.timestamp, dateRange.start, dateRange.end));
+  }, [readings, dateRange]);
+
+  const visibleCount = processedReadings.length;
+  const totalCount = readings?.length || 0;
 
   if (error) {
     return (
-      <motion.section
-        className={styles.container}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-      >
+      <motion.section className={styles.container} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <div className={styles.header}>
           <DashboardHeader status="offline" />
         </div>
@@ -141,10 +97,6 @@ export default function Dashboard() {
     );
   }
 
-  const latest = processed?.latest || {};
-  const timeSeries = processed?.timeSeries || [];
-  const dailyConsumption = processed?.dailyConsumption || [];
-
   return (
     <motion.section
       className={styles.container}
@@ -152,48 +104,72 @@ export default function Dashboard() {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25 }}
     >
-      {/* Header */}
       <div className={styles.header}>
         <DashboardHeader
-          status={processed?.status || "offline"}
-          lastUpdate={processed?.lastUpdate || "—"}
+          status={status}
+          lastUpdate={lastUpdate}
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
         />
       </div>
 
-      {/* KPI row — KPICards renders its own 4-col grid */}
       <KPICards readings={latest} loading={loading} />
 
-      {/* Primary row — LineChart 2fr | (CostTrend + EnergyAnalysis) 1fr */}
-      <div className={styles.primary}>
-        <div className={styles.chartCard}>
-          <LineChart data={timeSeries} loading={loading} />
-        </div>
-        <div className={styles.analyticsCol}>
-          <div className={styles.chartCard}>
-            <CostTrend data={timeSeries} loading={loading} />
-          </div>
-          <div className={styles.chartCard}>
-            <EnergyAnalysis readings={cleanedReadings} loading={loading} />
-          </div>
-        </div>
-      </div>
+      <FilterBar
+        readings={readings || []}
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+      />
 
-      {/* Secondary row — GaugeSection | DistributionChart */}
-      <div className={styles.secondary}>
-        <div className={styles.chartCard}>
-          <GaugeSection readings={latest} loading={loading} />
+      {loading ? (
+        <div className={styles.chartsRow}>
+          <MetricChart loading />
+          <MetricChart loading />
+          <MetricChart loading />
         </div>
-        <div className={styles.chartCard}>
-          <DistributionChart readings={cleanedReadings} loading={loading} />
+      ) : processedReadings.length === 0 ? (
+        <div className={styles.emptyBox}>
+          <p className={styles.emptyText}>Nenhuma leitura encontrada no período</p>
+          <p className={styles.emptyHint}>Tente selecionar um período maior ou limpar os filtros.</p>
         </div>
-      </div>
-
-      {/* Tertiary row — Daily consumption bar chart (full width) */}
-      <div className={styles.tertiary}>
-        <div className={styles.chartCard}>
-          <BarChart data={dailyConsumption} loading={loading} />
+      ) : (
+        <div className={styles.chartsRow}>
+          <div className={styles.chartInfo}>
+            {visibleCount < totalCount && (
+              <span className={styles.filterInfo}>
+                Mostrando {visibleCount} de {totalCount} leituras
+              </span>
+            )}
+          </div>
+          <MetricChart
+            readings={processedReadings}
+            field="voltagem"
+            label="Tensão"
+            unit="V"
+            color={colors.primary}
+            thresholds={{ min: 0, max: 300 }}
+            delay={0}
+          />
+          <MetricChart
+            readings={processedReadings}
+            field="corrente"
+            label="Corrente"
+            unit="A"
+            color={colors.info}
+            thresholds={{ min: 0, max: 10 }}
+            delay={0.08}
+          />
+          <MetricChart
+            readings={processedReadings}
+            field="potenciaAtiva"
+            label="Potência Ativa"
+            unit="W"
+            color={colors.warning}
+            thresholds={{ min: -100, max: 500 }}
+            delay={0.16}
+          />
         </div>
-      </div>
+      )}
     </motion.section>
   );
 }

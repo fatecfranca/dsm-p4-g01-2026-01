@@ -35,6 +35,7 @@ const links = [
   { to: "/", label: "Home", end: true },
   { to: "/dashboard", label: "Dashboard", end: false },
   { to: "/sobre", label: "Sobre", end: false },
+  { to: "/iot", label: "IoT", end: false },
 ];
 
 export default function Navbar() {
@@ -153,6 +154,13 @@ export default function Navbar() {
                 onClick={() => setOpen(false)}
               >
                 Sobre
+              </Link>
+              <Link
+                to="/iot"
+                className={styles.mobileLink}
+                onClick={() => setOpen(false)}
+              >
+                IoT
               </Link>
               <div className={styles.mobileDivider} />
               <button

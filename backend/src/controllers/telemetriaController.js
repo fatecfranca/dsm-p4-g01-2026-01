@@ -67,11 +67,12 @@ export const obterTelemetria = async (req, res) => {
   try {
     const { dispositivoId } = req.params;
 
-    const limite = req.query.limite ? parseInt(req.query.limite) : 100;
+    const limiteRaw = parseInt(req.query.limite);
+    const limite = !isNaN(limiteRaw) ? Math.min(Math.max(limiteRaw, 1), 1000) : 100;
 
     const leituras = await prisma.telemetria.findMany({
       where: { dispositivoId },
-      orderBy: { timestamp: "desc" },
+      orderBy: { timestamp: "asc" },
       take: limite,
     });
 

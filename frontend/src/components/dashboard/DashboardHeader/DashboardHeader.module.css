@@ -34,6 +34,40 @@
   min-width: 160px;
 }
 
+.statusGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.refreshBtn {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  opacity: 0.5;
+  margin-left: 2px;
+}
+
+.refreshBtn:hover:not(:disabled) {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-primary);
+}
+
+.refreshBtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 .statusBadge {
   display: flex;
   align-items: center;

@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "VITE_PROXY_TARGET=$(node scripts/resolve-target.mjs) vite",
+    "dev:local": "VITE_PROXY_TARGET=http://localhost:3000 vite",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

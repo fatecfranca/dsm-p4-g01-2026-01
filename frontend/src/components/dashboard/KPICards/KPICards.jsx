@@ -91,7 +91,7 @@ export default function KPICards({ readings, loading }) {
       {cardConfig.map((card, index) => {
         const raw = r[card.valueKey];
         const displayValue = raw !== undefined && raw !== null
-          ? (typeof raw === "number" ? raw.toFixed(2) : raw)
+          ? (typeof raw === "number" ? (Math.abs(raw) < 0.005 ? "0.00" : raw.toFixed(2)) : raw)
           : "—";
 
         return (
