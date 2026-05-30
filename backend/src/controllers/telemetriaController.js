@@ -10,7 +10,13 @@ import {
 } from "../utils/estatisticas.js";
 
 const TARIFA_KWH = parseFloat(process.env.TARIFA_KWH) || 0.85;
-const CAMPOS = ["voltagem", "corrente", "potenciaAtiva"];
+const CAMPOS = [
+  "voltagem",
+  "corrente",
+  "potenciaAtiva",
+  "frequencia",
+  "fatorPotencia",
+];
 
 function computeDomain(values) {
   if (!values || values.length < 2) return [0, 100];
@@ -19,7 +25,9 @@ function computeDomain(values) {
   const p95 = sorted[Math.floor(sorted.length * 0.95)];
   const min = Math.max(0, p5 * 0.8);
   const max = p95 * 1.3;
-  return max > min ? [+min.toFixed(2), +max.toFixed(2)] : [0, +(+max || 100).toFixed(2)];
+  return max > min
+    ? [+min.toFixed(2), +max.toFixed(2)]
+    : [0, +(+max || 100).toFixed(2)];
 }
 
 function computeInsight(latest, avg, min, max) {
@@ -34,24 +42,46 @@ function computeInsight(latest, avg, min, max) {
     const pct = Math.round((1 - latest / avg) * 100);
     return { type: "below", pct, text: `Valor atual ${pct}% abaixo da média.` };
   }
-  return { type: "normal", text: `Operação dentro da faixa esperada (${min}–${max}).` };
+  return {
+    type: "normal",
+    text: `Operação dentro da faixa esperada (${min}–${max}).`,
+  };
 }
 
 function toBR(ts) {
   return new Date(ts).toLocaleString("pt-BR", {
     timeZone: "America/Sao_Paulo",
-    day: "2-digit", month: "2-digit", year: "numeric",
-    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
   });
 }
 
 export const registrarTelemetria = async (req, res) => {
   try {
-    const { dispositivoId, voltagem, corrente, potenciaAtiva, potenciaAparente, potenciaReativa, fatorPotencia, frequencia } = req.body;
+    const {
+      dispositivoId,
+      voltagem,
+      corrente,
+      potenciaAtiva,
+      potenciaAparente,
+      potenciaReativa,
+      fatorPotencia,
+      frequencia,
+    } = req.body;
 
-    if (!dispositivoId || voltagem === undefined || corrente === undefined || potenciaAtiva === undefined) {
+    if (
+      !dispositivoId ||
+      voltagem === undefined ||
+      corrente === undefined ||
+      potenciaAtiva === undefined
+    ) {
       return res.status(400).json({
-        error: "Dados incompletos. dispositivoId, voltagem, corrente e potenciaAtiva são obrigatórios.",
+        error:
+          "Dados incompletos. dispositivoId, voltagem, corrente e potenciaAtiva são obrigatórios.",
       });
     }
 
@@ -59,13 +89,29 @@ export const registrarTelemetria = async (req, res) => {
     const custoHora = potenciaKw * TARIFA_KWH;
 
     const novaLeitura = await prisma.telemetria.create({
-      data: { dispositivoId, voltagem, corrente, potenciaAtiva, potenciaAparente, potenciaReativa, fatorPotencia, frequencia, potenciaKw, custoHora },
+      data: {
+        dispositivoId,
+        voltagem,
+        corrente,
+        potenciaAtiva,
+        potenciaAparente,
+        potenciaReativa,
+        fatorPotencia,
+        frequencia,
+        potenciaKw,
+        custoHora,
+      },
     });
 
-    return res.status(201).json({ message: "Leitura de energia registrada com sucesso!", data: novaLeitura });
+    return res.status(201).json({
+      message: "Leitura de energia registrada com sucesso!",
+      data: novaLeitura,
+    });
   } catch (error) {
     console.error("Erro na ingestão de dados:", error);
-    return res.status(500).json({ error: "Erro interno ao salvar os dados da telemetria." });
+    return res
+      .status(500)
+      .json({ error: "Erro interno ao salvar os dados da telemetria." });
   }
 };
 
@@ -75,7 +121,9 @@ export const obterTelemetria = async (req, res) => {
     const { start, end } = req.query;
 
     const limiteRaw = parseInt(req.query.limite);
-    const limite = !isNaN(limiteRaw) ? Math.min(Math.max(limiteRaw, 1), 1000) : 100;
+    const limite = !isNaN(limiteRaw)
+      ? Math.min(Math.max(limiteRaw, 1), 1000)
+      : 100;
 
     const where = { dispositivoId };
     if (start || end) {
@@ -91,13 +139,16 @@ export const obterTelemetria = async (req, res) => {
     });
 
     if (!leituras || leituras.length === 0) {
-      return res.status(404).json({ message: "Nenhuma leitura encontrada para este dispositivo." });
+      return res
+        .status(404)
+        .json({ message: "Nenhuma leitura encontrada para este dispositivo." });
     }
 
     const data = leituras.map((l) => ({
       ...l,
       potenciaKw: l.potenciaKw ?? +(l.potenciaAtiva / 1000).toFixed(6),
-      custoHora: l.custoHora ?? +((l.potenciaAtiva / 1000) * TARIFA_KWH).toFixed(6),
+      custoHora:
+        l.custoHora ?? +((l.potenciaAtiva / 1000) * TARIFA_KWH).toFixed(6),
       dataHoraBrasil: toBR(l.timestamp),
     }));
 
@@ -106,11 +157,18 @@ export const obterTelemetria = async (req, res) => {
     const descritiva = {};
     const insights = {};
     CAMPOS.forEach((field) => {
-      const vals = data.map((r) => r[field]).filter((v) => v != null && isFinite(v));
+      const vals = data
+        .map((r) => r[field])
+        .filter((v) => v != null && isFinite(v));
 
       if (vals.length === 0) {
         descritiva[field] = null;
-        insights[field] = computeInsight(undefined, undefined, undefined, undefined);
+        insights[field] = computeInsight(
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+        );
         return;
       }
 
@@ -137,16 +195,25 @@ export const obterTelemetria = async (req, res) => {
 
     let custoTotal = 0;
     for (let i = 1; i < data.length; i++) {
-      const dt = (new Date(data[i].timestamp) - new Date(data[i - 1].timestamp)) / 3600000;
+      const dt =
+        (new Date(data[i].timestamp) - new Date(data[i - 1].timestamp)) /
+        3600000;
       custoTotal += (data[i].custoHora || 0) * dt;
     }
-    const dias = (new Date(data[data.length - 1].timestamp) - new Date(data[0].timestamp)) / 86400000;
+    const dias =
+      (new Date(data[data.length - 1].timestamp) -
+        new Date(data[0].timestamp)) /
+      86400000;
     const mediaCustoDiario = dias > 0 ? custoTotal / dias : custoTotal;
     const desvioCusto = calcularDesvioPadrao(
       data.map((l) => l.custoHora || 0),
       data.reduce((a, l) => a + (l.custoHora || 0), 0) / data.length,
     );
-    const intervaloCusto = calcularIntervaloConfianca(custoTotal, desvioCusto * dias, data.length);
+    const intervaloCusto = calcularIntervaloConfianca(
+      custoTotal,
+      desvioCusto * dias,
+      data.length,
+    );
 
     const preditiva = {
       tendenciaDeCusto: dadosRegressao.tendencia > 0 ? "Aumentando" : "Estável",
@@ -170,7 +237,9 @@ export const obterTelemetria = async (req, res) => {
     });
   } catch (error) {
     console.error("Erro ao buscar dados:", error);
-    return res.status(500).json({ error: "Erro interno ao buscar os dados da telemetria." });
+    return res
+      .status(500)
+      .json({ error: "Erro interno ao buscar os dados da telemetria." });
   }
 };
 
@@ -180,50 +249,85 @@ export const obterEstatisticas = async (req, res) => {
   try {
     const { dispositivoId } = req.params;
 
+    // Vai buscar todas as leituras ordenadas no tempo
     const leituras = await prisma.telemetria.findMany({
       where: { dispositivoId },
       orderBy: { timestamp: "asc" },
     });
 
     if (!leituras || leituras.length === 0) {
-      return res.status(404).json({ message: "Sem dados suficientes para estatística." });
+      return res
+        .status(404)
+        .json({ message: "Sem dados suficientes para estatística." });
     }
 
-    const voltagens = leituras.map((l) => l.voltagem).filter((v) => v !== null);
-    const potencias = leituras.map((l) => l.potenciaAtiva).filter((p) => p !== null);
+    // 1. Estatística Descritiva Dinâmica para TODOS os componentes
+    const camposParaEstatistica = [
+      "voltagem",
+      "corrente",
+      "potenciaAtiva",
+      "frequencia",
+      "fatorPotencia",
+    ];
+    const descritiva = {};
 
-    const mediaVoltagem = calcularMedia(voltagens);
-    const desvioPadraoVoltagem = calcularDesvioPadrao(voltagens, mediaVoltagem);
-    const quartisVoltagem = calcularQuartis(voltagens);
-    const modaPotencia = calcularModa(potencias);
-    const medianaPotencia = calcularQuartis(potencias).mediana;
+    camposParaEstatistica.forEach((campo) => {
+      // Extrai apenas os números válidos do campo atual
+      const valores = leituras
+        .map((l) => l[campo])
+        .filter((v) => v !== null && v !== undefined);
 
+      if (valores.length > 0) {
+        const media = calcularMedia(valores);
+
+        descritiva[campo] = {
+          media: media.toFixed(2),
+          desvioPadrao: calcularDesvioPadrao(valores, media).toFixed(2),
+          boxPlot: calcularQuartis(valores), // q1, mediana e q3 perfeitos
+          // Passamos '2' para manter duas casas decimais e não estragar a moda da Corrente/Fator
+          moda: calcularModa(valores, 2),
+        };
+
+        // Criamos um atalho direto para a mediana fora do boxPlot para facilitar o Frontend
+        descritiva[campo].mediana =
+          descritiva[campo].boxPlot.mediana.toFixed(2);
+      } else {
+        descritiva[campo] = null; // Caso a coluna não tenha dados (ex: fator de potência null)
+      }
+    });
+
+    // 2. Amostragem Estratificada Proporcional (Consumo por Turno do Dia)
     const consumoPorTurno = calcularEstratosPorTurno(leituras);
     const dadosRegressao = regressaoLinearCusto(leituras);
 
-    const custoTotalAtual = leituras.reduce((acc, l) => acc + (l.custoReais || l.custoHora || 0), 0);
-    const mediaCustoDiario = custoTotalAtual / (leituras.length / 24);
+    // 3. Estatística Preditiva e Inferencial (Custos e Previsões)
+    const custoTotalAtual = leituras.reduce(
+      (acc, l) => acc + (l.custoReais || l.custoHora || 0),
+      0,
+    );
+    const mediaCustoDiario = custoTotalAtual / (leituras.length / 24); // Assumindo uma leitura por hora
+
     const desvioCusto = calcularDesvioPadrao(
       leituras.map((l) => l.custoReais || l.custoHora || 0),
       mediaCustoDiario,
     );
-    const intervaloCusto = calcularIntervaloConfianca(custoTotalAtual, desvioCusto * 30, leituras.length);
 
+    // Intervalo de Confiança para 30 dias com base na amostra de dados
+    const intervaloCusto = calcularIntervaloConfianca(
+      custoTotalAtual,
+      desvioCusto * 30,
+      leituras.length,
+    );
+
+    // 4. Monta o JSON de resposta de forma modularizada e limpa
     return res.status(200).json({
-      descritiva: {
-        voltagem: {
-          media: mediaVoltagem.toFixed(2),
-          desvioPadrao: desvioPadraoVoltagem.toFixed(2),
-          boxPlot: quartisVoltagem,
-        },
-        potencia: {
-          moda: modaPotencia,
-          mediana: medianaPotencia.toFixed(2),
-        },
+      descritiva,
+      estratificada: {
+        consumoPorTurno,
       },
-      estratificada: { consumoPorTurno },
       preditiva: {
-        tendenciaDeCusto: dadosRegressao.tendencia > 0 ? "Aumentando" : "Estável",
+        tendenciaDeCusto:
+          dadosRegressao.tendencia > 0 ? "Aumentando" : "Estável",
         custoAtual: custoTotalAtual.toFixed(2),
         intervaloConfianca95: {
           minimoEsperado: intervaloCusto.min.toFixed(2),
