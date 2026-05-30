@@ -18,16 +18,6 @@ function formatTick(value) {
   return value.toFixed(3);
 }
 
-function computeDomain(values) {
-  if (values.length < 2) return [0, 100];
-  const sorted = [...values].sort((a, b) => a - b);
-  const p95 = sorted[Math.floor(sorted.length * 0.95)];
-  const p5 = sorted[Math.floor(sorted.length * 0.05)];
-  const min = Math.max(0, p5 * 0.8);
-  const max = p95 * 1.3;
-  return max > min ? [min, max] : [0, max || 100];
-}
-
 const CustomTooltip = ({ active, payload, label, unit }) => {
   if (active && payload && payload.length) {
     return (
@@ -132,61 +122,32 @@ const styles = {
   },
 };
 
-export default function MetricChart({ readings, field, label, unit, color, thresholds, loading, delay = 0 }) {
-  const { chartData, stats, domain } = useMemo(() => {
-    if (!readings || readings.length === 0) {
-      return { chartData: [], stats: null, domain: [0, 100] };
-    }
-
+export default function MetricChart({ readings, field, label, unit, color, stats, insight, loading, delay = 0 }) {
+  const chartData = useMemo(() => {
+    if (!readings || readings.length === 0) return [];
     const sorted = [...readings]
       .filter(r => r[field] != null && isFinite(r[field]))
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-    let filtered = sorted;
-    if (thresholds) {
-      filtered = sorted.filter(r => {
-        const v = r[field];
-        if (thresholds.min !== undefined && v < thresholds.min) return false;
-        if (thresholds.max !== undefined && v > thresholds.max) return false;
-        return true;
-      });
-    }
-
-    if (filtered.length === 0) {
-      return { chartData: [], stats: null, domain: [0, 100] };
-    }
-
-    const values = filtered.map(r => r[field]);
-    const avg = values.reduce((a, b) => a + b, 0) / values.length;
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-
-    const first = filtered[0].timestamp;
-    const last = filtered[filtered.length - 1].timestamp;
+    const first = sorted[0]?.timestamp;
+    const last = sorted[sorted.length - 1]?.timestamp;
     const multiDay = first?.slice(0, 10) !== last?.slice(0, 10);
 
-    const formatTime = (ts) => {
-      const d = new Date(ts);
-      const hhmm = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-      if (multiDay) {
-        return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")} ${hhmm}`;
-      }
-      return hhmm;
-    };
-
-    const chartData = filtered.map(r => ({
-      time: formatTime(r.timestamp),
+    return sorted.map(r => ({
+      time: (ts => {
+        const d = new Date(ts);
+        const hhmm = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+        if (multiDay) return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")} ${hhmm}`;
+        return hhmm;
+      })(r.timestamp),
       value: r[field],
     }));
-
-    const domain = computeDomain(values);
-
-    return { chartData, stats: { avg, min, max }, domain };
-  }, [readings, field, thresholds]);
+  }, [readings, field]);
 
   if (loading) return <Skeleton />;
 
   const latest = chartData.length > 0 ? chartData[chartData.length - 1].value : null;
+  const domain = stats?.domain || [0, 100];
 
   return (
     <motion.div
@@ -212,7 +173,7 @@ export default function MetricChart({ readings, field, label, unit, color, thres
             Min <span style={styles.statValue}>{stats.min.toFixed(1)}</span>
           </div>
           <div style={styles.stat}>
-            Méd <span style={styles.statValue}>{stats.avg.toFixed(1)}</span>
+            Méd <span style={styles.statValue}>{stats.media.toFixed(1)}</span>
           </div>
           <div style={styles.stat}>
             Máx <span style={styles.statValue}>{stats.max.toFixed(1)}</span>
@@ -275,14 +236,8 @@ export default function MetricChart({ readings, field, label, unit, color, thres
         <div style={styles.error}>Nenhum dado disponível</div>
       )}
 
-      {stats && chartData.length > 0 && (
-        <p style={styles.insight}>
-          {latest > stats.avg * 1.1
-            ? `Valor atual ${((latest / stats.avg - 1) * 100).toFixed(0)}% acima da média.`
-            : latest < stats.avg * 0.9
-            ? `Valor atual ${((1 - latest / stats.avg) * 100).toFixed(0)}% abaixo da média.`
-            : `Operação dentro da faixa esperada (${stats.min.toFixed(0)}–${stats.max.toFixed(0)} ${unit}).`}
-        </p>
+      {insight && chartData.length > 0 && (
+        <p style={styles.insight}>{insight.text}</p>
       )}
     </motion.div>
   );

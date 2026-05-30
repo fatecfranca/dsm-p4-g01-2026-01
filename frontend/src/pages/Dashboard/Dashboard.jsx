@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import DashboardHeader from "../../components/dashboard/DashboardHeader/DashboardHeader";
 import KPICards from "../../components/dashboard/KPICards/KPICards";
@@ -6,83 +6,57 @@ import MetricChart from "../../components/dashboard/MetricChart/MetricChart";
 import FilterBar from "../../components/dashboard/FilterBar/FilterBar";
 import { fetchTelemetria } from "../../services/telemetriaService";
 import { colors } from "../../theme/colors";
-import { validateData } from "../../utils/validateData";
 import styles from "./Dashboard.module.css";
-
-function formatTimeBR(ts) {
-  const d = new Date(ts);
-  return d.toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
-}
-
-function inRange(ts, start, end) {
-  if (!start && !end) return true;
-  const t = ts.slice(0, 10);
-  if (start && t < start) return false;
-  if (end && t > end) return false;
-  return true;
-}
 
 export default function Dashboard() {
   const [state, setState] = useState({
     loading: true,
     error: null,
-    readings: null,
+    data: [],
+    meta: null,
   });
 
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async ({ start, end } = {}) => {
     try {
-      const data = await fetchTelemetria();
-      setState({ loading: false, error: null, readings: data });
-      if (import.meta.env.DEV) validateData(data);
+      const { data, meta } = await fetchTelemetria(undefined, 1000, start, end);
+      setState({ loading: false, error: null, data, meta });
     } catch (err) {
       setState(prev => ({
         loading: false,
         error: err.message || "Erro ao carregar dados",
-        readings: prev.readings,
+        data: [],
+        meta: err.message?.includes("404") ? null : prev.meta,
       }));
     }
   }, []);
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      await load();
-      if (!mounted) return;
-    })();
-    const interval = setInterval(load, 30000);
-    return () => { mounted = false; clearInterval(interval); };
+    (async () => { await load(); })();
+    const interval = setInterval(() => load(), 30000);
+    return () => clearInterval(interval);
   }, [load]);
+
+  useEffect(() => {
+    if (dateRange.start || dateRange.end) {
+      load(dateRange);
+    }
+  }, [dateRange, load]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await load();
+    await load(dateRange.start || dateRange.end ? dateRange : undefined);
     setRefreshing(false);
-  }, [load]);
+  }, [load, dateRange]);
 
-  const { loading, error, readings } = state;
+  const { loading, error, data, meta } = state;
+  const latest = meta?.latest || {};
+  const lastUpdate = latest?.dataHoraBrasil || "—";
+  const status = data.length > 0 ? "online" : "offline";
 
-  const latest = useMemo(() => {
-    if (!readings || readings.length === 0) return {};
-    const sorted = [...readings].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    return sorted[sorted.length - 1];
-  }, [readings]);
-
-  const lastUpdate = latest?.dataHoraBrasil || (latest?.timestamp ? formatTimeBR(latest.timestamp) : "—");
-  const status = readings && readings.length > 0 ? "online" : "offline";
-
-  // Filter readings by date range
-  const processedReadings = useMemo(() => {
-    if (!readings || readings.length === 0) return [];
-    return readings.filter(r => inRange(r.timestamp, dateRange.start, dateRange.end));
-  }, [readings, dateRange]);
-
-  const visibleCount = processedReadings.length;
-  const totalCount = readings?.length || 0;
-
-  if (error) {
+  if (error && !loading) {
     return (
       <motion.section className={styles.container} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <div className={styles.header}>
@@ -96,6 +70,12 @@ export default function Dashboard() {
       </motion.section>
     );
   }
+
+  const charts = [
+    { field: "voltagem", label: "Tensão", unit: "V", color: colors.primary, delay: 0 },
+    { field: "corrente", label: "Corrente", unit: "A", color: colors.info, delay: 0.08 },
+    { field: "potenciaAtiva", label: "Potência Ativa", unit: "W", color: colors.warning, delay: 0.16 },
+  ];
 
   return (
     <motion.section
@@ -116,7 +96,7 @@ export default function Dashboard() {
       <KPICards readings={latest} loading={loading} />
 
       <FilterBar
-        readings={readings || []}
+        readings={data}
         dateRange={dateRange}
         onDateRangeChange={setDateRange}
       />
@@ -127,7 +107,7 @@ export default function Dashboard() {
           <MetricChart loading />
           <MetricChart loading />
         </div>
-      ) : processedReadings.length === 0 ? (
+      ) : data.length === 0 ? (
         <div className={styles.emptyBox}>
           <p className={styles.emptyText}>Nenhuma leitura encontrada no período</p>
           <p className={styles.emptyHint}>Tente selecionar um período maior ou limpar os filtros.</p>
@@ -135,39 +115,23 @@ export default function Dashboard() {
       ) : (
         <div className={styles.chartsRow}>
           <div className={styles.chartInfo}>
-            {visibleCount < totalCount && (
-              <span className={styles.filterInfo}>
-                Mostrando {visibleCount} de {totalCount} leituras
-              </span>
-            )}
+            <span className={styles.filterInfo}>
+              {data.length} leitura{(data.length !== 1 ? "s" : "")}
+            </span>
           </div>
-          <MetricChart
-            readings={processedReadings}
-            field="voltagem"
-            label="Tensão"
-            unit="V"
-            color={colors.primary}
-            thresholds={{ min: 0, max: 300 }}
-            delay={0}
-          />
-          <MetricChart
-            readings={processedReadings}
-            field="corrente"
-            label="Corrente"
-            unit="A"
-            color={colors.info}
-            thresholds={{ min: 0, max: 10 }}
-            delay={0.08}
-          />
-          <MetricChart
-            readings={processedReadings}
-            field="potenciaAtiva"
-            label="Potência Ativa"
-            unit="W"
-            color={colors.warning}
-            thresholds={{ min: -100, max: 500 }}
-            delay={0.16}
-          />
+          {charts.map((c) => (
+            <MetricChart
+              key={c.field}
+              readings={data}
+              field={c.field}
+              label={c.label}
+              unit={c.unit}
+              color={c.color}
+              stats={meta?.descritiva?.[c.field]}
+              insight={meta?.insights?.[c.field]}
+              delay={c.delay}
+            />
+          ))}
         </div>
       )}
     </motion.section>

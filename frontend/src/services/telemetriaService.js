@@ -7,7 +7,10 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-export async function fetchTelemetria(dispositivoId = DEFAULT_DEVICE, limite = 100) {
-  const result = await get(`/telemetria/${dispositivoId}?limite=${limite}`, authHeaders());
-  return result.data;
+export async function fetchTelemetria(dispositivoId = DEFAULT_DEVICE, limite = 1000, start, end) {
+  let endpoint = `/telemetria/${dispositivoId}?limite=${limite}`;
+  if (start) endpoint += `&start=${start}`;
+  if (end) endpoint += `&end=${end}`;
+  const result = await get(endpoint, authHeaders());
+  return result;
 }
