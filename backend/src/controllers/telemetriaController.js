@@ -135,17 +135,22 @@ export const obterTelemetria = async (req, res) => {
     const consumoPorTurno = calcularEstratosPorTurno(data);
     const dadosRegressao = regressaoLinearCusto(data);
 
-    const custoTotalAtual = data.reduce((acc, l) => acc + (l.custohora || l.custoHora || 0), 0);
-    const mediaCustoDiario = custoTotalAtual / (data.length / 24);
+    let custoTotal = 0;
+    for (let i = 1; i < data.length; i++) {
+      const dt = (new Date(data[i].timestamp) - new Date(data[i - 1].timestamp)) / 3600000;
+      custoTotal += (data[i].custoHora || 0) * dt;
+    }
+    const dias = (new Date(data[data.length - 1].timestamp) - new Date(data[0].timestamp)) / 86400000;
+    const mediaCustoDiario = dias > 0 ? custoTotal / dias : custoTotal;
     const desvioCusto = calcularDesvioPadrao(
       data.map((l) => l.custoHora || 0),
-      mediaCustoDiario,
+      data.reduce((a, l) => a + (l.custoHora || 0), 0) / data.length,
     );
-    const intervaloCusto = calcularIntervaloConfianca(custoTotalAtual, desvioCusto * 30, data.length);
+    const intervaloCusto = calcularIntervaloConfianca(custoTotal, desvioCusto * dias, data.length);
 
     const preditiva = {
       tendenciaDeCusto: dadosRegressao.tendencia > 0 ? "Aumentando" : "Estável",
-      custoAtual: +custoTotalAtual.toFixed(2),
+      custoAtual: +custoTotal.toFixed(2),
       intervaloConfianca95: {
         minimoEsperado: +intervaloCusto.min.toFixed(2),
         maximoEsperado: +intervaloCusto.max.toFixed(2),

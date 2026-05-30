@@ -77,7 +77,8 @@ export const calcularEstratosPorTurno = (leituras) => {
   const estratos = { madrugada: 0, manha: 0, tarde: 0, noite: 0 };
 
   leituras.forEach((leitura) => {
-    const hora = new Date(leitura.timestamp).getUTCHours();
+    const d = new Date(leitura.timestamp);
+    const hora = (d.getUTCHours() - 3 + 24) % 24; // America/Sao_Paulo = UTC-3
     const consumo = leitura.potenciaKw || 0;
 
     if (hora >= 0 && hora < 6) estratos.madrugada += consumo;
