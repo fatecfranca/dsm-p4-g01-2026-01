@@ -6,22 +6,31 @@ export const calcularMedia = (dados) => {
 export const calcularQuartis = (dados) => {
   if (dados.length === 0) return { q1: 0, mediana: 0, q3: 0 };
   const ordenados = [...dados].sort((a, b) => a - b);
+
+  const mid = Math.floor(ordenados.length / 2);
+  const mediana =
+    ordenados.length % 2 === 0
+      ? (ordenados[mid - 1] + ordenados[mid]) / 2
+      : ordenados[mid];
+
   return {
     q1: ordenados[Math.floor(ordenados.length * 0.25)],
-    mediana: ordenados[Math.floor(ordenados.length * 0.5)],
+    mediana: mediana,
     q3: ordenados[Math.floor(ordenados.length * 0.75)],
   };
 };
 
-export const calcularModa = (dados) => {
+export const calcularModa = (dados, casasDecimais = 1) => {
   if (dados.length === 0) return 0;
   const frequencias = {};
   let maxFreq = 0;
   let moda = dados[0];
 
   dados.forEach((val) => {
-    // Arredondamos para agrupar valores contínuos (ex: 60.1 e 60.4 viram 60)
-    const valorArredondado = Math.round(val);
+    // Preserva casas decimais para não quebrar corrente e fator de potência
+    const fator = Math.pow(10, casasDecimais);
+    const valorArredondado = Math.round(val * fator) / fator;
+
     frequencias[valorArredondado] = (frequencias[valorArredondado] || 0) + 1;
     if (frequencias[valorArredondado] > maxFreq) {
       maxFreq = frequencias[valorArredondado];
