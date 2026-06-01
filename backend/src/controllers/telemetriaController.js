@@ -352,7 +352,7 @@ export const obterEstatisticas = async (req, res) => {
         tamanhoAmostra: amostraLeituras.length,
         tendenciaDeCusto:
           dadosRegressaoAmostra.tendencia > 0 ? "Aumentando" : "Estável",
-        custoAtualReal: custoTotalReal.toFixed(2),
+        custoAtualReal: custoTotalAtual.toFixed(2),
         previsaoFaturaMensal: estimativaMensal.toFixed(2),
         intervaloConfianca95: {
           minimoEsperado: Math.max(0, intervaloCusto.min).toFixed(2),
