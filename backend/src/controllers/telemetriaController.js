@@ -314,10 +314,21 @@ export const obterEstatisticas = async (req, res) => {
     );
 
     // O CUSTO ATUAL REAL (Da População inteira)
-    const custoTotalReal = leituras.reduce(
-      (acc, l) => acc + (l.custoHora || l.custoReais || 0),
-      0,
-    );
+    let custoTotalAtual = 0;
+    for (let i = 1; i < leituras.length; i++) {
+      const dt =
+        (new Date(leituras[i].timestamp) -
+          new Date(leituras[i - 1].timestamp)) /
+        3600000;
+      custoTotalAtual += (leituras[i].custoHora || 0) * dt;
+    }
+
+    const diasDecorridos =
+      (new Date(leituras[leituras.length - 1].timestamp) -
+        new Date(leituras[0].timestamp)) /
+      86400000;
+    const mediaCustoDiario =
+      diasDecorridos > 0 ? custoTotalAtual / diasDecorridos : custoTotalAtual;
 
     // INFERÊNCIA: Projetando a amostra para 30 dias (Assumindo 24 leituras por dia)
     const estimativaMensal = mediaCustoAmostra * 24 * 30;

@@ -85,16 +85,26 @@ export const calcularIntervaloConfianca = (media, desvioPadrao, n) => {
 export const calcularEstratosPorTurno = (leituras) => {
   const estratos = { madrugada: 0, manha: 0, tarde: 0, noite: 0 };
 
-  leituras.forEach((leitura) => {
-    const d = new Date(leitura.timestamp);
-    const hora = (d.getUTCHours() - 3 + 24) % 24; // America/Sao_Paulo = UTC-3
-    const consumo = leitura.potenciaKw || 0;
+  // Começamos do índice 1 para poder comparar com a leitura anterior [i-1]
+  for (let i = 1; i < leituras.length; i++) {
+    const leitura = leituras[i];
+    const prevLeitura = leituras[i - 1];
 
-    if (hora >= 0 && hora < 6) estratos.madrugada += consumo;
-    else if (hora >= 6 && hora < 12) estratos.manha += consumo;
-    else if (hora >= 12 && hora < 18) estratos.tarde += consumo;
-    else estratos.noite += consumo;
-  });
+    // Calcula quantas horas se passaram entre uma leitura e outra (Delta Time)
+    const dt =
+      (new Date(leitura.timestamp) - new Date(prevLeitura.timestamp)) / 3600000;
+
+    // Energia Real Consumida (kWh) = Potência (kW) * Tempo (h)
+    const consumoKwh = (leitura.potenciaKw || 0) * dt;
+
+    const d = new Date(leitura.timestamp);
+    const hora = (d.getUTCHours() - 3 + 24) % 24; // Fuso horário
+
+    if (hora >= 0 && hora < 6) estratos.madrugada += consumoKwh;
+    else if (hora >= 6 && hora < 12) estratos.manha += consumoKwh;
+    else if (hora >= 12 && hora < 18) estratos.tarde += consumoKwh;
+    else estratos.noite += consumoKwh;
+  }
 
   return estratos;
 };
