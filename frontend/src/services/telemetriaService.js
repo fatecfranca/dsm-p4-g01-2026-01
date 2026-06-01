@@ -1,6 +1,6 @@
 import { get } from "./api";
 
-const DEFAULT_DEVICE = "ESP32_SALA_01";
+const DEFAULT_DEVICE = "ESP32-001";
 
 function authHeaders() {
   const token = localStorage.getItem("token");
@@ -13,4 +13,9 @@ export async function fetchTelemetria(dispositivoId = DEFAULT_DEVICE, limite = 1
   if (end) endpoint += `&end=${end}`;
   const result = await get(endpoint, authHeaders());
   return result;
+}
+
+export async function fetchEstatisticas(dispositivoId = DEFAULT_DEVICE) {
+  const endpoint = `/telemetria/estatisticas/${dispositivoId}`;
+  return get(endpoint, authHeaders());
 }

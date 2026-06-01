@@ -1,0 +1,161 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 1023px) {
+  .grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 639px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: #1E293B;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.accent {
+  height: 3px;
+  flex-shrink: 0;
+}
+
+.cardBody {
+  padding: 1rem 1rem 1.125rem;
+  display: flex;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.iconBox {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.iconBox svg {
+  width: 18px;
+  height: 18px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.valueRow {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+.prefix {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #94A3B8;
+}
+
+.value {
+  font-size: 1.625rem;
+  font-weight: 700;
+  color: #E2E8F0;
+  line-height: 1.1;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border: 1px solid;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-top: 2px;
+}
+
+.statsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.statRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  min-width: 0;
+}
+
+.statLabel {
+  font-size: 0.625rem;
+  color: #94A3B8;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.statValue {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #E2E8F0;
+  white-space: nowrap;
+  text-align: right;
+}
+
+.noData {
+  font-size: 0.8125rem;
+  color: #94A3B8;
+  font-style: italic;
+}
+
+/* Skeletons */
+.skelAccent { height: 3px; background: rgba(255, 255, 255, 0.04); }
+.skelIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  flex-shrink: 0;
+}
+.skelContent { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.skelLabel {
+  height: 10px;
+  width: 60%;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.skelValue {
+  height: 22px;
+  width: 45%;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  animation: pulse 1.5s ease-in-out infinite 0.2s;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
