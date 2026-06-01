@@ -49,7 +49,6 @@ export const calcularDesvioPadrao = (dados, media) => {
 };
 
 export const regressaoLinearCusto = (leituras) => {
-  // Vamos cruzar os dias (X) com o custo acumulado (Y)
   let somaX = 0,
     somaY = 0,
     somaXY = 0,
@@ -57,16 +56,26 @@ export const regressaoLinearCusto = (leituras) => {
   const n = leituras.length;
   if (n === 0) return { tendencia: 0, intercepto: 0 };
 
-  leituras.forEach((leitura, index) => {
-    const x = index; // Representa a linha do tempo
+  const tempoInicial = new Date(leituras[0].timestamp).getTime();
+
+  leituras.forEach((leitura) => {
+    // Eixo X: Quantas horas se passaram desde a primeira leitura da amostra
+    const x = (new Date(leitura.timestamp).getTime() - tempoInicial) / 3600000;
+
+    // Eixo Y: O valor do custo
     const y = leitura.custoHora || 0;
+
     somaX += x;
     somaY += y;
     somaXY += x * y;
     somaX2 += x * x;
   });
 
-  const tendencia = (n * somaXY - somaX * somaY) / (n * somaX2 - somaX * somaX);
+  // Se todos os dados tiverem o mesmo tempo (evita divisão por zero)
+  const denominador = n * somaX2 - Math.pow(somaX, 2);
+  if (denominador === 0) return { tendencia: 0, intercepto: somaY / n };
+
+  const tendencia = (n * somaXY - somaX * somaY) / denominador;
   const intercepto = (somaY - tendencia * somaX) / n;
 
   return { tendencia, intercepto };
@@ -110,15 +119,15 @@ export const calcularEstratosPorTurno = (leituras) => {
 };
 
 export const obterAmostraAleatoria = (dados, tamanhoAmostra) => {
-  if (dados.length <= tamanhoAmostra) return dados; // Se tiver pouco dado, a amostra é tudo
+  if (dados.length <= tamanhoAmostra) return dados;
 
-  // Cria uma cópia do array e embaralha
   const embaralhado = [...dados];
   for (let i = embaralhado.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [embaralhado[i], embaralhado[j]] = [embaralhado[j], embaralhado[i]];
   }
 
-  // Retorna apenas a quantidade solicitada para a amostra
-  return embaralhado.slice(0, tamanhoAmostra);
+  // Pegamos a amostra e RE-ORDENAMOS cronologicamente
+  const amostra = embaralhado.slice(0, tamanhoAmostra);
+  return amostra.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 };
