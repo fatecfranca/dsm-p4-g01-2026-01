@@ -41,10 +41,10 @@ export const calcularModa = (dados, casasDecimais = 1) => {
 };
 
 export const calcularDesvioPadrao = (dados, media) => {
-  if (dados.length === 0) return 0;
+  if (dados.length <= 1) return 0;
   const variancia =
     dados.reduce((acc, val) => acc + Math.pow(val - media, 2), 0) /
-    dados.length;
+    (dados.length - 1);
   return Math.sqrt(variancia);
 };
 
@@ -97,4 +97,18 @@ export const calcularEstratosPorTurno = (leituras) => {
   });
 
   return estratos;
+};
+
+export const obterAmostraAleatoria = (dados, tamanhoAmostra) => {
+  if (dados.length <= tamanhoAmostra) return dados; // Se tiver pouco dado, a amostra é tudo
+
+  // Cria uma cópia do array e embaralha
+  const embaralhado = [...dados];
+  for (let i = embaralhado.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [embaralhado[i], embaralhado[j]] = [embaralhado[j], embaralhado[i]];
+  }
+
+  // Retorna apenas a quantidade solicitada para a amostra
+  return embaralhado.slice(0, tamanhoAmostra);
 };
