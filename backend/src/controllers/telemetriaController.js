@@ -7,6 +7,7 @@ import {
   calcularEstratosPorTurno,
   regressaoLinearCusto,
   calcularIntervaloConfianca,
+  obterAmostraAleatoria,
 } from "../utils/estatisticas.js";
 
 const TARIFA_KWH = parseFloat(process.env.TARIFA_KWH) || 0.85;
@@ -249,7 +250,7 @@ export const obterEstatisticas = async (req, res) => {
   try {
     const { dispositivoId } = req.params;
 
-    // Vai buscar todas as leituras ordenadas no tempo
+    // Vai buscar TODAS as leituras ordenadas no tempo (A População)
     const leituras = await prisma.telemetria.findMany({
       where: { dispositivoId },
       orderBy: { timestamp: "asc" },
@@ -261,7 +262,7 @@ export const obterEstatisticas = async (req, res) => {
         .json({ message: "Sem dados suficientes para estatística." });
     }
 
-    // 1. Estatística Descritiva Dinâmica para TODOS os componentes
+    // Estatisticas Descritivas (Calculada usando a POPULAÇÃO inteira)
     const camposParaEstatistica = [
       "voltagem",
       "corrente",
@@ -272,7 +273,6 @@ export const obterEstatisticas = async (req, res) => {
     const descritiva = {};
 
     camposParaEstatistica.forEach((campo) => {
-      // Extrai apenas os números válidos do campo atual
       const valores = leituras
         .map((l) => l[campo])
         .filter((v) => v !== null && v !== undefined);
@@ -283,54 +283,68 @@ export const obterEstatisticas = async (req, res) => {
         descritiva[campo] = {
           media: media.toFixed(2),
           desvioPadrao: calcularDesvioPadrao(valores, media).toFixed(2),
-          boxPlot: calcularQuartis(valores), // q1, mediana e q3 perfeitos
-          // Passamos '2' para manter duas casas decimais e não estragar a moda da Corrente/Fator
-          moda: calcularModa(valores, 2),
+          boxPlot: calcularQuartis(valores),
+          moda: calcularModa(valores, 2), // Preservando 2 casas decimais
         };
 
-        // Criamos um atalho direto para a mediana fora do boxPlot para facilitar o Frontend
+        // Atalho para a mediana fora do boxPlot
         descritiva[campo].mediana =
           descritiva[campo].boxPlot.mediana.toFixed(2);
       } else {
-        descritiva[campo] = null; // Caso a coluna não tenha dados (ex: fator de potência null)
+        descritiva[campo] = null;
       }
     });
 
-    // 2. Amostragem Estratificada Proporcional (Consumo por Turno do Dia)
+    // Amostragem Estratificada (Consumo real por turno do dia)
     const consumoPorTurno = calcularEstratosPorTurno(leituras);
-    const dadosRegressao = regressaoLinearCusto(leituras);
 
-    // 3. Estatística Preditiva e Inferencial (Custos e Previsões)
-    const custoTotalAtual = leituras.reduce(
-      (acc, l) => acc + (l.custoReais || l.custoHora || 0),
+    // 3. Estatistica Preditiva e Inferencial (Calculada usando uma AMOSTRA)
+    const amostraLeituras = obterAmostraAleatoria(leituras, 500); // Extraímos uma Amostra Aleatória Simples de 500 leituras
+
+    // Fazemos a Regressão Linear SOMENTE na amostra para saber a tendência
+    const dadosRegressaoAmostra = regressaoLinearCusto(amostraLeituras);
+
+    const valoresCustoAmostra = amostraLeituras.map(
+      (l) => l.custoHora || l.custoReais || 0,
+    );
+    const mediaCustoAmostra = calcularMedia(valoresCustoAmostra); // Média de custo por HORA
+    const desvioCustoAmostra = calcularDesvioPadrao(
+      valoresCustoAmostra,
+      mediaCustoAmostra,
+    );
+
+    // O CUSTO ATUAL REAL (Da População inteira)
+    const custoTotalReal = leituras.reduce(
+      (acc, l) => acc + (l.custoHora || l.custoReais || 0),
       0,
     );
-    const mediaCustoDiario = custoTotalAtual / (leituras.length / 24); // Assumindo uma leitura por hora
 
-    const desvioCusto = calcularDesvioPadrao(
-      leituras.map((l) => l.custoReais || l.custoHora || 0),
-      mediaCustoDiario,
-    );
+    // INFERÊNCIA: Projetando a amostra para 30 dias (Assumindo 24 leituras por dia)
+    const estimativaMensal = mediaCustoAmostra * 24 * 30;
+    const desvioMensal = desvioCustoAmostra * 24 * 30;
 
-    // Intervalo de Confiança para 30 dias com base na amostra de dados
+    // Intervalo de Confiança da conta no fim do mês baseado na AMOSTRA
     const intervaloCusto = calcularIntervaloConfianca(
-      custoTotalAtual,
-      desvioCusto * 30,
-      leituras.length,
+      estimativaMensal,
+      desvioMensal,
+      amostraLeituras.length,
     );
 
-    // 4. Monta o JSON de resposta de forma modularizada e limpa
+    // Retorno do JSON com todas as estatísticas
     return res.status(200).json({
       descritiva,
       estratificada: {
         consumoPorTurno,
       },
       preditiva: {
+        metodo: "Amostragem Aleatória Simples",
+        tamanhoAmostra: amostraLeituras.length,
         tendenciaDeCusto:
-          dadosRegressao.tendencia > 0 ? "Aumentando" : "Estável",
-        custoAtual: custoTotalAtual.toFixed(2),
+          dadosRegressaoAmostra.tendencia > 0 ? "Aumentando" : "Estável",
+        custoAtualReal: custoTotalReal.toFixed(2),
+        previsaoFaturaMensal: estimativaMensal.toFixed(2),
         intervaloConfianca95: {
-          minimoEsperado: intervaloCusto.min.toFixed(2),
+          minimoEsperado: Math.max(0, intervaloCusto.min).toFixed(2),
           maximoEsperado: intervaloCusto.max.toFixed(2),
         },
       },
