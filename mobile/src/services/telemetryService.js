@@ -1,8 +1,14 @@
 import api from './api';
 
-export async function getTelemetria(dispositivoId = 'ESP32-001', limite = 30) {
+const TARIFA_KWH = parseFloat(process.env.EXPO_PUBLIC_TARIFA_KWH) || 0.85;
+
+export async function getTelemetria(dispositivoId = 'ESP32-001', limite = 100) {
   const response = await api.get(`/telemetria/${dispositivoId}`, {
     params: { limite },
   });
   return response.data;
+}
+
+export function getTarifa() {
+  return TARIFA_KWH;
 }

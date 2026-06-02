@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { getTelemetria } from '../services/telemetryService';
+import { getTelemetria, getTarifa } from '../services/telemetryService';
+
+const TARIFA = getTarifa();
 
 function getPeakIndex(data) {
   if (!data || data.length === 0) return 0;
@@ -10,92 +12,135 @@ function getPeakIndex(data) {
   return maxIdx;
 }
 
-function buildTimeSeries(readings, field) {
+function buildSeries(readings, field, fallback = 0) {
   return readings.map((r) => {
     const d = new Date(r.timestamp);
     const h = String(d.getHours()).padStart(2, '0');
     const m = String(d.getMinutes()).padStart(2, '0');
-    return { time: `${h}:${m}`, value: r[field] ?? 0 };
+    return {
+      time: `${h}:${m}`,
+      value: r[field] ?? fallback,
+    };
   });
-}
-
-function buildDailyData(readings, field) {
-  const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-  const byDay = {};
-  readings.forEach((r) => {
-    const d = new Date(r.timestamp);
-    const dayName = days[d.getDay()];
-    if (!byDay[dayName]) byDay[dayName] = [];
-    byDay[dayName].push(r[field] ?? 0);
-  });
-  return days.map((day) => ({
-    day,
-    value: byDay[day]
-      ? +(byDay[day].reduce((a, b) => a + b, 0) / byDay[day].length).toFixed(1)
-      : 0,
-  }));
 }
 
 const INITIAL = {
-  powerData: [],
   voltageData: [],
   currentData: [],
-  dailyData: [],
-  financialData: [],
+  activePowerData: [],
+  apparentPowerData: [],
+  reactivePowerData: [],
+  powerFactorData: [],
+  frequencyData: [],
+  powerKwData: [],
+  costHourData: [],
   voltage: 0,
   current: 0,
   power: 0,
-  monthlyCost: 0,
-  frequency: 0,
+  powerKw: 0,
+  costHora: 0,
   powerFactor: 0,
-  peakPowerIndex: 0,
+  frequency: 0,
+  lastTimestamp: '',
   peakVoltageIndex: 0,
   peakCurrentIndex: 0,
-  maxKwhIndex: 0,
-  maxCostIndex: 0,
+  peakPowerIndex: 0,
+  peakApparentPowerIndex: 0,
+  peakReactivePowerIndex: 0,
+  peakPowerKwIndex: 0,
+  peakCostHourIndex: 0,
+  monthlyCost: 0,
+  readings: [],
   loading: true,
   error: null,
 };
 
-export default function useTelemetryData(dispositivoId = 'ESP32-001') {
+export default function useTelemetryData(dispositivoId = 'ESP32-001', limite = 100) {
   const [state, setState] = useState(INITIAL);
-  const intervalRef = useRef(null);
   const stateRef = useRef(state);
 
   const refresh = useCallback(async () => {
     try {
-      const response = await getTelemetria(dispositivoId, 30);
+      const response = await getTelemetria(dispositivoId, limite);
       const readings = response.data || [];
       if (readings.length === 0) {
         throw new Error('Nenhuma leitura disponível');
       }
-      const reversed = [...readings].reverse();
-      const latest = reversed[reversed.length - 1];
 
-      const power = buildTimeSeries(reversed, 'potenciaAtiva');
-      const voltage = buildTimeSeries(reversed, 'voltagem');
-      const current = buildTimeSeries(reversed, 'corrente');
-      const daily = buildDailyData(readings, 'consumokWh');
-      const financial = buildDailyData(readings, 'custoReais');
-      const monthly = +(latest.custoReais * 30).toFixed(2);
+      const sorted = [...readings];
+      const latest = sorted[sorted.length - 1];
+
+      const voltageData = buildSeries(sorted, 'voltagem');
+      const currentData = buildSeries(sorted, 'corrente');
+      const activePowerData = buildSeries(sorted, 'potenciaAtiva');
+      const apparentPowerData = buildSeries(sorted, 'potenciaAparente');
+      const reactivePowerData = buildSeries(sorted, 'potenciaReativa');
+      const powerFactorData = buildSeries(sorted, 'fatorPotencia');
+      const frequencyData = buildSeries(sorted, 'frequencia');
+
+      const powerKwData = sorted.map((r) => {
+        const d = new Date(r.timestamp);
+        const h = String(d.getHours()).padStart(2, '0');
+        const m = String(d.getMinutes()).padStart(2, '0');
+        return {
+          time: `${h}:${m}`,
+          value: r.consumokWh ?? (r.potenciaAtiva / 1000),
+        };
+      });
+
+      const costHourData = sorted.map((r) => {
+        const d = new Date(r.timestamp);
+        const h = String(d.getHours()).padStart(2, '0');
+        const m = String(d.getMinutes()).padStart(2, '0');
+        const kw = r.consumokWh ?? (r.potenciaAtiva / 1000);
+        return {
+          time: `${h}:${m}`,
+          value: r.custoReais ?? (kw * TARIFA),
+        };
+      });
+
+      const lastTimestamp = latest.timestamp
+        ? new Date(latest.timestamp).toLocaleString('pt-BR', {
+            timeZone: 'America/Sao_Paulo',
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          })
+        : '';
+
+      const latestKw = latest.consumokWh ?? (latest.potenciaAtiva / 1000);
+      const monthlyCost = +(latest.custoReais * 30).toFixed(2) || 0;
 
       const newState = {
-        powerData: power,
-        voltageData: voltage,
-        currentData: current,
-        dailyData: daily,
-        financialData: financial,
+        voltageData,
+        currentData,
+        activePowerData,
+        apparentPowerData,
+        reactivePowerData,
+        powerFactorData,
+        frequencyData,
+        powerKwData,
+        costHourData,
         voltage: latest.voltagem ?? 0,
         current: latest.corrente ?? 0,
         power: latest.potenciaAtiva ?? 0,
-        monthlyCost: monthly,
-        frequency: latest.frequencia ?? 0,
+        powerKw: latestKw,
+        costHora: latest.custoReais ?? (latestKw * TARIFA),
         powerFactor: latest.fatorPotencia ?? 0,
-        peakPowerIndex: getPeakIndex(power),
-        peakVoltageIndex: getPeakIndex(voltage),
-        peakCurrentIndex: getPeakIndex(current),
-        maxKwhIndex: getPeakIndex(daily),
-        maxCostIndex: getPeakIndex(financial),
+        frequency: latest.frequencia ?? 0,
+        lastTimestamp,
+        peakVoltageIndex: getPeakIndex(voltageData),
+        peakCurrentIndex: getPeakIndex(currentData),
+        peakPowerIndex: getPeakIndex(activePowerData),
+        peakApparentPowerIndex: getPeakIndex(apparentPowerData),
+        peakReactivePowerIndex: getPeakIndex(reactivePowerData),
+        peakPowerKwIndex: getPeakIndex(powerKwData),
+        peakCostHourIndex: getPeakIndex(costHourData),
+        monthlyCost,
+        readings: sorted,
         loading: false,
         error: null,
       };
@@ -110,15 +155,11 @@ export default function useTelemetryData(dispositivoId = 'ESP32-001') {
         error: err.message || 'Falha ao conectar com o servidor',
       });
     }
-  }, [dispositivoId]);
+  }, [dispositivoId, limite]);
 
   useEffect(() => {
     refresh();
-    intervalRef.current = setInterval(refresh, 3000);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
   }, [refresh]);
 
-  return state;
+  return { ...state, refresh };
 }

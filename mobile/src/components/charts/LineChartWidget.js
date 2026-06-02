@@ -18,13 +18,16 @@ export default function LineChartWidget({
 
   const labels = data.map((d) => d.time);
   const values = data.map((d) => d.value);
-  const peakValue = values[peakIndex];
+  const safePeakIndex = peakIndex >= 0 && peakIndex < values.length ? peakIndex : 0;
+  const peakValue = values.length > 0 ? values[safePeakIndex] : 0;
+
+  const hasHeader = title !== '';
 
   const chartData = {
     labels: labels.filter((_, i) => i % 5 === 0),
     datasets: [
       {
-        data: values,
+        data: values.length > 0 ? values : [0],
         color: () => lineColor,
         strokeWidth: 2,
       },
@@ -33,20 +36,24 @@ export default function LineChartWidget({
 
   return (
     <View style={styles.wrapper}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
-        <View style={[styles.peakBadge, { backgroundColor: `${lineColor}20` }]}>
-          <Text style={[styles.peakText, { color: lineColor }]}>
-            {peakLabel}: {peakValue}{unit}
-          </Text>
+      {hasHeader && (
+        <View style={styles.header}>
+          <Text style={styles.title}>{title}</Text>
+          {peakIndex >= 0 && (
+            <View style={[styles.peakBadge, { backgroundColor: `${lineColor}20` }]}>
+              <Text style={[styles.peakText, { color: lineColor }]}>
+                {peakLabel}: {typeof peakValue === 'number' ? peakValue.toFixed(1) : peakValue}{unit}
+              </Text>
+            </View>
+          )}
         </View>
-      </View>
+      )}
 
       <LineChart
         data={chartData}
         width={chartWidth}
         height={200}
-        yAxisSuffix={unit}
+        yAxisSuffix={unit ? ` ${unit}` : ''}
         yAxisInterval={1}
         chartConfig={{
           backgroundColor: 'transparent',
