@@ -2,10 +2,14 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { login } from "../../services/authService";
+import { useAuth } from "../../contexts/AuthContext";
 import styles from "./Login.module.css";
 
 export default function Login() {
   const navigate = useNavigate();
+  
+  const { login: loginContext } = useAuth();
+
   const [form, setForm] = useState({ email: "", senha: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,6 +25,9 @@ export default function Login() {
     setLoading(true);
     try {
       const data = await login(form.email, form.senha);
+
+      loginContext(data.token, data.usuario);
+
       navigate("/dashboard");
     } catch {
       setError("Email ou senha inválidos.");

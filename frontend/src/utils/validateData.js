@@ -5,7 +5,7 @@ const YELLOW = "color:#F59E0B;font-weight:700";
 const DIM = "color:#94A3B8";
 const RESET = "color:#E2E8F0";
 
-const FIELDS = ["voltagem", "corrente", "potenciaAtiva", "potenciaAparente", "potenciaReativa", "fatorPotencia", "frequencia", "consumokWh", "custoReais"];
+const FIELDS = ["voltagem", "corrente", "potenciaAtiva", "potenciaAparente", "potenciaReativa", "fatorPotencia", "frequencia", "potenciaKw", "custoHora", "consumokWh", "custoReais"];
 
 function pct(a, b) {
   if (!b) return "0.0";
