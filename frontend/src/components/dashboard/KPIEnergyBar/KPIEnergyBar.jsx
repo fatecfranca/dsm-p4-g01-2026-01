@@ -72,7 +72,7 @@ export default function KPIEnergyBar({ preditiva, voltageStats, loading }) {
     );
   }
 
-  const custoReal = preditiva?.custoAtualReal ?? preditiva?.custoAtual;
+  const custoReal = preditiva?.custoAtualReal;
   const previsao = preditiva?.previsaoFaturaMensal;
   const trend = preditiva?.tendenciaDeCusto;
 

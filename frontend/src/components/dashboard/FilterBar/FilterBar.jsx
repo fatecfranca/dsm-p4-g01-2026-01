@@ -70,19 +70,19 @@ export default function FilterBar({ readings, dateRange, onDateRangeChange }) {
 
   function applyPreset(key) {
     const now = new Date();
+    const today = toDateInput(now.toISOString());
     switch (key) {
       case "all":
         onDateRangeChange({ start:"", end:"" }); return;
       case "today":
-        const t = toDateInput(now.toISOString());
-        onDateRangeChange({ start:t, end:t }); return;
+        onDateRangeChange({ start:today, end:today }); return;
       case "7d": {
         const d7 = new Date(); d7.setDate(d7.getDate()-7);
-        onDateRangeChange({ start:toDateInput(d7.toISOString()), end:toDateInput(now.toISOString()) }); return;
+        onDateRangeChange({ start:toDateInput(d7.toISOString()), end:today }); return;
       }
       case "30d": {
         const d30 = new Date(); d30.setDate(d30.getDate()-30);
-        onDateRangeChange({ start:toDateInput(d30.toISOString()), end:toDateInput(now.toISOString()) }); return;
+        onDateRangeChange({ start:toDateInput(d30.toISOString()), end:today }); return;
       }
     }
   }

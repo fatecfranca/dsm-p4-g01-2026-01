@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import DashboardHeader from "../../components/dashboard/DashboardHeader/DashboardHeader";
 import KPIEnergyBar from "../../components/dashboard/KPIEnergyBar/KPIEnergyBar";
@@ -11,74 +11,63 @@ import { fetchTelemetria, fetchEstatisticas } from "../../services/telemetriaSer
 import styles from "./Dashboard.module.css";
 
 export default function Dashboard() {
-  const [telState, setTelState] = useState({ loading: true, error: null, data: [], meta: null });
-  const [estatState, setEstatState] = useState({ loading: true, data: null });
+  const [kpis, setKpis] = useState({ loading: true, error: null, data: null });
+  const [graficoLinha, setGraficoLinha] = useState({ loading: true, error: null, data: [], meta: null });
   const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [refreshing, setRefreshing] = useState(false);
-  const estatFetched = useRef(false);
 
-  const loadEstatisticas = useCallback(async () => {
-    if (estatFetched.current) return;
-    estatFetched.current = true;
+  const loadKpis = useCallback(async () => {
+    setKpis(prev => ({ ...prev, loading: true }));
     try {
-      const result = await fetchEstatisticas();
-      setEstatState({ loading: false, data: result });
-    } catch {
-      setEstatState({ loading: false, data: null });
+      const data = await fetchEstatisticas();
+      setKpis({ loading: false, error: null, data });
+    } catch (err) {
+      setKpis({ loading: false, error: err.message || "Erro ao carregar estatísticas", data: null });
     }
   }, []);
 
-  const loadTelemetria = useCallback(async ({ start, end } = {}) => {
+  const loadGraficoLinha = useCallback(async ({ start, end } = {}) => {
+    setGraficoLinha(prev => ({ ...prev, loading: true }));
     try {
-      const { data, meta } = await fetchTelemetria(undefined, 1000, start, end);
-      setTelState({ loading: false, error: null, data, meta });
+      const result = await fetchTelemetria(undefined, 1000, start, end);
+      const data = result?.history || [];
+      const meta = result?.insights || null;
+      setGraficoLinha({ loading: false, error: null, data, meta });
     } catch (err) {
       const is404 = err.message?.includes("404");
-      setTelState(prev => ({
+      setGraficoLinha(prev => ({
         loading: false,
         error: is404 ? null : (err.message || "Erro ao carregar dados"),
-        data: [],
+        data: is404 ? [] : prev.data,
         meta: is404 ? prev.meta : null,
       }));
     }
   }, []);
 
   useEffect(() => {
-    loadEstatisticas();
-    loadTelemetria();
-    const interval = setInterval(() => loadTelemetria(), 30000);
-    return () => clearInterval(interval);
-  }, [loadEstatisticas, loadTelemetria]);
+    loadKpis();
+    loadGraficoLinha();
+  }, [loadKpis, loadGraficoLinha]);
 
   useEffect(() => {
-    if (dateRange.start || dateRange.end) loadTelemetria(dateRange);
-  }, [dateRange, loadTelemetria]);
+    loadKpis();
+    if (dateRange.start || dateRange.end) loadGraficoLinha(dateRange);
+  }, [dateRange, loadKpis, loadGraficoLinha]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await loadTelemetria(dateRange.start || dateRange.end ? dateRange : undefined);
+    await Promise.all([
+      loadKpis(),
+      loadGraficoLinha(dateRange.start || dateRange.end ? dateRange : undefined),
+    ]);
     setRefreshing(false);
-  }, [loadTelemetria, dateRange]);
+  }, [loadKpis, loadGraficoLinha, dateRange]);
 
-  const { loading, error, data, meta } = telState;
-  const { loading: estatLoading, data: estatData } = estatState;
-
-  const latest = meta?.latest || {};
+  const latest = graficoLinha.meta?.latest || {};
   const lastUpdate = latest?.dataHoraBrasil || "—";
-  const status = data.length > 0 ? "online" : "offline";
+  const status = (graficoLinha.data?.length || 0) > 0 ? "online" : "offline";
 
-  const preditiva = estatData?.preditiva || meta?.preditiva || {};
-  const descritiva = {
-    ...(meta?.descritiva || {}),
-    ...(estatData?.descritiva || {}),
-  };
-  const descritivaBase = meta?.descritiva || {};
-  const estratificada = {
-    ...(meta?.estratificada || {}),
-    ...(estatData?.estratificada || {}),
-  };
-
-  if (error && !loading) {
+  if (graficoLinha.error && !graficoLinha.loading) {
     return (
       <motion.section className={styles.container} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <div className={styles.header}>
@@ -93,7 +82,7 @@ export default function Dashboard() {
             </svg>
           </span>
           <p className={styles.errorText}>Erro ao conectar com o servidor</p>
-          <span className={styles.errorDetail}>{error}</span>
+          <span className={styles.errorDetail}>{graficoLinha.error}</span>
         </div>
       </motion.section>
     );
@@ -116,18 +105,18 @@ export default function Dashboard() {
       </div>
 
       <KPIEnergyBar
-        preditiva={preditiva}
-        voltageStats={descritiva.voltagem}
-        loading={loading || estatLoading}
+        preditiva={kpis.data?.preditiva}
+        voltageStats={kpis.data?.descritiva?.voltagem}
+        loading={kpis.loading || graficoLinha.loading}
       />
 
       <FilterBar
-        readings={data}
+        readings={graficoLinha.data}
         dateRange={dateRange}
         onDateRangeChange={setDateRange}
       />
 
-      {loading ? (
+      {graficoLinha.loading ? (
         <div className={styles.chartsGrid}>
           <div className={styles.skelRow}>
             <div className={styles.skelBlock} />
@@ -140,21 +129,21 @@ export default function Dashboard() {
             <div className={styles.skelBlock} />
           </div>
         </div>
-      ) : data.length === 0 ? (
+      ) : (graficoLinha.data?.length || 0) === 0 ? (
         <div className={styles.emptyBox}>
           <p className={styles.emptyText}>Nenhuma leitura encontrada no período</p>
           <p className={styles.emptyHint}>Tente selecionar um período maior ou limpar os filtros.</p>
         </div>
       ) : (
         <div className={styles.chartsGrid}>
-          <TimeSeriesChart readings={data} delay={0} />
+          <TimeSeriesChart readings={graficoLinha.data} delay={0} />
 
           <div className={styles.chartsPair}>
-            <ShiftConsumption consumoPorTurno={estratificada.consumoPorTurno} delay={0.1} />
-            <ForecastChart preditiva={preditiva} delay={0.1} />
+            <ShiftConsumption consumoPorTurno={kpis.data?.estratificada?.consumoPorTurno} delay={0.1} />
+            <ForecastChart preditiva={kpis.data?.preditiva} delay={0.1} />
           </div>
 
-          <BoxPlotChart descritiva={descritiva} descritivaBase={descritivaBase} delay={0.2} />
+          <BoxPlotChart descritiva={kpis.data?.descritiva} delay={0.2} />
         </div>
       )}
     </motion.section>

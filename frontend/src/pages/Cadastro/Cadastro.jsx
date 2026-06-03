@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { cadastro } from "../../services/authService";
+import { useAuth } from "../../contexts/AuthContext";
 import styles from "./Cadastro.module.css";
 
 export default function Cadastro() {
   const navigate = useNavigate();
+  const { login: loginContext } = useAuth();
   const [form, setForm] = useState({
     nome: "",
     email: "",
@@ -37,9 +39,15 @@ export default function Cadastro() {
     setLoading(true);
     try {
       const data = await cadastro(form.nome, form.email, form.senha);
+      loginContext(data.token, data.usuario);
       navigate("/dashboard");
-    } catch {
-      setError("Erro ao criar conta. Tente novamente.");
+    } catch (err) {
+      const msg = err?.message || "";
+      if (msg.includes("400") || msg.includes("em uso")) {
+        setError("Este e-mail já está em uso.");
+      } else {
+        setError("Erro ao criar conta. Tente novamente.");
+      }
     } finally {
       setLoading(false);
     }

@@ -71,14 +71,13 @@ function BoxShape(props) {
   );
 }
 
-export default function BoxPlotChart({ descritiva, descritivaBase, field = "voltagem", label = "Tensão", delay = 0 }) {
+export default function BoxPlotChart({ descritiva, field = "voltagem", label = "Tensão", delay = 0 }) {
   const stats = descritiva?.[field];
-  const statsBase = descritivaBase?.[field];
   const box = stats?.boxPlot;
 
-  const min = stats?.min ?? statsBase?.min;
-  const max = stats?.max ?? statsBase?.max;
-  const domain = stats?.domain ?? statsBase?.domain;
+  const min = box?.min ?? stats?.min;
+  const max = box?.max ?? stats?.max;
+  const domain = stats?.domain;
 
   if (!stats || !box || min == null || max == null) {
     return (
