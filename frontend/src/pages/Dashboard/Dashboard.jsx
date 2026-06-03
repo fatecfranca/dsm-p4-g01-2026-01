@@ -63,8 +63,13 @@ export default function Dashboard() {
     setRefreshing(false);
   }, [loadKpis, loadGraficoLinha, dateRange]);
 
-  const latest = graficoLinha.meta?.latest || {};
-  const lastUpdate = latest?.dataHoraBrasil || "—";
+  const lastReading = graficoLinha.data?.[graficoLinha.data.length - 1];
+  const lastUpdate = lastReading?.timestamp
+    ? new Date(lastReading.timestamp).toLocaleString("pt-BR", {
+        day: "2-digit", month: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit",
+      })
+    : "—";
   const status = (graficoLinha.data?.length || 0) > 0 ? "online" : "offline";
 
   if (graficoLinha.error && !graficoLinha.loading) {
