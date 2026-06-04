@@ -5,7 +5,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import DashboardScreen from '../screens/DashboardScreen';
-import HistoryScreen from '../screens/HistoryScreen';
 import AboutScreen from '../screens/AboutScreen';
 import { colors } from '../theme/colors';
 
@@ -66,16 +65,6 @@ export default function MainTabs() {
           tabBarLabel: 'Dashboard',
           tabBarIcon: ({ focused }) => (
             <TabIcon name="grid" focused={focused} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="History"
-        component={HistoryScreen}
-        options={{
-          tabBarLabel: 'Histórico',
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="time" focused={focused} />
           ),
         }}
       />
