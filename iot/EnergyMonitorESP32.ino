@@ -202,7 +202,7 @@ void loop() {
     // Criação do JSON
     StaticJsonDocument<256> doc;
 
-    doc["dispositivoId"] = "ESP32_SALA_01";
+    doc["dispositivoId"] = "ESP32_VENTILADOR";
     doc["voltagem"] = voltagem;
     doc["corrente"] = corrente;
     doc["potenciaAtiva"] = potenciaAtiva;
