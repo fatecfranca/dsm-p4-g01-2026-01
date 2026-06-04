@@ -9,7 +9,7 @@ const INITIAL = {
   error: null,
 };
 
-export default function useEstatisticas(dispositivoId = 'ESP32-001') {
+export default function useEstatisticas(dispositivoId = 'ESP32_VENTILADOR') {
   const [state, setState] = useState(INITIAL);
   const dispositivoRef = useRef(dispositivoId);
 

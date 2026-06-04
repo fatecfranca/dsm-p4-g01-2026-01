@@ -116,11 +116,11 @@ export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
 
   const [periodo, setPeriodo] = useState('1h');
-  const [dispositivoId, setDispositivoId] = useState('ESP32-001');
+  const [dispositivoId, setDispositivoId] = useState('ESP32_VENTILADOR');
   const [tipoGrafico, setTipoGrafico] = useState('all');
   const [dataInicio, setDataInicio] = useState('');
   const [dataFim, setDataFim] = useState('');
-  const [inputDevice, setInputDevice] = useState('ESP32-001');
+  const [inputDevice, setInputDevice] = useState('ESP32_VENTILADOR');
 
   const limite = useMemo(() => getLimite(periodo), [periodo]);
 
@@ -174,7 +174,7 @@ export default function DashboardScreen() {
   };
 
   const handleDeviceSubmit = () => {
-    setDispositivoId(inputDevice.trim() || 'ESP32-001');
+    setDispositivoId(inputDevice.trim() || 'ESP32_VENTILADOR');
   };
 
   return (

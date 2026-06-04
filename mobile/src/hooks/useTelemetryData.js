@@ -55,7 +55,7 @@ const INITIAL = {
   error: null,
 };
 
-export default function useTelemetryData(dispositivoId = 'ESP32-001', limite = 100) {
+export default function useTelemetryData(dispositivoId = 'ESP32_VENTILADOR', limite = 100) {
   const [state, setState] = useState(INITIAL);
   const stateRef = useRef(state);
 
