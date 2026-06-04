@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { getEstatisticas } from '../services/telemetryService';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { getEstatisticas } from "../services/telemetryService";
 
 const INITIAL = {
   descritiva: null,
@@ -9,13 +9,17 @@ const INITIAL = {
   error: null,
 };
 
-export default function useEstatisticas(dispositivoId = 'ESP32_VENTILADOR') {
+export default function useEstatisticas(
+  dispositivoId = "ESP32_VENTILADOR",
+  dataInicio,
+  dataFim,
+) {
   const [state, setState] = useState(INITIAL);
   const dispositivoRef = useRef(dispositivoId);
 
   const refresh = useCallback(async () => {
     try {
-      const data = await getEstatisticas(dispositivoId);
+      const data = await getEstatisticas(dispositivoId, dataInicio, dataFim);
       setState({
         descritiva: data.descritiva || null,
         estratificada: data.estratificada || null,
@@ -27,16 +31,16 @@ export default function useEstatisticas(dispositivoId = 'ESP32_VENTILADOR') {
       setState((prev) => ({
         ...prev,
         loading: false,
-        error: err.message || 'Falha ao carregar estatísticas',
+        error: err.message || "Falha ao carregar estatísticas",
       }));
     }
-  }, [dispositivoId]);
+  }, [dispositivoId, dataInicio, dataFim]);
 
   useEffect(() => {
     setState(INITIAL);
     dispositivoRef.current = dispositivoId;
     refresh();
-  }, [refresh, dispositivoId]);
+  }, [refresh, dispositivoId, dataInicio, dataFim]);
 
   return { ...state, refresh };
 }

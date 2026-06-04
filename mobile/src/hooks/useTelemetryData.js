@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { getTelemetria, getTarifa } from '../services/telemetryService';
+import { useState, useEffect, useCallback, useRef } from "react";
+import { getTelemetria, getTarifa } from "../services/telemetryService";
 
 const TARIFA = getTarifa();
 
@@ -15,8 +15,8 @@ function getPeakIndex(data) {
 function buildSeries(readings, field, fallback = 0) {
   return readings.map((r) => {
     const d = new Date(r.timestamp);
-    const h = String(d.getHours()).padStart(2, '0');
-    const m = String(d.getMinutes()).padStart(2, '0');
+    const h = String(d.getHours()).padStart(2, "0");
+    const m = String(d.getMinutes()).padStart(2, "0");
     return {
       time: `${h}:${m}`,
       value: r[field] ?? fallback,
@@ -41,7 +41,7 @@ const INITIAL = {
   costHora: 0,
   powerFactor: 0,
   frequency: 0,
-  lastTimestamp: '',
+  lastTimestamp: "",
   peakVoltageIndex: 0,
   peakCurrentIndex: 0,
   peakPowerIndex: 0,
@@ -55,64 +55,57 @@ const INITIAL = {
   error: null,
 };
 
-export default function useTelemetryData(dispositivoId = 'ESP32_VENTILADOR', limite = 100) {
+export default function useTelemetryData(
+  dispositivoId = "ESP32_VENTILADOR",
+  limite = 100,
+  dataInicio,
+  dataFim,
+) {
   const [state, setState] = useState(INITIAL);
   const stateRef = useRef(state);
 
   const refresh = useCallback(async () => {
     try {
-      const response = await getTelemetria(dispositivoId, limite);
-      const readings = response.data || [];
+      const response = await getTelemetria(
+        dispositivoId,
+        limite,
+        dataInicio,
+        dataFim,
+      );
+      const readings = response.history || [];
       if (readings.length === 0) {
-        throw new Error('Nenhuma leitura disponível');
+        throw new Error("Nenhuma leitura disponível");
       }
 
       const sorted = [...readings];
       const latest = sorted[sorted.length - 1];
 
-      const voltageData = buildSeries(sorted, 'voltagem');
-      const currentData = buildSeries(sorted, 'corrente');
-      const activePowerData = buildSeries(sorted, 'potenciaAtiva');
-      const apparentPowerData = buildSeries(sorted, 'potenciaAparente');
-      const reactivePowerData = buildSeries(sorted, 'potenciaReativa');
-      const powerFactorData = buildSeries(sorted, 'fatorPotencia');
-      const frequencyData = buildSeries(sorted, 'frequencia');
+      const voltageData = buildSeries(sorted, "voltagem");
+      const currentData = buildSeries(sorted, "corrente");
+      const activePowerData = buildSeries(sorted, "potenciaAtiva");
+      const apparentPowerData = buildSeries(sorted, "potenciaAparente");
+      const reactivePowerData = buildSeries(sorted, "potenciaReativa");
+      const powerFactorData = buildSeries(sorted, "fatorPotencia");
+      const frequencyData = buildSeries(sorted, "frequencia");
 
-      const powerKwData = sorted.map((r) => {
-        const d = new Date(r.timestamp);
-        const h = String(d.getHours()).padStart(2, '0');
-        const m = String(d.getMinutes()).padStart(2, '0');
-        return {
-          time: `${h}:${m}`,
-          value: r.consumokWh ?? (r.potenciaAtiva / 1000),
-        };
-      });
-
-      const costHourData = sorted.map((r) => {
-        const d = new Date(r.timestamp);
-        const h = String(d.getHours()).padStart(2, '0');
-        const m = String(d.getMinutes()).padStart(2, '0');
-        const kw = r.consumokWh ?? (r.potenciaAtiva / 1000);
-        return {
-          time: `${h}:${m}`,
-          value: r.custoReais ?? (kw * TARIFA),
-        };
-      });
+      // MAPEAMENTO CORRIGIDO: Puxa direto das novas colunas oficiais do Prisma
+      const powerKwData = buildSeries(sorted, "potenciaKw");
+      const costHourData = buildSeries(sorted, "custoHora");
 
       const lastTimestamp = latest.timestamp
-        ? new Date(latest.timestamp).toLocaleString('pt-BR', {
-            timeZone: 'America/Sao_Paulo',
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
+        ? new Date(latest.timestamp).toLocaleString("pt-BR", {
+            timeZone: "America/Sao_Paulo",
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
           })
-        : '';
+        : "";
 
-      const latestKw = latest.consumokWh ?? (latest.potenciaAtiva / 1000);
-      const monthlyCost = +(latest.custoReais * 30).toFixed(2) || 0;
+      const latestKw = latest.potenciaKw ?? latest.potenciaAtiva / 1000;
+      const monthlyCost = +(latest.custoHora * 24 * 30).toFixed(2) || 0;
 
       const newState = {
         voltageData,
@@ -128,7 +121,7 @@ export default function useTelemetryData(dispositivoId = 'ESP32_VENTILADOR', lim
         current: latest.corrente ?? 0,
         power: latest.potenciaAtiva ?? 0,
         powerKw: latestKw,
-        costHora: latest.custoReais ?? (latestKw * TARIFA),
+        costHora: latest.custoHora ?? 0,
         powerFactor: latest.fatorPotencia ?? 0,
         frequency: latest.frequencia ?? 0,
         lastTimestamp,
@@ -152,10 +145,10 @@ export default function useTelemetryData(dispositivoId = 'ESP32_VENTILADOR', lim
       setState({
         ...prev,
         loading: false,
-        error: err.message || 'Falha ao conectar com o servidor',
+        error: err.message || "Falha ao conectar com o servidor",
       });
     }
-  }, [dispositivoId, limite]);
+  }, [dispositivoId, limite, dataInicio, dataFim]);
 
   useEffect(() => {
     refresh();
