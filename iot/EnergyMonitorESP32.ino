@@ -4,248 +4,423 @@
 #include <ArduinoJson.h>
 #include <EmonLib.h>
 
-// =========================================================
-// EcoSense - Medidor de Energia IoT
-// Projeto DSM - ESP32 + SCT-013 + ZMPT101B
-// =========================================================
 
-// ---------------------------------------------------------
-// 1. CONFIGURAÇÕES DE REDE
-// ---------------------------------------------------------
-
-// Nome da rede Wi-Fi
-const char* ssid = "SEU_WIFI";
-
-// Senha da rede Wi-Fi
-const char* password = "SUA_SENHA";
-
-// URL da API
-const char* api_url =
-"https://dsm-p4-g01-2026-01.onrender.com/api/telemetria/ingestao";
+// =====================================
+// CONFIGURAÇÃO WIFI
+// =====================================
+const char* ssid = "Rissato";
+const char* password = "253537jf";
 
 
-// ---------------------------------------------------------
-// 2. CONFIGURAÇÕES DOS SENSORES
-// ---------------------------------------------------------
+// =====================================
+// CONFIGURAÇÃO API
+// =====================================
+const char* api_url = "https://dsm-p4-g01-2026-01.onrender.com/api/telemetria/ingestao";
+const char* dispositivoId = "ESP32_VENTILADOR";
 
+
+// =====================================
+// PINOS ESP32
+// =====================================
+const int PINO_TENSAO = 34;     
+const int PINO_CORRENTE = 32;   
+
+
+// =====================================
+// SENSOR ZMPT101B
+// =====================================
 EnergyMonitor emon1;
 
-// Pino do sensor de tensão ZMPT101B
-const int PINO_TENSAO = 34;
 
-// Pino do sensor de corrente SCT-013
-const int PINO_CORRENTE = 32;
+// AJUSTADO PARA REDE 127V
+float calibracaoTensao = 154.00;
 
 
-// ---------------------------------------------------------
-// 3. CALIBRAÇÕES
-// ---------------------------------------------------------
+// =====================================
+// SENSOR ACS712 20A
+// =====================================
 
-// Calibração da corrente
-float calibracaoCorrente = 1.55;
-
-// Calibração da tensão
-float calibracaoTensao = 234.26;
+// ACS712 20A sem divisor
+float sensibilidadeACS = 0.100;
 
 
-// ---------------------------------------------------------
-// 4. FUNÇÃO DE CONEXÃO WIFI
-// ---------------------------------------------------------
-
-void conectarWiFi() {
-
-  // Verifica se já está conectado
-  if (WiFi.status() == WL_CONNECTED) {
-    return;
-  }
-
-  Serial.print("Conectando ao Wi-Fi");
-
-  WiFi.begin(ssid, password);
-
-  int tentativas = 0;
-
-  // Tenta conectar por até 20 tentativas
-  while (WiFi.status() != WL_CONNECTED && tentativas < 20) {
-
-    delay(500);
-    Serial.print(".");
-    tentativas++;
-  }
-
-  // Se conectou
-  if (WiFi.status() == WL_CONNECTED) {
-
-    Serial.println("\nWi-Fi conectado!");
-    Serial.print("IP do ESP32: ");
-    Serial.println(WiFi.localIP());
-
-  } else {
-
-    Serial.println("\nFalha ao conectar no Wi-Fi.");
-  }
-}
+// calculado automaticamente
+float offsetACS = 2.50;
 
 
-// ---------------------------------------------------------
-// 5. SETUP
-// ---------------------------------------------------------
+
+// =====================================
+// FILTROS
+// =====================================
+
+// evita tensão fantasma
+float tensaoMinima = 10.0;
+
+
+// corta ruído do ACS712 parado
+float correnteMinima = 0.050;
+
+
+
 
 void setup() {
 
-  Serial.begin(115200);
 
+  Serial.begin(115200);
   delay(1000);
 
-  Serial.println("====================================");
-  Serial.println(" EcoSense - Medidor de Energia ");
-  Serial.println("====================================");
 
-  // Conecta no Wi-Fi
-  conectarWiFi();
+  Serial.println("Iniciando ESP32...");
 
-  // Configuração do sensor de tensão
-  emon1.voltage(PINO_TENSAO, calibracaoTensao, 1.7);
 
-  // Configuração do sensor de corrente
-  emon1.current(PINO_CORRENTE, calibracaoCorrente);
+  analogReadResolution(12);
 
-  Serial.println("Sensores configurados!");
+
+
+  WiFi.begin(ssid, password);
+
+
+  Serial.print("Conectando WiFi");
+
+
+  while(WiFi.status() != WL_CONNECTED){
+
+    delay(500);
+    Serial.print(".");
+  }
+
+
+
+  Serial.println();
+  Serial.println("WiFi conectado!");
+
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
+
+
+
+
+  // inicia sensor tensão
+  emon1.voltage(
+    PINO_TENSAO,
+    calibracaoTensao,
+    1.7
+  );
+
+
+
+  delay(2000);
+
+
+
+  // calibrar ACS sem carga ligada
+  calibrarOffsetACS();
+
+
+  delay(1000);
 }
 
 
-// ---------------------------------------------------------
-// 6. LOOP PRINCIPAL
-// ---------------------------------------------------------
 
-void loop() {
 
-  // Mantém conexão Wi-Fi
-  conectarWiFi();
 
-  // Faz leitura elétrica
-  emon1.calcVI(20, 2000);
 
-  // Tensão RMS
-  float voltagem = emon1.Vrms;
+void loop(){
 
-  // Corrente RMS
-  float corrente = emon1.Irms;
 
-  // Potência ativa
-  float potenciaAtiva = emon1.realPower;
 
-  // Potência aparente
-  float potenciaAparente = voltagem * corrente;
+  // =============================
+  // TENSÃO
+  // =============================
+  emon1.calcVI(20,2000);
 
-  // Fator de potência
-  float fatorPotencia = 0;
 
-  // Evita divisão por zero
-  if (potenciaAparente > 0) {
+  float tensao = emon1.Vrms;
 
-    fatorPotencia = potenciaAtiva / potenciaAparente;
-  }
 
-  // Validação de erro matemático
-  if (isnan(fatorPotencia) || isinf(fatorPotencia)) {
 
-    fatorPotencia = 0;
+  // =============================
+  // CORRENTE
+  // =============================
+  float corrente = lerCorrenteACS();
+
+
+
+
+  if(tensao < tensaoMinima){
+
+    tensao = 0.0;
   }
 
 
-  // ---------------------------------------------------------
-  // SERIAL MONITOR
-  // ---------------------------------------------------------
 
-  Serial.println("\n========== LEITURA ==========");
+  if(corrente < correnteMinima){
 
-  Serial.print("Voltagem: ");
-  Serial.print(voltagem, 2);
+    corrente = 0.0;
+  }
+
+
+
+  float potenciaAtiva = tensao * corrente;
+
+
+
+  Serial.println("===================================");
+
+
+
+  Serial.print("Tensão: ");
+  Serial.print(tensao,2);
   Serial.println(" V");
 
+
+
   Serial.print("Corrente: ");
-  Serial.print(corrente, 4);
+  Serial.print(corrente,4);
   Serial.println(" A");
 
-  Serial.print("Potência Ativa: ");
-  Serial.print(potenciaAtiva, 2);
+
+
+  Serial.print("Potência: ");
+  Serial.print(potenciaAtiva,2);
   Serial.println(" W");
 
-  Serial.print("Potência Aparente: ");
-  Serial.print(potenciaAparente, 2);
-  Serial.println(" VA");
-
-  Serial.print("Fator de Potência: ");
-  Serial.println(fatorPotencia, 2);
 
 
-  // ---------------------------------------------------------
-  // ENVIO PARA API
-  // ---------------------------------------------------------
+  enviarParaAPI(
+    tensao,
+    corrente,
+    potenciaAtiva
+  );
 
-  if (WiFi.status() == WL_CONNECTED) {
+
+
+  delay(1000);
+}
+
+
+
+
+
+
+
+
+
+// =====================================
+// CALIBRAR ZERO ACS712
+// =====================================
+void calibrarOffsetACS(){
+
+
+
+  long soma = 0;
+
+
+  int amostras = 1000;
+
+
+
+  Serial.println("Calibrando ACS712...");
+  Serial.println("Não deixe aparelho ligado");
+
+
+
+  for(int i=0;i<amostras;i++){
+
+
+    soma += analogRead(PINO_CORRENTE);
+
+
+    delay(2);
+  }
+
+
+
+
+  float mediaADC = soma / (float)amostras;
+
+
+
+  offsetACS = mediaADC * (3.3 / 4095.0);
+
+
+
+
+  Serial.print("Offset ACS712: ");
+  Serial.print(offsetACS,4);
+  Serial.println(" V");
+
+}
+
+
+
+
+
+
+
+
+
+// =====================================
+// LER ACS712 RMS
+// =====================================
+float lerCorrenteACS(){
+
+
+
+  int amostras = 1000;
+
+
+
+  float somaQuadrados = 0;
+
+
+
+  for(int i=0;i<amostras;i++){
+
+
+
+    int adc = analogRead(PINO_CORRENTE);
+
+
+
+    float tensaoSensor = adc * (3.3 / 4095.0);
+
+
+
+    float diferenca = tensaoSensor - offsetACS;
+
+
+
+    somaQuadrados += diferenca * diferenca;
+
+
+
+
+    delayMicroseconds(500);
+
+  }
+
+
+
+
+  float tensaoRMS = sqrt(
+    somaQuadrados / amostras
+  );
+
+
+
+  float correnteRMS = tensaoRMS / sensibilidadeACS;
+
+
+
+
+  return correnteRMS;
+
+}
+
+
+
+
+
+
+
+
+
+// =====================================
+// ENVIAR PARA API
+// =====================================
+void enviarParaAPI(
+  float tensao,
+  float corrente,
+  float potenciaAtiva
+){
+
+
+
+  if(WiFi.status() == WL_CONNECTED){
+
+
 
     WiFiClientSecure client;
 
-    // Ignora certificado HTTPS
+
     client.setInsecure();
+
+
+
 
     HTTPClient http;
 
-    // Inicia conexão HTTP
-    http.begin(client, api_url);
 
-    // Header JSON
-    http.addHeader("Content-Type", "application/json");
 
-    // Criação do JSON
+    http.begin(
+      client,
+      api_url
+    );
+
+
+
+    http.addHeader(
+      "Content-Type",
+      "application/json"
+    );
+
+
+
+
     StaticJsonDocument<256> doc;
 
-    doc["dispositivoId"] = "ESP32_VENTILADOR";
-    doc["voltagem"] = voltagem;
+
+
+
+    doc["dispositivoId"] = dispositivoId;
+
+    doc["voltagem"] = tensao;
+
     doc["corrente"] = corrente;
+
     doc["potenciaAtiva"] = potenciaAtiva;
-    doc["potenciaAparente"] = potenciaAparente;
-    doc["fatorPotencia"] = fatorPotencia;
 
-    // Conversão JSON para String
-    String jsonString;
 
-    serializeJson(doc, jsonString);
 
-    Serial.println("\nJSON enviado:");
-    Serial.println(jsonString);
 
-    // Envia POST
-    int codigoResposta = http.POST(jsonString);
 
-    // Verifica resposta
-    if (codigoResposta > 0) {
+    String json;
 
-      Serial.print("Código HTTP: ");
-      Serial.println(codigoResposta);
 
-      String resposta = http.getString();
 
-      Serial.println("Resposta API:");
-      Serial.println(resposta);
+    serializeJson(
+      doc,
+      json
+    );
 
-    } else {
 
-      Serial.print("Erro HTTP: ");
 
-      Serial.println(http.errorToString(codigoResposta));
-    }
 
-    // Finaliza conexão
+    Serial.println("Enviando JSON:");
+    Serial.println(json);
+
+
+
+
+    int httpCode = http.POST(json);
+
+
+
+
+    Serial.print("Código HTTP: ");
+    Serial.println(httpCode);
+
+
+
+
+    Serial.println("Resposta API:");
+    Serial.println(http.getString());
+
+
+
     http.end();
 
-  } else {
-
-    Serial.println("Wi-Fi desconectado.");
   }
 
-  // Delay entre leituras
-  delay(5000);
 }
