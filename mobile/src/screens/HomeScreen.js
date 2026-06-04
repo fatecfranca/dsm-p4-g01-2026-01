@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Animated,
   Dimensions,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -93,6 +94,7 @@ const whyCards = [
 
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const [refreshing, setRefreshing] = useState(false);
   const {
     voltage,
     current,
@@ -101,16 +103,26 @@ export default function HomeScreen({ navigation }) {
     powerFactor,
     loading,
     error,
+    refresh,
   } = useTelemetryData();
 
   const online = !error && !loading;
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refresh();
+    setRefreshing(false);
+  };
   const costToday = monthlyCost > 0 ? `R$ ${(monthlyCost / 30).toFixed(2)}` : '---';
   const powerKW = power ? (power / 1000).toFixed(1) : '---';
   const powerUnit = power ? `${powerKW} kW` : '---';
 
   return (
     <View style={[s.container, { paddingTop: insets.top }]}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      >
         <StatusBar style="light" />
 
         {/* ===== HERO ===== */}

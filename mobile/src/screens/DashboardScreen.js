@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   TextInput,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -197,12 +198,19 @@ export default function DashboardScreen() {
     refresh: refreshStats,
   } = useEstatisticas(dispositivoId, dataInicioCalc, dataFimCalc);
 
+  const [refreshing, setRefreshing] = useState(false);
   const loading = telLoading || statsLoading;
   const error = telError;
 
   const refreshAll = () => {
     refreshTelemetry();
     refreshStats();
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await Promise.all([refreshTelemetry(), refreshStats()]);
+    setRefreshing(false);
   };
 
   /* ── Determine which charts to show ── */
@@ -237,6 +245,7 @@ export default function DashboardScreen() {
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >
         {/* ── HEADER ── */}
         <FadeInView style={styles.header}>

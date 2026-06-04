@@ -152,6 +152,8 @@ export default function useTelemetryData(
 
   useEffect(() => {
     refresh();
+    const interval = setInterval(refresh, 10000);
+    return () => clearInterval(interval);
   }, [refresh]);
 
   return { ...state, refresh };

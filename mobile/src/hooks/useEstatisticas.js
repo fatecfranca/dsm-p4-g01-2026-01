@@ -40,6 +40,8 @@ export default function useEstatisticas(
     setState(INITIAL);
     dispositivoRef.current = dispositivoId;
     refresh();
+    const interval = setInterval(refresh, 10000);
+    return () => clearInterval(interval);
   }, [refresh, dispositivoId, dataInicio, dataFim]);
 
   return { ...state, refresh };
