@@ -9,6 +9,11 @@ export async function getTelemetria(dispositivoId = 'ESP32-001', limite = 100) {
   return response.data;
 }
 
+export async function getEstatisticas(dispositivoId = 'ESP32-001') {
+  const response = await api.get(`/telemetria/estatisticas/${dispositivoId}`);
+  return response.data;
+}
+
 export function getTarifa() {
   return TARIFA_KWH;
 }

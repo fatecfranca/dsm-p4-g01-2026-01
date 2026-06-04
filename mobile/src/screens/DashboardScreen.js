@@ -14,6 +14,9 @@ import FadeInView from '../components/FadeInView';
 import KpiCard from '../components/cards/KpiCard';
 import LineChartWidget from '../components/charts/LineChartWidget';
 import useTelemetryData from '../hooks/useTelemetryData';
+import useEstatisticas from '../hooks/useEstatisticas';
+import BarChartWidget from '../components/charts/BarChartWidget';
+import InfoCard from '../components/InfoCard';
 import { colors } from '../theme/colors';
 
 /* ── Constant helpers ── */
@@ -143,6 +146,13 @@ export default function DashboardScreen() {
     error,
     refresh,
   } = useTelemetryData(dispositivoId, limite);
+
+  const {
+    descritiva: statsDescritiva,
+    estratificada: statsEstratificada,
+    preditiva: statsPreditiva,
+    loading: statsLoading,
+  } = useEstatisticas(dispositivoId);
 
   /* ── Determine which charts to show ── */
   const showChart = (chartKey) => {
@@ -523,8 +533,122 @@ export default function DashboardScreen() {
             </FadeInView>
           )}
 
+          {/* ── STATISTICS SECTION ── */}
+          {!statsLoading && statsDescritiva && (
+            <>
+              {/* Descritiva - Voltage Stats */}
+              {statsDescritiva.voltagem && (
+                <FadeInView delay={600} style={styles.statsSection}>
+                  <Text style={styles.sectionTitle}>Estatísticas de Tensão</Text>
+                  <View style={styles.statsGrid}>
+                    <InfoCard
+                      icon="stats-chart-outline"
+                      iconColor={colors.secondary}
+                      bgColor={colors.secondaryBg}
+                      label="Média"
+                      value={`${statsDescritiva.voltagem.media} V`}
+                      subtitle={`Mediana: ${statsDescritiva.voltagem.mediana} V`}
+                    />
+                    <InfoCard
+                      icon="trending-up-outline"
+                      iconColor={colors.warning}
+                      bgColor={colors.warningBg}
+                      label="Desvio Padrão"
+                      value={statsDescritiva.voltagem.desvioPadrao}
+                      unit="V"
+                      subtitle={`Moda: ${statsDescritiva.voltagem.moda || '—'} V`}
+                    />
+                  </View>
+                  {statsDescritiva.voltagem.boxPlot && (
+                    <View style={styles.statsGrid}>
+                      <InfoCard
+                        icon="stats-chart-outline"
+                        iconColor={colors.info}
+                        bgColor={colors.secondaryBg}
+                        label="Q1 (25%)"
+                        value={String(statsDescritiva.voltagem.boxPlot.q1)}
+                        unit="V"
+                      />
+                      <InfoCard
+                        icon="stats-chart-outline"
+                        iconColor={colors.purple}
+                        bgColor={colors.purpleBg}
+                        label="Q3 (75%)"
+                        value={String(statsDescritiva.voltagem.boxPlot.q3)}
+                        unit="V"
+                      />
+                    </View>
+                  )}
+                </FadeInView>
+              )}
+
+              {/* Preditiva - Forecast */}
+              {statsPreditiva && (
+                <FadeInView delay={630} style={styles.statsSection}>
+                  <Text style={styles.sectionTitle}>Previsão de Custos</Text>
+                  <View style={styles.statsGrid}>
+                    <InfoCard
+                      icon="cash-outline"
+                      iconColor={colors.success}
+                      bgColor={colors.successBg}
+                      label="Fatura Mensal Estimada"
+                      value={`R$ ${statsPreditiva.previsaoFaturaMensal || '—'}`}
+                      subtitle={`Tendência: ${statsPreditiva.tendenciaDeCusto || '—'}`}
+                    />
+                    <InfoCard
+                      icon="wallet-outline"
+                      iconColor={colors.warning}
+                      bgColor={colors.warningBg}
+                      label="Custo Atual (Real)"
+                      value={`R$ ${statsPreditiva.custoAtualReal || '—'}`}
+                      subtitle={`Amostra: ${statsPreditiva.tamanhoAmostra || '—'} leituras`}
+                    />
+                  </View>
+                  {statsPreditiva.intervaloConfianca95 && (
+                    <View style={styles.intervaloBox}>
+                      <Text style={styles.intervaloLabel}>
+                        Intervalo de Confiança (95%)
+                      </Text>
+                      <View style={styles.intervaloRow}>
+                        <View style={styles.intervaloItem}>
+                          <Text style={styles.intervaloValue}>
+                            R$ {statsPreditiva.intervaloConfianca95.minimoEsperado}
+                          </Text>
+                          <Text style={styles.intervaloDesc}>Mínimo</Text>
+                        </View>
+                        <Text style={styles.intervaloSeparator}>—</Text>
+                        <View style={styles.intervaloItem}>
+                          <Text style={styles.intervaloValue}>
+                            R$ {statsPreditiva.intervaloConfianca95.maximoEsperado}
+                          </Text>
+                          <Text style={styles.intervaloDesc}>Máximo</Text>
+                        </View>
+                      </View>
+                    </View>
+                  )}
+                </FadeInView>
+              )}
+
+              {/* Estratificada - Shift Consumption */}
+              {statsEstratificada?.consumoPorTurno && (
+                <BarChartWidget
+                  data={[
+                    { day: 'Madrugada', value: statsEstratificada.consumoPorTurno.madrugada || 0 },
+                    { day: 'Manhã', value: statsEstratificada.consumoPorTurno.manha || 0 },
+                    { day: 'Tarde', value: statsEstratificada.consumoPorTurno.tarde || 0 },
+                    { day: 'Noite', value: statsEstratificada.consumoPorTurno.noite || 0 },
+                  ]}
+                  maxIndex={-1}
+                  title="Consumo por Turno"
+                  unit=" kWh"
+                  barColor={colors.primary}
+                />
+              )}
+            </>
+          )}
+
           {/* ── FOOTER ── */}
-          <FadeInView delay={610} style={styles.footer}>
+          <FadeInView delay={640} style={styles.footer}>
             <Text style={styles.footerText}>
               EcoSense © {new Date().getFullYear()} — Monitoramento Inteligente de Energia
             </Text>
@@ -780,6 +904,61 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
     flexShrink: 1,
+  },
+
+  /* Statistics section */
+  statsSection: {
+    paddingHorizontal: 20,
+    marginTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    marginBottom: 12,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 12,
+  },
+  intervaloBox: {
+    backgroundColor: colors.surfaceLight,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 4,
+  },
+  intervaloLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+    marginBottom: 10,
+  },
+  intervaloRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  intervaloItem: {
+    alignItems: 'center',
+  },
+  intervaloValue: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  intervaloDesc: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  intervaloSeparator: {
+    fontSize: 20,
+    color: colors.textMuted,
   },
 
   /* Footer */
