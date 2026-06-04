@@ -97,6 +97,7 @@ function ToastItem({ toast, timers, onDismiss }) {
       }}
       onMouseEnter={() => { clearTimeout(timers.current[toast.id]); }}
       onMouseLeave={() => {
+        // eslint-disable-next-line react-hooks/immutability
         timers.current[toast.id] = setTimeout(onDismiss, 4000);
       }}
     >

@@ -68,7 +68,7 @@ function MinusIcon({ color }) {
 
 export default function ForecastChart({ preditiva, delay = 0 }) {
   const ic = preditiva?.intervaloConfianca95;
-  const previsaoRaw = preditiva?.previsaoFaturaMensal ?? preditiva?.custoAtual;
+  const previsaoRaw = preditiva?.previsaoFaturaMensal;
   const previsao = previsaoRaw ? parseFloat(previsaoRaw) : 0;
   const valMin = ic?.minimoEsperado ? parseFloat(ic.minimoEsperado) : previsao * 0.9;
   const valMax = ic?.maximoEsperado ? parseFloat(ic.maximoEsperado) : previsao * 1.1;

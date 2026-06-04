@@ -41,8 +41,6 @@ export default function UserMenu() {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
-  if (!user) return null;
-
   useEffect(() => {
     function handleClick(e) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -50,6 +48,8 @@ export default function UserMenu() {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
+  if (!user) return null;
 
   function handleLogout() {
     setOpen(false);

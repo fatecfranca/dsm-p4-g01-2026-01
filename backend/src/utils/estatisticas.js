@@ -4,7 +4,7 @@ export const calcularMedia = (dados) => {
 };
 
 export const calcularQuartis = (dados) => {
-  if (dados.length === 0) return { q1: 0, mediana: 0, q3: 0 };
+  if (dados.length === 0) return { min: 0, q1: 0, mediana: 0, q3: 0, max: 0 };
   const ordenados = [...dados].sort((a, b) => a - b);
 
   const mid = Math.floor(ordenados.length / 2);
@@ -14,9 +14,11 @@ export const calcularQuartis = (dados) => {
       : ordenados[mid];
 
   return {
-    q1: ordenados[Math.floor(ordenados.length * 0.25)],
-    mediana: mediana,
-    q3: ordenados[Math.floor(ordenados.length * 0.75)],
+    min: Number(ordenados[0].toFixed(2)),
+    q1: Number(ordenados[Math.floor(ordenados.length * 0.25)].toFixed(2)),
+    mediana: Number(mediana.toFixed(2)),
+    q3: Number(ordenados[Math.floor(ordenados.length * 0.75)].toFixed(2)),
+    max: Number(ordenados[ordenados.length - 1].toFixed(2)),
   };
 };
 

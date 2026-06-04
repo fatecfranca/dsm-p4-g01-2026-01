@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
 
 const AuthContext = createContext(null);
 
@@ -9,34 +9,29 @@ function getStored() {
     if (token && user) {
       return { token, user: JSON.parse(user) };
     }
-  } catch {}
+  } catch {
+    return { token: null, user: null };
+  }
   return { token: null, user: null };
 }
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(null);
-  const [user, setUser] = useState(null);
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    const stored = getStored();
-    setToken(stored.token);
-    setUser(stored.user);
-    setReady(true);
-  }, []);
+  const [{ token, user }, setAuth] = useState(() => {
+    const s = getStored();
+    return { token: s.token, user: s.user };
+  });
+  const ready = true;
 
   const login = useCallback((newToken, newUser) => {
     localStorage.setItem("token", newToken);
     localStorage.setItem("user", JSON.stringify(newUser));
-    setToken(newToken);
-    setUser(newUser);
+    setAuth({ token: newToken, user: newUser });
   }, []);
 
   const logout = useCallback(() => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    setToken(null);
-    setUser(null);
+    setAuth({ token: null, user: null });
   }, []);
 
   return (
