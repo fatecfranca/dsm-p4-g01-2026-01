@@ -22,17 +22,18 @@ export default function useDashboardData() {
   });
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [refreshing, setRefreshing] = useState(false);
-  const reqIdRef = useRef(0);
+  const kpisReqIdRef = useRef(0);
+  const graficoReqIdRef = useRef(0);
 
   const loadKpis = useCallback(async ({ start, end } = {}) => {
-    const myId = ++reqIdRef.current;
+    const myId = ++kpisReqIdRef.current;
     setKpis((prev) => ({ ...prev, loading: true }));
     try {
       const data = await fetchEstatisticas(undefined, start, end);
-      if (myId !== reqIdRef.current) return;
+      if (myId !== kpisReqIdRef.current) return;
       setKpis({ loading: false, error: null, data });
     } catch (err) {
-      if (myId !== reqIdRef.current) return;
+      if (myId !== kpisReqIdRef.current) return;
       const is404 = err?.status === 404;
       setKpis((prev) => ({
         loading: false,
@@ -43,15 +44,15 @@ export default function useDashboardData() {
   }, []);
 
   const loadGraficoLinha = useCallback(async ({ start, end } = {}) => {
-    const myId = ++reqIdRef.current;
+    const myId = ++graficoReqIdRef.current;
     setGraficoLinha((prev) => ({ ...prev, loading: true }));
     try {
       const result = await fetchTelemetria(undefined, HISTORY_LIMIT, start, end);
-      if (myId !== reqIdRef.current) return;
+      if (myId !== graficoReqIdRef.current) return;
       const data = result?.history || [];
       setGraficoLinha({ loading: false, error: null, data });
     } catch (err) {
-      if (myId !== reqIdRef.current) return;
+      if (myId !== graficoReqIdRef.current) return;
       const is404 = err?.status === 404;
       setGraficoLinha((prev) => ({
         loading: false,
