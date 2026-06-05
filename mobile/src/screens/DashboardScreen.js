@@ -110,7 +110,7 @@ export default function DashboardScreen() {
                   <ForecastChart preditiva={kpis.data?.preditiva} />
                 </View>
 
-                <BoxPlotChart descritiva={kpis.data?.descritiva} />
+                <BoxPlotChart descritiva={kpis.data?.descritiva} field="corrente" label="Corrente" />
 
                 <View style={styles.footer}>
                   <Text style={styles.footerText}>

@@ -1,551 +1,576 @@
-import React, { useRef, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Animated,
-  Dimensions,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
-import FadeInView from '../components/FadeInView';
-import PulseDot from '../components/PulseDot';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import Svg, { Path } from 'react-native-svg';
+import { colors } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
-const isSmall = width < 380;
 
-function GlowNode({ delay, style }) {
-  const anim = useRef(new Animated.Value(0)).current;
+const PROJETO_CARDS = [
+  {
+    Icon: PropIcon,
+    color: colors.success,
+    bg: 'rgba(34,197,94,0.08)',
+    title: 'Propósito',
+    text: 'Democratizar o acesso ao monitoramento energético, permitindo que qualquer pessoa acompanhe e reduza seu consumo de forma inteligente.',
+  },
+  {
+    Icon: IotIcon,
+    color: colors.secondary,
+    bg: 'rgba(59,130,246,0.08)',
+    title: 'Tecnologia IoT',
+    text: 'Sensores de corrente ACS712 20A e voltagem ZMPT101B conectados a um ESP32 enviam dados em tempo real para processamento.',
+  },
+  {
+    Icon: PulseIcon,
+    color: colors.info,
+    bg: 'rgba(6,182,212,0.08)',
+    title: 'Dados Precisos',
+    text: 'Cálculos de potência, consumo e gasto processados por uma API Node.js e armazenados no MongoDB para análise histórica.',
+  },
+  {
+    Icon: BarsIcon,
+    color: colors.warning,
+    bg: 'rgba(245,158,11,0.08)',
+    title: 'Visualização',
+    text: 'Dashboard interativo com gráficos, relatórios e alertas visuais para tomada de decisão rápida e eficiente.',
+  },
+];
 
-  useEffect(() => {
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(anim, {
-          toValue: 1,
-          duration: 1500,
-          delay,
-          useNativeDriver: true,
-        }),
-        Animated.timing(anim, {
-          toValue: 0,
-          duration: 1500,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    loop.start();
-    return () => loop.stop();
-  }, []);
+const TECHS = [
+  { abbr: 'Re', name: 'React', desc: 'Interface moderna e reativa', color: colors.info },
+  { abbr: 'No', name: 'Node.js', desc: 'API robusta e escalável', color: colors.success },
+  { abbr: 'Mo', name: 'MongoDB', desc: 'Banco de dados flexível', color: colors.success },
+  { abbr: 'ES', name: 'ESP32', desc: 'Microcontrolador IoT', color: colors.secondary },
+  { abbr: 'Io', name: 'IoT', desc: 'Sensores de corrente e tensão', color: colors.warning },
+  { abbr: 'Rc', name: 'Recharts', desc: 'Gráficos dinâmicos e interativos', color: colors.success },
+];
 
-  const glow = anim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.3, 1],
-  });
+const TEAM = [
+  { initials: 'IR', name: 'Iago Rodrigues Pinheiro', role: 'Desenvolvedor Front-end', color: colors.success },
+  { initials: 'PC', name: 'Pedro Henrique Xavier Constancio', role: 'Desenvolvedor Back-end / IoT', color: colors.secondary },
+  { initials: 'KR', name: 'Kaio Leandro Rissato', role: 'Desenvolvedor Mobile / IoT', color: colors.info },
+];
 
+function PropIcon({ color }) {
+  return <View style={[styles.projPulse, { backgroundColor: color, shadowColor: color }]} />;
+}
+
+function IotIcon({ color }) {
+  return <Text style={[styles.projIconText, { color }]}>IoT</Text>;
+}
+
+function PulseIcon({ color }) {
   return (
-    <Animated.View style={[style, { opacity: glow }]}>
-      <View style={s.nodeDotInner} />
-    </Animated.View>
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+    </Svg>
   );
 }
 
-const projectCards = [
-  {
-    icon: '\u26A1',
-    color: '#23C55E',
-    bg: 'rgba(35,197,94,0.12)',
-    title: 'Propósito',
-    desc: 'Monitorar e otimizar o consumo de energia elétrica usando ESP32 e sensores SCT-013 (corrente) e ZMPT101B (tensão).',
-  },
-  {
-    icon: '\uD83D\uDD0C',
-    color: '#3B82F6',
-    bg: 'rgba(59,130,246,0.12)',
-    title: 'Tecnologia IoT',
-    desc: 'Sensores conectados via ESP32 enviam dados para o backend Node.js + MongoDB com comunicação eficiente e confiável.',
-  },
-  {
-    icon: '\uD83D\uDCCA',
-    color: '#F59E0B',
-    bg: 'rgba(245,158,11,0.12)',
-    title: 'Dados Precisos',
-    desc: 'Coleta e armazenamento confiável de métricas elétricas para análises detalhadas do consumo de energia.',
-  },
-  {
-    icon: '\uD83D\uDCA1',
-    color: '#8B5CF6',
-    bg: 'rgba(139,92,246,0.12)',
-    title: 'Visualização',
-    desc: 'Dashboard interativo com gráficos dinâmicos e indicadores em tempo real para decisões inteligentes.',
-  },
-];
-
-const techs = [
-  { name: 'React Native', icon: '\uD83D\uDCF1', color: '#3B82F6' },
-  { name: 'Node.js', icon: '\uD83D\uDFE2', color: '#23C55E' },
-  { name: 'MongoDB', icon: '\uD83C\uDF33', color: '#1EA454' },
-  { name: 'ESP32', icon: '\uD83D\uDEE0\uFE0F', color: '#F59E0B' },
-  { name: 'IoT', icon: '\uD83C\uDF10', color: '#8B5CF6' },
-  { name: 'Gráficos', icon: '\uD83D\uDCC8', color: '#EC4899' },
-];
-
-const team = [
-  { initials: 'IR', name: 'Iago Rodrigues Pinheiro', role: 'Desenvolvedor' },
-  { initials: 'PX', name: 'Pedro Henrique Xavier Constancio', role: 'Desenvolvedor' },
-  { initials: 'KL', name: 'Kaio Leandro Rissato', role: 'Desenvolvedor' },
-];
-
-export default function AboutScreen({ navigation }) {
+function BarsIcon({ color }) {
   return (
-    <ScrollView style={s.container} showsVerticalScrollIndicator={false}>
+    <Svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round">
+      <Path d="M12 20V10" />
+      <Path d="M18 20V4" />
+      <Path d="M6 20v-4" />
+    </Svg>
+  );
+}
+
+function ProjectCard({ card }) {
+  const { Icon, color, bg, title, text } = card;
+  return (
+    <View style={styles.projetoCard}>
+      <View style={[styles.projIcon, { backgroundColor: bg }]}>
+        <Icon color={color} />
+      </View>
+      <Text style={styles.cardTitle}>{title}</Text>
+      <Text style={styles.cardText}>{text}</Text>
+    </View>
+  );
+}
+
+function TechCard({ tech }) {
+  return (
+    <View style={[styles.techCard, { borderColor: `${tech.color}25` }]}>
+      <View style={[styles.techIcon, { backgroundColor: `${tech.color}15` }]}>
+        <Text style={styles.techIconText}>{tech.abbr}</Text>
+      </View>
+      <Text style={styles.techName}>{tech.name}</Text>
+      <Text style={styles.techDesc}>{tech.desc}</Text>
+    </View>
+  );
+}
+
+function MemberCard({ member }) {
+  return (
+    <View style={styles.memberCard}>
+      <View style={[styles.memberAvatar, { borderColor: `${member.color}4D` }]}>
+        <Text style={styles.memberInitials}>{member.initials}</Text>
+        <View style={[styles.avatarGlow, { backgroundColor: member.color }]} />
+      </View>
+      <Text style={styles.memberName}>{member.name}</Text>
+      <Text style={[styles.memberRole, { color: member.color }]}>{member.role}</Text>
+      <View style={styles.memberSocial}>
+        <View style={[styles.socialDot, { backgroundColor: member.color }]} />
+        <View style={[styles.socialDot, { backgroundColor: member.color }]} />
+        <View style={[styles.socialDot, { backgroundColor: member.color }]} />
+      </View>
+    </View>
+  );
+}
+
+function SectionDivider() {
+  return <View style={styles.divider} />;
+}
+
+function HeroNetwork() {
+  return (
+    <View style={styles.networkPanel}>
+      <View style={styles.networkGrid} />
+      <View style={styles.networkGlow} />
+      <View style={[styles.netNode, { top: '20%', left: '20%', backgroundColor: colors.success }]} />
+      <View style={[styles.netNode, { top: '60%', left: '75%', backgroundColor: colors.secondary }]} />
+      <View style={[styles.netNode, { top: '75%', left: '30%', backgroundColor: colors.info }]} />
+      <View style={[styles.netNode, { top: '30%', left: '80%', backgroundColor: colors.warning }]} />
+      <View style={[styles.netNode, { top: '50%', left: '50%', width: 10, height: 10, backgroundColor: colors.success }]} />
+
+      <Svg style={StyleSheet.absoluteFill} viewBox="0 0 400 300" preserveAspectRatio="none">
+        <Path d="M 80 75 L 200 150" stroke="rgba(34,197,94,0.18)" strokeWidth={1.5} fill="none" />
+        <Path d="M 200 150 L 300 180" stroke="rgba(59,130,246,0.18)" strokeWidth={1.5} fill="none" />
+        <Path d="M 300 180 L 120 225" stroke="rgba(6,182,212,0.18)" strokeWidth={1.5} fill="none" />
+        <Path d="M 120 225 L 320 90" stroke="rgba(245,158,11,0.18)" strokeWidth={1.5} fill="none" />
+      </Svg>
+
+      <View style={styles.networkBadge}>
+        <View style={styles.badgeDot} />
+        <Text style={styles.badgeText}>IoT CONECTADO</Text>
+      </View>
+    </View>
+  );
+}
+
+export default function AboutScreen() {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar style="light" />
-
-      {/* ===== HERO ===== */}
-      <LinearGradient colors={['#0A1120', '#0F172A', '#14213D']} style={s.heroWrap}>
-        <FadeInView style={s.heroInner}>
-          <View style={s.badge}>
-            <PulseDot />
-            <Text style={s.badgeText}>IoT CONECTADO</Text>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <LinearGradient colors={['#0A1120', '#0F172A', '#14213D']} style={styles.hero}>
+          <View style={styles.heroTag}>
+            <View style={styles.heroTagDot} />
+            <Text style={styles.heroTagText}>Sobre o Projeto</Text>
           </View>
 
-          <Text style={s.heroLabel}>Sobre o Projeto</Text>
-          <Text style={s.heroTitle}>
-            Transformando dados em{'\n'}energia inteligente
+          <Text style={styles.heroTitle}>
+            Transformando dados em{'\n'}
+            <Text style={styles.heroGradient}>energia inteligente</Text>
           </Text>
-          <Text style={s.heroSub}>
-            O EcoSense é uma plataforma IoT de monitoramento energético que
-            combina sensores de corrente e tensão, microcontroladores ESP32 e
-            uma dashboard interativa para fornecer insights precisos sobre o
-            consumo de energia elétrica em tempo real.
+
+          <Text style={styles.heroSubtitle}>
+            O EcoSense nasceu para resolver um desafio real: monitorar o
+            consumo de energia de forma acessível, precisa e em tempo real
+            usando tecnologia IoT.
           </Text>
-        </FadeInView>
 
-        {/* IoT NETWORK VISUAL */}
-        <FadeInView delay={300} style={s.iotPanel}>
-          <View style={s.iotGlow} pointerEvents="none" />
-          <Text style={s.iotPanelLabel}>REDE DE SENSORES</Text>
+          <HeroNetwork />
+        </LinearGradient>
 
-          <View style={s.iotNodesWrap}>
-            <GlowNode delay={0} style={[s.iotNode, { left: '5%', top: '10%' }]} />
-            <GlowNode delay={400} style={[s.iotNodeBlue, { left: '40%', top: '0%' }]} />
-            <GlowNode delay={800} style={[s.iotNode, { left: '75%', top: '15%' }]} />
-            <GlowNode delay={1200} style={[s.iotNodeBlue, { left: '15%', top: '55%' }]} />
-            <GlowNode delay={1600} style={[s.iotNode, { left: '60%', top: '45%' }]} />
+        <SectionDivider />
 
-            <View style={[s.iotLine, { top: '20%', left: '5%', width: '35%' }]} />
-            <View style={[s.iotLineBlue, { top: '10%', left: '40%', width: '35%' }]} />
-            <View style={[s.iotLine, { top: '35%', left: '15%', width: '45%' }]} />
-            <View style={[s.iotLineBlue, { top: '30%', left: '60%', width: '15%' }]} />
-          </View>
-
-          <View style={s.iotStats}>
-            <View style={s.iotStat}>
-              <Text style={s.iotStatValue}>ESP32</Text>
-              <Text style={s.iotStatLabel}>Controlador</Text>
-            </View>
-            <View style={s.iotStat}>
-              <Text style={s.iotStatValue}>SCT-013</Text>
-              <Text style={s.iotStatLabel}>Corrente</Text>
-            </View>
-            <View style={s.iotStat}>
-              <Text style={s.iotStatValue}>ZMPT101B</Text>
-              <Text style={s.iotStatLabel}>Tensão</Text>
-            </View>
-          </View>
-        </FadeInView>
-      </LinearGradient>
-
-      {/* ===== SOBRE O PROJETO ===== */}
-      <View style={s.section}>
-        <FadeInView style={s.sectionHeader}>
-          <Text style={s.sectionTag}>Sobre o Projeto</Text>
-          <Text style={s.sectionTitle}>
-            Tecnologia a serviço da eficiência
-          </Text>
-          <Text style={s.sectionSub}>
+        <View style={styles.projeto}>
+          <Text style={styles.sectionTag}>Sobre o Projeto</Text>
+          <Text style={styles.sectionTitle}>Tecnologia a serviço da eficiência</Text>
+          <Text style={styles.sectionSubtitle}>
             Conheça os pilares que sustentam a plataforma EcoSense
           </Text>
-        </FadeInView>
 
-        <View style={s.cardsGrid}>
-          {projectCards.map((card, i) => (
-            <FadeInView key={i} delay={i * 100} style={s.card}>
-              <View style={[s.cardIcon, { backgroundColor: card.bg }]}>
-                <Text style={[s.cardIconText, { color: card.color }]}>
-                  {card.icon}
-                </Text>
-              </View>
-              <Text style={s.cardTitle}>{card.title}</Text>
-              <Text style={s.cardDesc}>{card.desc}</Text>
-            </FadeInView>
-          ))}
+          <View style={styles.projetoGrid}>
+            {PROJETO_CARDS.map((card, i) => (
+              <ProjectCard key={i} card={card} />
+            ))}
+          </View>
         </View>
-      </View>
 
-      {/* ===== TECNOLOGIAS ===== */}
-      <View style={[s.section, { backgroundColor: '#0A1120' }]}>
-        <FadeInView style={s.sectionHeader}>
-          <Text style={s.sectionTag}>Tecnologias</Text>
-          <Text style={s.sectionTitle}>Stack do Projeto</Text>
-          <Text style={s.sectionSub}>
+        <SectionDivider />
+
+        <View style={styles.techSection}>
+          <Text style={styles.sectionTag}>Tecnologias</Text>
+          <Text style={styles.sectionTitle}>Stack do Projeto</Text>
+          <Text style={styles.sectionSubtitle}>
             Ferramentas e tecnologias utilizadas no EcoSense
           </Text>
-        </FadeInView>
 
-        <View style={s.techGrid}>
-          {techs.map((tech, i) => (
-            <FadeInView key={i} delay={i * 80} style={[s.techCard, { borderColor: `${tech.color}25` }]}>
-              <View style={[s.techIcon, { backgroundColor: `${tech.color}15` }]}>
-                <Text style={s.techIconText}>{tech.icon}</Text>
-              </View>
-              <Text style={s.techName}>{tech.name}</Text>
-            </FadeInView>
-          ))}
+          <View style={styles.techGrid}>
+            {TECHS.map((tech, i) => (
+              <TechCard key={i} tech={tech} />
+            ))}
+          </View>
         </View>
-      </View>
 
-      {/* ===== EQUIPE ===== */}
-      <View style={s.section}>
-        <FadeInView style={s.sectionHeader}>
-          <Text style={s.sectionTag}>Equipe</Text>
-          <Text style={s.sectionTitle}>Quem faz o EcoSense</Text>
-          <Text style={s.sectionSub}>
+        <SectionDivider />
+
+        <View style={styles.equipe}>
+          <Text style={styles.sectionTag}>Equipe</Text>
+          <Text style={styles.sectionTitle}>Quem faz o EcoSense</Text>
+          <Text style={styles.sectionSubtitle}>
             Conheça os desenvolvedores por trás do projeto
           </Text>
-        </FadeInView>
 
-        <View style={s.teamList}>
-          {team.map((member, i) => (
-            <FadeInView key={i} delay={i * 120} style={s.teamCard}>
-              <View style={s.teamAvatar}>
-                <Text style={s.teamAvatarText}>{member.initials}</Text>
-              </View>
-              <View style={s.teamInfo}>
-                <Text style={s.teamName}>{member.name}</Text>
-                <Text style={s.teamRole}>{member.role}</Text>
-              </View>
-            </FadeInView>
-          ))}
+          <View style={styles.equipeList}>
+            {TEAM.map((member, i) => (
+              <MemberCard key={i} member={member} />
+            ))}
+          </View>
         </View>
-      </View>
 
-      {/* FOOTER */}
-      <View style={s.footer}>
-        <Text style={s.footerText}>
-          EcoSense © {new Date().getFullYear()} — Monitoramento Inteligente de Energia
-        </Text>
-      </View>
-    </ScrollView>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            EcoSense © {new Date().getFullYear()} — Monitoramento Inteligente de Energia
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
-const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0F172A',
-  },
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  scroll: { flex: 1 },
+  scrollContent: { paddingBottom: 32 },
 
-  /* HERO */
-  heroWrap: {
-    paddingTop: 50,
-    paddingBottom: 40,
+  hero: {
+    paddingTop: 32,
+    paddingBottom: 48,
     paddingHorizontal: 20,
-  },
-  heroInner: {
     alignItems: 'center',
-  },
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(35,197,94,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(35,197,94,0.25)',
-    borderRadius: 100,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    marginBottom: 20,
-    alignSelf: 'center',
-  },
-  badgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#23C55E',
-    letterSpacing: 0.5,
-  },
-  heroLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#3B82F6',
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: 8,
-  },
-  heroTitle: {
-    fontSize: isSmall ? 24 : 30,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    textAlign: 'center',
-    lineHeight: isSmall ? 32 : 40,
-    marginBottom: 14,
-  },
-  heroSub: {
-    fontSize: 14,
-    color: '#94A3B8',
-    textAlign: 'center',
-    lineHeight: 21,
-    maxWidth: 340,
-  },
-
-  /* IOT PANEL */
-  iotPanel: {
-    marginTop: 32,
-    backgroundColor: 'rgba(15,23,42,0.85)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(35,197,94,0.15)',
-    padding: 20,
     overflow: 'hidden',
   },
-  iotGlow: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  iotPanelLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#64748B',
-    letterSpacing: 1,
-    marginBottom: 16,
-  },
-  iotNodesWrap: {
-    height: 80,
-    position: 'relative',
+  heroTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 100,
+    backgroundColor: 'rgba(34,197,94,0.06)',
+    borderWidth: 1,
+    borderColor: 'rgba(34,197,94,0.25)',
     marginBottom: 20,
   },
-  iotNode: {
-    position: 'absolute',
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(35,197,94,0.15)',
-    borderWidth: 2,
-    borderColor: 'rgba(35,197,94,0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  heroTagDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.success,
   },
-  iotNodeBlue: {
-    position: 'absolute',
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(59,130,246,0.15)',
-    borderWidth: 2,
-    borderColor: 'rgba(59,130,246,0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  heroTagText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.success,
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
   },
-  nodeDotInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#23C55E',
+  heroTitle: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    textAlign: 'center',
+    lineHeight: 36,
+    letterSpacing: -0.5,
+    marginBottom: 14,
   },
-  iotLine: {
-    position: 'absolute',
-    height: 1.5,
-    backgroundColor: 'rgba(35,197,94,0.25)',
+  heroGradient: {
+    color: colors.success,
   },
-  iotLineBlue: {
-    position: 'absolute',
-    height: 1.5,
-    backgroundColor: 'rgba(59,130,246,0.25)',
-  },
-  iotStats: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  iotStat: {
-    flex: 1,
-    backgroundColor: 'rgba(15,23,42,0.5)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 10,
-    padding: 10,
-    alignItems: 'center',
-  },
-  iotStatValue: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 2,
-  },
-  iotStatLabel: {
-    fontSize: 10,
-    color: '#64748B',
+  heroSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 28,
+    maxWidth: 320,
   },
 
-  /* SECTION */
-  section: {
-    paddingHorizontal: 20,
-    paddingVertical: 48,
+  networkPanel: {
+    width: '100%',
+    height: 240,
+    backgroundColor: 'rgba(15,23,42,0.7)',
+    borderWidth: 1,
+    borderColor: 'rgba(51,65,85,0.5)',
+    borderRadius: 16,
+    position: 'relative',
+    overflow: 'hidden',
   },
-  sectionHeader: {
+  networkGrid: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.5,
+  },
+  networkGlow: {
+    position: 'absolute',
+    top: -40,
+    left: '50%',
+    marginLeft: -120,
+    width: 240,
+    height: 240,
+    backgroundColor: 'rgba(34,197,94,0.1)',
+    borderRadius: 120,
+  },
+  netNode: {
+    position: 'absolute',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  networkBadge: {
+    position: 'absolute',
+    bottom: 18,
+    left: '50%',
+    marginLeft: -60,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 28,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    backgroundColor: 'rgba(34,197,94,0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(34,197,94,0.2)',
+    borderRadius: 100,
+  },
+  badgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.success,
+  },
+  badgeText: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: colors.success,
+    letterSpacing: 1.2,
+  },
+
+  divider: {
+    height: 1,
+    marginHorizontal: 40,
+    backgroundColor: colors.border,
+    opacity: 0.4,
+  },
+
+  projeto: {
+    paddingHorizontal: 20,
+    paddingTop: 48,
+    paddingBottom: 48,
+  },
+  techSection: {
+    paddingHorizontal: 20,
+    paddingTop: 48,
+    paddingBottom: 48,
+  },
+  equipe: {
+    paddingHorizontal: 20,
+    paddingTop: 48,
+    paddingBottom: 32,
   },
   sectionTag: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#23C55E',
-    backgroundColor: 'rgba(35,197,94,0.1)',
+    alignSelf: 'center',
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.success,
+    backgroundColor: 'rgba(34,197,94,0.1)',
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 100,
     overflow: 'hidden',
     marginBottom: 12,
+    letterSpacing: 1,
   },
   sectionTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: 8,
+    letterSpacing: -0.4,
   },
-  sectionSub: {
-    fontSize: 14,
-    color: '#94A3B8',
+  sectionSubtitle: {
+    fontSize: 13,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
-    maxWidth: 300,
+    marginBottom: 28,
+    maxWidth: 320,
+    alignSelf: 'center',
   },
 
-  /* CARDS GRID */
-  cardsGrid: {
+  projetoGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 14,
+    gap: 12,
   },
-  card: {
-    width: (width - 54) / 2,
-    backgroundColor: 'rgba(30,41,59,0.4)',
+  projetoCard: {
+    width: (width - 52) / 2,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: colors.borderLight,
     borderRadius: 14,
-    padding: 18,
-    alignItems: 'center',
+    padding: 16,
   },
-  cardIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+  projIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 14,
   },
-  cardIconText: {
-    fontSize: 20,
+  projIconText: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.3,
+  },
+  projPulse: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
   },
   cardTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#FFFFFF',
-    textAlign: 'center',
+    color: colors.textPrimary,
     marginBottom: 6,
+    lineHeight: 18,
   },
-  cardDesc: {
+  cardText: {
     fontSize: 12,
-    color: '#94A3B8',
-    textAlign: 'center',
     lineHeight: 17,
+    color: colors.textSecondary,
   },
 
-  /* TECHS */
   techGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
-    justifyContent: 'center',
+    gap: 10,
+    justifyContent: 'space-between',
   },
   techCard: {
-    width: (width - 64) / 3,
-    backgroundColor: 'rgba(30,41,59,0.3)',
+    width: (width - 60) / 3,
+    backgroundColor: 'rgba(30,41,59,0.35)',
     borderWidth: 1,
-    borderRadius: 14,
-    paddingVertical: 20,
-    paddingHorizontal: 12,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 8,
     alignItems: 'center',
   },
   techIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   techIconText: {
-    fontSize: 22,
+    fontSize: 12,
+    fontWeight: '800',
+    color: colors.textPrimary,
   },
   techName: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '700',
+    color: colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  techDesc: {
+    fontSize: 9,
+    lineHeight: 12,
+    color: colors.textSecondary,
     textAlign: 'center',
   },
 
-  /* TEAM */
-  teamList: {
+  equipeList: {
     gap: 12,
   },
-  teamCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    backgroundColor: 'rgba(30,41,59,0.4)',
+  memberCard: {
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 14,
-    padding: 18,
+    borderColor: colors.borderLight,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
   },
-  teamAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(35,197,94,0.15)',
+  memberAvatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(30,41,59,0.6)',
     borderWidth: 2,
-    borderColor: 'rgba(35,197,94,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 14,
+    position: 'relative',
   },
-  teamAvatarText: {
-    fontSize: 16,
+  memberInitials: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    letterSpacing: 0.5,
+  },
+  avatarGlow: {
+    position: 'absolute',
+    top: -6,
+    left: -6,
+    right: -6,
+    bottom: -6,
+    borderRadius: 42,
+    opacity: 0.18,
+  },
+  memberName: {
+    fontSize: 14,
     fontWeight: '700',
-    color: '#23C55E',
+    color: colors.textPrimary,
+    marginBottom: 4,
+    textAlign: 'center',
   },
-  teamInfo: {
-    flex: 1,
+  memberRole: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 10,
+    textAlign: 'center',
   },
-  teamName: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    marginBottom: 2,
+  memberSocial: {
+    flexDirection: 'row',
+    gap: 6,
   },
-  teamRole: {
-    fontSize: 13,
-    color: '#94A3B8',
+  socialDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    opacity: 0.5,
   },
 
-  /* FOOTER */
   footer: {
     paddingVertical: 24,
     alignItems: 'center',
-    backgroundColor: '#080E1A',
   },
   footerText: {
-    fontSize: 12,
-    color: '#475569',
+    fontSize: 11,
+    color: colors.textInactive,
     textAlign: 'center',
     paddingHorizontal: 20,
   },
