@@ -1,6 +1,8 @@
-import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
+
+const TARIFA_KWH = 0.85;
 
 function fmt(value, decimals = 2) {
   if (value === null || value === undefined) return '—';
@@ -38,13 +40,39 @@ function Minus({ color }) {
   );
 }
 
-export default function KPIEnergyBar({ preditiva, voltageStats, loading }) {
+function Check({ color }) {
+  return (
+    <View style={{ width: 10, height: 10, alignItems: 'center', justifyContent: 'center' }}>
+      <Ionicons name="checkmark" size={10} color={color} />
+    </View>
+  );
+}
+
+function Alert({ color }) {
+  return (
+    <View style={{ width: 10, height: 10, alignItems: 'center', justifyContent: 'center' }}>
+      <Ionicons name="alert" size={10} color={color} />
+    </View>
+  );
+}
+
+export default function KPIEnergyBar({
+  preditiva,
+  voltageStats,
+  fatorPotenciaStats,
+  frequenciaStats,
+  loading,
+}) {
   if (loading) {
     return (
       <View style={styles.grid}>
         <View style={styles.topRow}>
           <SkeletonCard accent={colors.danger} />
           <SkeletonCard accent={colors.warning} />
+        </View>
+        <View style={styles.topRow}>
+          <SkeletonCard accent={colors.purple} />
+          <SkeletonCard accent={colors.info} />
         </View>
         <SkeletonCard accent={colors.primary} fullWidth />
       </View>
@@ -65,6 +93,22 @@ export default function KPIEnergyBar({ preditiva, voltageStats, loading }) {
   const moda = voltageStats?.moda != null ? parseFloat(voltageStats.moda) : null;
   const desvioAlert = media && desvio ? desvio / media > 0.05 : false;
 
+  const fpMedia = fatorPotenciaStats?.media != null
+    ? parseFloat(fatorPotenciaStats.media)
+    : null;
+  const fpEficiente = fpMedia != null && fpMedia >= 0.92;
+  const fpColor = fpEficiente ? colors.success : colors.danger;
+  const fpLabel = fpEficiente ? 'Eficiente' : 'Atenção';
+
+  const freqMedia = frequenciaStats?.media != null
+    ? parseFloat(frequenciaStats.media)
+    : null;
+  const freqEstavel = freqMedia != null && freqMedia >= 59.5 && freqMedia <= 60.5;
+  const freqColor = freqEstavel ? colors.success : colors.danger;
+  const freqLabel = freqEstavel ? 'Estável' : 'Instável';
+
+  const consumoKwh = custoReal != null ? (parseFloat(custoReal) / TARIFA_KWH).toFixed(2).replace('.', ',') : null;
+
   return (
     <View style={styles.grid}>
       <View style={styles.topRow}>
@@ -83,6 +127,11 @@ export default function KPIEnergyBar({ preditiva, voltageStats, loading }) {
                   {fmt(custoReal)}
                 </Text>
               </View>
+              {consumoKwh !== null ? (
+                <Text style={styles.subValue}>
+                  Acumulado: <Text style={styles.subValueStrong}>{consumoKwh} kWh</Text>
+                </Text>
+              ) : null}
             </View>
           </View>
         </View>
@@ -122,7 +171,76 @@ export default function KPIEnergyBar({ preditiva, voltageStats, loading }) {
         </View>
       </View>
 
-      {/* Card 3: Qualidade da Tensão (full-width) */}
+      <View style={styles.topRow}>
+        {/* Card 3: Fator de Potência */}
+        <View style={[styles.card, styles.cardHalf]}>
+          <View style={[styles.accent, { background: colors.purple }]} />
+          <View style={styles.cardBody}>
+            <View style={[styles.iconBox, { background: `${colors.purple}1A`, borderColor: `${colors.purple}33` }]}>
+              <Ionicons name="pulse-outline" size={20} color={colors.purple} />
+            </View>
+            <View style={styles.content}>
+              <Text style={styles.label}>Fator de Potência</Text>
+              <View style={styles.valueRow}>
+                <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>
+                  {fpMedia != null ? fpMedia.toFixed(2) : '—'}
+                </Text>
+              </View>
+              {fpMedia != null ? (
+                <View
+                  style={[
+                    styles.badge,
+                    {
+                      borderColor: `${fpColor}4D`,
+                      background: `${fpColor}1A`,
+                      alignSelf: 'flex-start',
+                    },
+                  ]}
+                >
+                  {fpEficiente ? <Check color={fpColor} /> : <Alert color={fpColor} />}
+                  <Text style={[styles.badgeText, { color: fpColor }]}>{fpLabel}</Text>
+                </View>
+              ) : null}
+            </View>
+          </View>
+        </View>
+
+        {/* Card 4: Frequência da Rede */}
+        <View style={[styles.card, styles.cardHalf]}>
+          <View style={[styles.accent, { background: colors.info }]} />
+          <View style={styles.cardBody}>
+            <View style={[styles.iconBox, { background: `${colors.info}1A`, borderColor: `${colors.info}33` }]}>
+              <Ionicons name="speedometer-outline" size={20} color={colors.info} />
+            </View>
+            <View style={styles.content}>
+              <Text style={styles.label}>Frequência</Text>
+              <View style={styles.valueRow}>
+                <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>
+                  {freqMedia != null ? freqMedia.toFixed(2) : '—'}
+                </Text>
+                <Text style={styles.suffix}>Hz</Text>
+              </View>
+              {freqMedia != null ? (
+                <View
+                  style={[
+                    styles.badge,
+                    {
+                      borderColor: `${freqColor}4D`,
+                      background: `${freqColor}1A`,
+                      alignSelf: 'flex-start',
+                    },
+                  ]}
+                >
+                  {freqEstavel ? <Check color={freqColor} /> : <Alert color={freqColor} />}
+                  <Text style={[styles.badgeText, { color: freqColor }]}>{freqLabel}</Text>
+                </View>
+              ) : null}
+            </View>
+          </View>
+        </View>
+      </View>
+
+      {/* Card 5: Qualidade da Tensão (full-width) */}
       <View style={[styles.card, styles.cardFull]}>
         <View style={[styles.accent, { background: colors.primary }]} />
         <View style={styles.cardBody}>
@@ -217,7 +335,18 @@ const styles = StyleSheet.create({
   },
   valueRow: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
   prefix: { fontSize: 11, fontWeight: '600', color: colors.textSecondary },
+  suffix: { fontSize: 11, fontWeight: '600', color: colors.textSecondary },
   value: { fontSize: 18, fontWeight: '800', color: colors.textPrimary, flexShrink: 1 },
+  subValue: {
+    fontSize: 10,
+    color: colors.textMuted,
+    fontWeight: '500',
+    marginTop: 4,
+  },
+  subValueStrong: {
+    color: colors.textPrimary,
+    fontWeight: '700',
+  },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',

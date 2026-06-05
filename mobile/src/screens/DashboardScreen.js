@@ -18,7 +18,9 @@ function Skeleton({ width: w, height: h, style }) {
 function SkeletonGroup() {
   return (
     <View style={styles.skeletonWrap}>
-      <Skeleton width={'100%'} height={110} style={styles.skelRow} />
+      <Skeleton width={'100%'} height={96} style={styles.skelRow} />
+      <Skeleton width={'100%'} height={96} style={styles.skelRow} />
+      <Skeleton width={'100%'} height={140} style={styles.skelRow} />
       <View style={styles.skelPair}>
         <Skeleton width={'100%'} height={260} />
         <Skeleton width={'100%'} height={260} />
@@ -47,6 +49,9 @@ export default function DashboardScreen() {
   const data = graficoLinha.data || [];
   const showCharts = !loading && !error;
 
+  const lastReading = data.length > 0 ? data[data.length - 1] : null;
+  const deviceOn = lastReading != null && Number(lastReading.potenciaKw) > 0;
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <ScrollView
@@ -55,6 +60,7 @@ export default function DashboardScreen() {
       >
         <DashboardHeader
           status={status}
+          deviceOn={showCharts ? deviceOn : null}
           lastUpdate={lastUpdate}
           refreshing={refreshing}
           onRefresh={handleRefresh}
@@ -79,6 +85,8 @@ export default function DashboardScreen() {
             <KPIEnergyBar
               preditiva={kpis.data?.preditiva}
               voltageStats={kpis.data?.descritiva?.voltagem}
+              fatorPotenciaStats={kpis.data?.descritiva?.fatorPotencia}
+              frequenciaStats={kpis.data?.descritiva?.frequencia}
               loading={loading}
             />
 

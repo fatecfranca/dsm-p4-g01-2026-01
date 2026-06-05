@@ -3,11 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 
-function StatusDot({ online }) {
+function PulsingDot({ color, pulsing }) {
   const [pulse, setPulse] = useState(0);
 
   useEffect(() => {
-    if (!online) return undefined;
+    if (!pulsing) return undefined;
     let frame;
     let start = Date.now();
     const tick = () => {
@@ -17,10 +17,10 @@ function StatusDot({ online }) {
     };
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [online]);
+  }, [pulsing]);
 
-  if (!online) {
-    return <View style={[styles.statusDot, { background: colors.danger }]} />;
+  if (!pulsing) {
+    return <View style={[styles.statusDot, { background: color }]} />;
   }
 
   return (
@@ -28,8 +28,8 @@ function StatusDot({ online }) {
       style={[
         styles.statusDot,
         {
-          background: colors.success,
-          shadowColor: colors.success,
+          background: color,
+          shadowColor: color,
           shadowOpacity: 0.4 + pulse * 0.4,
           shadowRadius: 6 + pulse * 8,
           shadowOffset: { width: 0, height: 0 },
@@ -39,7 +39,32 @@ function StatusDot({ online }) {
   );
 }
 
-export default function DashboardHeader({ status = 'offline', lastUpdate = '—', refreshing, onRefresh }) {
+function DevicePill({ deviceOn }) {
+  const color = deviceOn ? colors.success : colors.textInactive;
+  const label = deviceOn ? 'Aparelho Ligado' : 'Aparelho Desligado';
+  return (
+    <View
+      style={[
+        styles.deviceBadge,
+        {
+          background: deviceOn ? `${colors.success}14` : 'rgba(100,116,139,0.14)',
+          borderColor: deviceOn ? `${colors.success}33` : `${colors.textMuted}55`,
+        },
+      ]}
+    >
+      <PulsingDot color={color} pulsing={deviceOn} />
+      <Text style={[styles.deviceLabel, { color }]}>{label}</Text>
+    </View>
+  );
+}
+
+export default function DashboardHeader({
+  status = 'offline',
+  deviceOn = null,
+  lastUpdate = '—',
+  refreshing,
+  onRefresh,
+}) {
   const isOnline = status === 'online';
   const [now, setNow] = useState(() => new Date().toLocaleTimeString('pt-BR'));
 
@@ -58,6 +83,8 @@ export default function DashboardHeader({ status = 'offline', lastUpdate = '—'
       </View>
 
       <View style={styles.right}>
+        {deviceOn !== null ? <DevicePill deviceOn={deviceOn} /> : null}
+
         <View
           style={[
             styles.statusBadge,
@@ -67,7 +94,7 @@ export default function DashboardHeader({ status = 'offline', lastUpdate = '—'
             },
           ]}
         >
-          <StatusDot online={isOnline} />
+          <PulsingDot color={isOnline ? colors.success : colors.danger} pulsing={isOnline} />
           <Text
             style={[
               styles.statusLabel,
@@ -112,6 +139,16 @@ const styles = StyleSheet.create({
   right: { alignItems: 'flex-end', gap: 6 },
   title: { fontSize: 22, fontWeight: '800', color: colors.textPrimary, marginBottom: 4 },
   subtitle: { fontSize: 13, color: colors.textSecondary, fontWeight: '500' },
+  deviceBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 100,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  deviceLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.3 },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
