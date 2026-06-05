@@ -73,7 +73,7 @@ export default function LoginScreen({ navigation }) {
     setError('');
     try {
       await login(email, password);
-      navigation?.navigate('MainTabs');
+      navigation?.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
     } catch (err) {
       const msg = err?.data?.error || 'Erro ao fazer login. Verifique suas credenciais.';
       setError(msg);

@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textSecondary,
     fontWeight: '500',
-    marginBottom: 8,
+    marginBottom: 20,
   },
   heroButtons: {
     flexDirection: 'row',

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
@@ -33,7 +33,6 @@ function SkeletonGroup() {
 
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
   const {
     kpis,
     graficoLinha,

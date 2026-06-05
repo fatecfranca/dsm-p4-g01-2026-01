@@ -83,7 +83,7 @@ export default function RegisterScreen({ navigation }) {
     setError('');
     try {
       await cadastro(name, email, password);
-      navigation?.navigate('MainTabs');
+      navigation?.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
     } catch (err) {
       const status = err?.status;
       const msg = err?.data?.error;

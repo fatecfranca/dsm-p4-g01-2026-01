@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import AboutScreen from '../screens/AboutScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 import { colors } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
@@ -65,6 +66,16 @@ export default function MainTabs() {
           tabBarLabel: 'Dashboard',
           tabBarIcon: ({ focused }) => (
             <TabIcon name="grid" focused={focused} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Perfil"
+        component={ProfileScreen}
+        options={{
+          tabBarLabel: 'Perfil',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon name="person" focused={focused} />
           ),
         }}
       />
