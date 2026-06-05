@@ -81,7 +81,6 @@ export function AuthProvider({ children }) {
         user,
         token,
         ready,
-        loading: !ready,
         login,
         cadastro,
         logout,

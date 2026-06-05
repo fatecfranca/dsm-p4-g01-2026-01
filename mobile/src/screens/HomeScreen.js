@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,8 +6,6 @@ import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../theme/colors';
-
-const { width } = Dimensions.get('window');
 
 const DESTAQUES = [
   {
@@ -141,7 +139,9 @@ function MockupBrowser() {
 
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const { user } = useAuth();
+  const destaqueCardWidth = (width - 52) / 2;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -205,7 +205,7 @@ export default function HomeScreen({ navigation }) {
 
           <View style={styles.destaquesGrid}>
             {DESTAQUES.map((d, i) => (
-              <View key={i} style={styles.destaqueCard}>
+              <View key={i} style={[styles.destaqueCard, { width: destaqueCardWidth }]}>
                 <HighlightIcon name={d.icon} color={d.color} bg={d.bg} />
                 <Text style={styles.cardTitle}>{d.title}</Text>
                 <Text style={styles.cardText}>{d.text}</Text>
@@ -366,7 +366,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   destaqueCard: {
-    width: (width - 52) / 2,
     backgroundColor: colors.surfaceLight,
     borderWidth: 1,
     borderColor: colors.borderLight,

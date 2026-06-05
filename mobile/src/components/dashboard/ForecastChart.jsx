@@ -131,7 +131,7 @@ export default function ForecastChart({ preditiva }) {
               fill={colors.textMuted}
               textAnchor="end"
             >
-              R$ {v.toFixed(0)}
+              R$ {Math.round(v).toLocaleString('pt-BR')}
             </SvgText>
           );
         })}

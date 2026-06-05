@@ -6,7 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
   Animated,
-  Dimensions,
+  useWindowDimensions,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,14 +15,12 @@ import {
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import FadeInView from '../components/FadeInView';
 import PulseDot from '../components/PulseDot';
 import { useAuth } from '../contexts/AuthContext';
 
-const { width } = Dimensions.get('window');
-const isSmall = width < 380;
-
-function FloatingLabelInput({ label, icon, secureTextEntry, value, onChangeText }) {
+function FloatingLabelInput({ label, icon, secureTextEntry, value, onChangeText, rightAccessory }) {
   const [focused, setFocused] = useState(false);
   const borderAnim = useRef(new Animated.Value(0)).current;
 
@@ -41,7 +39,7 @@ function FloatingLabelInput({ label, icon, secureTextEntry, value, onChangeText 
 
   return (
     <Animated.View style={[s.inputWrap, { borderColor }]}>
-      <Text style={s.inputIcon}>{icon}</Text>
+      {icon}
       <TextInput
         style={s.input}
         placeholder={label}
@@ -53,14 +51,18 @@ function FloatingLabelInput({ label, icon, secureTextEntry, value, onChangeText 
         onBlur={() => setFocused(false)}
         autoCapitalize="none"
       />
+      {rightAccessory}
     </Animated.View>
   );
 }
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();
+  const { width } = useWindowDimensions();
+  const isSmall = width < 380;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -110,7 +112,7 @@ export default function LoginScreen({ navigation }) {
               <PulseDot />
               <Text style={s.badgeText}>Plataforma IoT de Monitoramento</Text>
             </View>
-            <Text style={s.title}>Acesse sua conta</Text>
+            <Text style={[s.title, { fontSize: isSmall ? 24 : 28 }]}>Acesse sua conta</Text>
             <Text style={s.subtitle}>
               Monitore seu consumo de energia em tempo real
             </Text>
@@ -120,16 +122,30 @@ export default function LoginScreen({ navigation }) {
           <FadeInView delay={300} style={s.formWrap}>
             <FloatingLabelInput
               label="Seu e-mail"
-              icon={'\u2709\uFE0F'}
+              icon={<Ionicons name="mail-outline" size={18} color="#94A3B8" />}
               value={email}
               onChangeText={setEmail}
+              keyboardType="email-address"
             />
             <FloatingLabelInput
               label="Sua senha"
-              icon={'\uD83D\uDD12'}
-              secureTextEntry
+              icon={<Ionicons name="lock-closed-outline" size={18} color="#94A3B8" />}
+              secureTextEntry={!showPassword}
               value={password}
               onChangeText={setPassword}
+              rightAccessory={
+                <TouchableOpacity
+                  onPress={() => setShowPassword((v) => !v)}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  accessibilityLabel={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
+                >
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={18}
+                    color="#94A3B8"
+                  />
+                </TouchableOpacity>
+              }
             />
 
             {error ? (
@@ -230,7 +246,6 @@ const s = StyleSheet.create({
     marginBottom: 28,
   },
   title: {
-    fontSize: isSmall ? 24 : 28,
     fontWeight: '800',
     color: '#FFFFFF',
     textAlign: 'center',
@@ -257,9 +272,6 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     height: 52,
     gap: 10,
-  },
-  inputIcon: {
-    fontSize: 16,
   },
   input: {
     flex: 1,

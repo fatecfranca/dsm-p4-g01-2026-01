@@ -160,7 +160,7 @@ export default function MiniLineChart({
     return { value, y };
   });
 
-  const xTickCount = data.multiDay ? 4 : 4;
+  const xTickCount = data.multiDay ? 5 : 4;
   const xTicks = Array.from({ length: xTickCount + 1 }, (_, i) => {
     const t = tMin + (tRange * i) / xTickCount;
     return { x: xFor(t), label: formatLabel(new Date(t).toISOString(), data.multiDay) };

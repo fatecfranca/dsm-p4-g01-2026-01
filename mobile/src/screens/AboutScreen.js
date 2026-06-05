@@ -1,12 +1,10 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Svg, { Path } from 'react-native-svg';
 import { colors } from '../theme/colors';
-
-const { width } = Dimensions.get('window');
 
 const PROJETO_CARDS = [
   {
@@ -80,10 +78,10 @@ function BarsIcon({ color }) {
   );
 }
 
-function ProjectCard({ card }) {
+function ProjectCard({ card, width: cardWidth }) {
   const { Icon, color, bg, title, text } = card;
   return (
-    <View style={styles.projetoCard}>
+    <View style={[styles.projetoCard, { width: cardWidth }]}>
       <View style={[styles.projIcon, { backgroundColor: bg }]}>
         <Icon color={color} />
       </View>
@@ -93,9 +91,9 @@ function ProjectCard({ card }) {
   );
 }
 
-function TechCard({ tech }) {
+function TechCard({ tech, width: cardWidth }) {
   return (
-    <View style={[styles.techCard, { borderColor: `${tech.color}25` }]}>
+    <View style={[styles.techCard, { width: cardWidth, borderColor: `${tech.color}25` }]}>
       <View style={[styles.techIcon, { backgroundColor: `${tech.color}15` }]}>
         <Text style={styles.techIconText}>{tech.abbr}</Text>
       </View>
@@ -155,6 +153,9 @@ function HeroNetwork() {
 
 export default function AboutScreen() {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const projetoCardWidth = (width - 52) / 2;
+  const techCardWidth = (width - 60) / 3;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -195,7 +196,7 @@ export default function AboutScreen() {
 
           <View style={styles.projetoGrid}>
             {PROJETO_CARDS.map((card, i) => (
-              <ProjectCard key={i} card={card} />
+              <ProjectCard key={i} card={card} width={projetoCardWidth} />
             ))}
           </View>
         </View>
@@ -211,7 +212,7 @@ export default function AboutScreen() {
 
           <View style={styles.techGrid}>
             {TECHS.map((tech, i) => (
-              <TechCard key={i} tech={tech} />
+              <TechCard key={i} tech={tech} width={techCardWidth} />
             ))}
           </View>
         </View>
@@ -421,7 +422,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   projetoCard: {
-    width: (width - 52) / 2,
     backgroundColor: colors.surfaceLight,
     borderWidth: 1,
     borderColor: colors.borderLight,
@@ -468,12 +468,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   techCard: {
-    width: (width - 60) / 3,
-    backgroundColor: 'rgba(30,41,59,0.35)',
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
     borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
+    padding: 14,
     alignItems: 'center',
   },
   techIcon: {
