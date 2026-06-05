@@ -1,8 +1,13 @@
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
+import { TARIFA_KWH } from '../../constants/config';
 
-const TARIFA_KWH = 0.85;
+function safeFloat(value) {
+  if (value == null) return null;
+  const n = parseFloat(value);
+  return Number.isFinite(n) ? n : null;
+}
 
 function fmt(value, decimals = 2) {
   if (value === null || value === undefined) return '—';
@@ -85,29 +90,24 @@ export default function KPIEnergyBar({
   const isIncreasing = trend === 'Aumentando';
   const trendColor = isIncreasing ? colors.danger : colors.textSecondary;
 
-  const media = voltageStats?.media != null ? parseFloat(voltageStats.media) : null;
-  const desvio = voltageStats?.desvioPadrao != null ? parseFloat(voltageStats.desvioPadrao) : null;
-  const mediana = voltageStats?.boxPlot?.mediana != null
-    ? parseFloat(voltageStats.boxPlot.mediana)
-    : voltageStats?.mediana != null ? parseFloat(voltageStats.mediana) : null;
-  const moda = voltageStats?.moda != null ? parseFloat(voltageStats.moda) : null;
-  const desvioAlert = media && desvio ? desvio / media > 0.05 : false;
+  const media = safeFloat(voltageStats?.media);
+  const desvio = safeFloat(voltageStats?.desvioPadrao);
+  const mediana = safeFloat(voltageStats?.boxPlot?.mediana) ?? safeFloat(voltageStats?.mediana);
+  const moda = safeFloat(voltageStats?.moda);
+  const desvioAlert = media != null && desvio != null ? desvio / media > 0.05 : false;
 
-  const fpMedia = fatorPotenciaStats?.media != null
-    ? parseFloat(fatorPotenciaStats.media)
-    : null;
+  const fpMedia = safeFloat(fatorPotenciaStats?.media);
   const fpEficiente = fpMedia != null && fpMedia >= 0.92;
   const fpColor = fpEficiente ? colors.success : colors.danger;
   const fpLabel = fpEficiente ? 'Eficiente' : 'Atenção';
 
-  const freqMedia = frequenciaStats?.media != null
-    ? parseFloat(frequenciaStats.media)
-    : null;
+  const freqMedia = safeFloat(frequenciaStats?.media);
   const freqEstavel = freqMedia != null && freqMedia >= 59.5 && freqMedia <= 60.5;
   const freqColor = freqEstavel ? colors.success : colors.danger;
   const freqLabel = freqEstavel ? 'Estável' : 'Instável';
 
-  const consumoKwh = custoReal != null ? (parseFloat(custoReal) / TARIFA_KWH).toFixed(2).replace('.', ',') : null;
+  const custoRealNum = safeFloat(custoReal);
+  const consumoKwh = custoRealNum != null ? (custoRealNum / TARIFA_KWH).toFixed(2).replace('.', ',') : null;
 
   return (
     <View style={styles.grid}>

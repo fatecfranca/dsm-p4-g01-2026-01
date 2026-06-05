@@ -57,11 +57,6 @@ export default function useDashboardData() {
   }, []);
 
   useEffect(() => {
-    loadKpis();
-    loadGraficoLinha();
-  }, [loadKpis, loadGraficoLinha]);
-
-  useEffect(() => {
     const params =
       dateRange.start || dateRange.end ? dateRange : undefined;
     loadKpis(params);

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { login as apiLogin, cadastro as apiCadastro } from '../services/authService';
+import { onUnauthorized } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -62,6 +63,16 @@ export function AuthProvider({ children }) {
     await clearAuth();
     setToken(null);
     setUser(null);
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onUnauthorized(() => {
+      clearAuth().finally(() => {
+        setToken(null);
+        setUser(null);
+      });
+    });
+    return unsubscribe;
   }, []);
 
   return (

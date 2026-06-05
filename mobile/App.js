@@ -8,6 +8,7 @@ import LoginScreen from './src/screens/LoginScreen';
 import RegisterScreen from './src/screens/RegisterScreen';
 import MainTabs from './src/navigation/MainTabs';
 import AnimatedSplash from './src/screens/SplashScreen';
+import ErrorBoundary from './src/components/ErrorBoundary';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -70,5 +71,9 @@ export default function App() {
     );
   }
 
-  return <AppWrapper />;
+  return (
+    <ErrorBoundary>
+      <AppWrapper />
+    </ErrorBoundary>
+  );
 }

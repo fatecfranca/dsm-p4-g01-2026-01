@@ -1,10 +1,22 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DEFAULT_REQUEST_TIMEOUT_MS } from '../constants/config';
 
 const API_BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ||
   'https://dsm-p4-g01-2026-01.onrender.com/api';
 
-const DEFAULT_TIMEOUT = 15000;
+const unauthorizedListeners = new Set();
+
+export function onUnauthorized(cb) {
+  unauthorizedListeners.add(cb);
+  return () => unauthorizedListeners.delete(cb);
+}
+
+function emitUnauthorized() {
+  unauthorizedListeners.forEach((cb) => {
+    try { cb(); } catch { /* ignore */ }
+  });
+}
 
 async function request(endpoint, options = {}) {
   const token = await AsyncStorage.getItem('token');
@@ -18,7 +30,7 @@ async function request(endpoint, options = {}) {
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT);
+  const timeoutId = setTimeout(() => controller.abort(), DEFAULT_REQUEST_TIMEOUT_MS);
 
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -36,7 +48,10 @@ async function request(endpoint, options = {}) {
       } catch {
         error.data = null;
       }
-      if (response.status !== 404) {
+      if (response.status === 401) {
+        emitUnauthorized();
+      }
+      if (__DEV__ && response.status !== 404) {
         console.error(`Falha ao chamar ${endpoint}:`, error);
       }
       throw error;
@@ -49,7 +64,9 @@ async function request(endpoint, options = {}) {
       timeoutError.status = 0;
       throw timeoutError;
     }
-    console.error(`Falha ao chamar ${endpoint}:`, error);
+    if (error.name !== 'AbortError' && __DEV__) {
+      console.error(`Falha ao chamar ${endpoint}:`, error);
+    }
     throw error;
   }
 }
