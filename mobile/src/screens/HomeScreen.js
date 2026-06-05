@@ -1,350 +1,71 @@
-import React, { useRef, useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  Animated,
-  Dimensions,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import FadeInView from '../components/FadeInView';
-import PulseDot from '../components/PulseDot';
-import InfoCard from '../components/InfoCard';
-import StatusBadge from '../components/StatusBadge';
 import { colors } from '../theme/colors';
-import useTelemetryData from '../hooks/useTelemetryData';
-
-const { width } = Dimensions.get('window');
-const isSmall = width < 380;
-const cardWidth = (width - 52) / 2;
-
-function PressScaleButton({ children, onPress, style }) {
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-
-  const handlePressIn = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 0.96,
-      useNativeDriver: true,
-      speed: 50,
-      bounciness: 4,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scaleAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: 50,
-      bounciness: 4,
-    }).start();
-  };
-
-  return (
-    <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, style]}>
-      <TouchableOpacity
-        onPress={onPress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        activeOpacity={0.9}
-      >
-        {children}
-      </TouchableOpacity>
-    </Animated.View>
-  );
-}
-
-const whyCards = [
-  {
-    icon: '\u26A1',
-    color: colors.primary,
-    bg: colors.successBg,
-    title: 'Monitoramento em Tempo Real',
-    desc: 'Acompanhe o consumo de energia elétrica instantaneamente com dados atualizados a cada segundo.',
-  },
-  {
-    icon: '\uD83D\uDCCA',
-    color: colors.secondary,
-    bg: colors.secondaryBg,
-    title: 'Análise de Consumo',
-    desc: 'Visualize gráficos detalhados e relatórios inteligentes sobre o uso de energia.',
-  },
-  {
-    icon: '\uD83D\uDD14',
-    color: colors.warning,
-    bg: colors.warningBg,
-    title: 'Alertas Inteligentes',
-    desc: 'Receba notificações quando o consumo ultrapassar limites pré-definidos.',
-  },
-  {
-    icon: '\uD83C\uDF31',
-    color: colors.purple,
-    bg: colors.purpleBg,
-    title: 'Eficiência Energética',
-    desc: 'Identifique desperdícios e receba sugestões para reduzir sua conta de luz.',
-  },
-];
+import { useAuth } from '../contexts/AuthContext';
 
 export default function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
-  const [refreshing, setRefreshing] = useState(false);
-  const {
-    voltage,
-    current,
-    power,
-    monthlyCost,
-    powerFactor,
-    loading,
-    error,
-    refresh,
-  } = useTelemetryData();
-
-  const online = !error && !loading;
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await refresh();
-    setRefreshing(false);
-  };
-  const costToday = monthlyCost > 0 ? `R$ ${(monthlyCost / 30).toFixed(2)}` : '---';
-  const powerKW = power ? (power / 1000).toFixed(1) : '---';
-  const powerUnit = power ? `${powerKW} kW` : '---';
+  const { user } = useAuth();
 
   return (
-    <View style={[s.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <StatusBar style="light" />
       <ScrollView
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >
-        <StatusBar style="light" />
-
-        {/* ===== HERO ===== */}
-        <LinearGradient colors={['#0A1120', '#0F172A', '#14213D']} style={s.heroWrap}>
-          <FadeInView style={s.heroInner}>
-            <Image
-              source={require('../../assets/logo.png')}
-              style={s.heroLogo}
-              resizeMode="contain"
-            />
-
-            <View style={s.badge}>
-              <PulseDot />
-              <Text style={s.badgeText}>Plataforma IoT de Monitoramento</Text>
+        <LinearGradient
+          colors={['#0A1120', '#0F172A', '#14213D']}
+          style={styles.hero}
+        >
+          <View style={styles.heroInner}>
+            <View style={styles.badge}>
+              <View style={styles.dot} />
+              <Text style={styles.badgeText}>Plataforma IoT de Monitoramento</Text>
             </View>
 
-            <Text style={s.heroTitle}>
+            <Text style={styles.heroTitle}>
               Eficiência Energética em{'\n'}
-              <Text style={s.heroGradient}>tempo real</Text>
+              <Text style={styles.heroGradient}>tempo real</Text>
             </Text>
 
-            <Text style={s.heroSub}>
-              Monitore o consumo de energia da sua residência ou empresa com sensores IoT inteligentes.
+            <Text style={styles.heroSub}>
+              Monitore o consumo de energia da sua residência ou empresa com
+              sensores IoT inteligentes.
             </Text>
 
-            {/* CTA Button */}
-            <PressScaleButton onPress={() => navigation?.navigate('Dashboard')}>
+            {user?.nome ? (
+              <Text style={styles.welcome}>Olá, {user.nome.split(' ')[0]}</Text>
+            ) : null}
+
+            <TouchableOpacity
+              style={styles.cta}
+              onPress={() => navigation?.navigate('Dashboard')}
+              activeOpacity={0.8}
+            >
               <LinearGradient
                 colors={['#23C55E', '#1EA34D']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={s.ctaButton}
+                style={styles.ctaGradient}
               >
-                <Ionicons name="rocket-outline" size={20} color="#FFFFFF" />
-                <Text style={s.ctaButtonText}>Explorar Dashboard</Text>
-                <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+                <Ionicons name="grid-outline" size={18} color="#FFFFFF" />
+                <Text style={styles.ctaText}>Acessar Dashboard</Text>
+                <Ionicons name="arrow-forward" size={16} color="#FFFFFF" />
               </LinearGradient>
-            </PressScaleButton>
-            <Text style={s.ctaDesc}>Acompanhe métricas energéticas em tempo real</Text>
-          </FadeInView>
+            </TouchableOpacity>
 
-          {/* MONITORING PANEL */}
-          <FadeInView delay={300} style={s.panel}>
-            <View style={s.panelGlow} pointerEvents="none" />
-            <Text style={s.panelTitle}>Monitoramento ao Vivo</Text>
-
-            {loading ? (
-              <ActivityIndicator color={colors.primary} style={{ marginTop: 20 }} />
-            ) : error ? (
-              <Text style={s.panelError}>{error}</Text>
-            ) : (
-              <View style={s.metricsGrid}>
-                <FadeInView delay={400} style={{ width: cardWidth }}>
-                  <InfoCard
-                    icon="flash"
-                    iconColor={colors.warning}
-                    bgColor={colors.warningBg}
-                    label="Tensão"
-                    value={`${voltage} V`}
-                    subtitle="Rede elétrica"
-                    subtitleColor={colors.textSecondary}
-                  />
-                </FadeInView>
-                <FadeInView delay={460} style={{ width: cardWidth }}>
-                  <InfoCard
-                    icon="speedometer-outline"
-                    iconColor={colors.purple}
-                    bgColor={colors.purpleBg}
-                    label="Corrente"
-                    value={`${current} A`}
-                    subtitle="Carga atual"
-                    subtitleColor={colors.textSecondary}
-                  />
-                </FadeInView>
-                <FadeInView delay={520} style={{ width: cardWidth }}>
-                  <InfoCard
-                    icon="flash-outline"
-                    iconColor={colors.secondary}
-                    bgColor={colors.secondaryBg}
-                    label="Potência"
-                    value={powerUnit}
-                    subtitle="Demanda atual"
-                    subtitleColor={colors.textSecondary}
-                  />
-                </FadeInView>
-                <FadeInView delay={580} style={{ width: cardWidth }}>
-                  <InfoCard
-                    icon="pulse-outline"
-                    iconColor={colors.primary}
-                    bgColor={colors.successBg}
-                    label="Fator Potência"
-                    value={powerFactor ? powerFactor.toFixed(2) : '---'}
-                    subtitle="Qualidade"
-                    subtitleColor={powerFactor >= 0.92 ? colors.success : colors.danger}
-                  />
-                </FadeInView>
-              </View>
-            )}
-          </FadeInView>
+            <Text style={styles.ctaDesc}>
+              Acompanhe métricas energéticas em tempo real
+            </Text>
+          </View>
         </LinearGradient>
 
-        {/* ===== SYSTEM STATUS ===== */}
-        <View style={s.statusSection}>
-          <FadeInView>
-            <Text style={s.sectionTag}>Status do Sistema</Text>
-          </FadeInView>
-
-          <FadeInView delay={100} style={s.statusCard}>
-            <View style={s.statusHeader}>
-              <StatusBadge online={online} label={online ? 'Sistema Online' : 'Sem conexão'} />
-            </View>
-
-            <View style={s.statusRow}>
-              <Ionicons name="hardware-chip-outline" size={16} color={colors.textMuted} />
-              <Text style={s.statusLabel}>Conexão ESP32</Text>
-              <View style={s.statusIndicator}>
-                <PulseDot size={6} color={online ? colors.success : colors.danger} />
-                <Text style={s.statusValue}>{online ? 'Conectado' : 'Desconectado'}</Text>
-              </View>
-            </View>
-
-            <View style={s.statusRow}>
-              <Ionicons name="cloud-outline" size={16} color={colors.textMuted} />
-              <Text style={s.statusLabel}>API</Text>
-              <View style={s.statusIndicator}>
-                <PulseDot size={6} color={online ? colors.success : colors.danger} />
-                <Text style={s.statusValue}>{online ? 'Online' : 'Offline'}</Text>
-              </View>
-            </View>
-          </FadeInView>
-        </View>
-
-        {/* ===== ENERGY SAVINGS ===== */}
-        <View style={s.savingsSection}>
-          <FadeInView>
-            <Text style={s.sectionTag}>Resumo Financeiro</Text>
-          </FadeInView>
-
-          <FadeInView delay={100} style={s.savingsCard}>
-            <View style={s.savingsHeader}>
-              <View style={s.savingsIconBox}>
-                <Ionicons name="wallet-outline" size={24} color={colors.success} />
-              </View>
-              <View style={s.savingsHeaderText}>
-                <Text style={s.savingsValue}>{costToday}</Text>
-                <Text style={s.savingsLabel}>Custo estimado hoje</Text>
-              </View>
-            </View>
-
-            {online && (
-              <>
-                <View style={s.savingsDivider} />
-
-                <View style={s.savingsRow}>
-                  <Ionicons name="flash-outline" size={18} color={colors.warning} />
-                  <Text style={s.savingsRowText}>
-                    Consumo atual: <Text style={{ color: colors.warning }}>{power} W</Text>
-                  </Text>
-                </View>
-
-                <View style={s.savingsRow}>
-                  <Ionicons name="flag-outline" size={18} color={colors.primary} />
-                  <Text style={s.savingsRowText}>
-                    Projeção mensal: <Text style={{ color: colors.primary }}>R$ {monthlyCost.toFixed(2)}</Text>
-                  </Text>
-                </View>
-              </>
-            )}
-          </FadeInView>
-        </View>
-
-        {/* ===== WHY ECOSENSE ===== */}
-        <View style={s.whySection}>
-          <FadeInView style={s.sectionCenter}>
-            <Text style={s.sectionTag}>Por que EcoSense?</Text>
-            <Text style={s.sectionTitle}>Tecnologia inteligente para sua economia</Text>
-            <Text style={s.sectionSub}>
-              Nossa plataforma combina sensores IoT, análise de dados e alertas para transformar a forma como você consome energia.
-            </Text>
-          </FadeInView>
-
-          <View style={s.cardsGrid}>
-            {whyCards.map((card, i) => (
-              <FadeInView key={i} delay={i * 100} style={s.whyCard}>
-                <View style={[s.whyCardIcon, { backgroundColor: card.bg }]}>
-                  <Text style={[s.whyCardIconText, { color: card.color }]}>{card.icon}</Text>
-                </View>
-                <Text style={s.whyCardTitle}>{card.title}</Text>
-                <Text style={s.whyCardDesc}>{card.desc}</Text>
-              </FadeInView>
-            ))}
-          </View>
-        </View>
-
-        {/* ===== DASHBOARD CTA ===== */}
-        <View style={s.ctaSection}>
-          <PressScaleButton onPress={() => navigation?.navigate('Dashboard')}>
-            <LinearGradient
-              colors={['rgba(35,197,94,0.15)', 'rgba(59,130,246,0.08)']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={s.ctaCard}
-            >
-              <View style={s.ctaCardGlow} pointerEvents="none" />
-              <View style={s.ctaIconBox}>
-                <Ionicons name="grid-outline" size={32} color={colors.primary} />
-              </View>
-              <Text style={s.ctaCardTitle}>Dashboard Completo</Text>
-              <Text style={s.ctaCardDesc}>
-                Acompanhe métricas energéticas em tempo real com gráficos e indicadores
-              </Text>
-              <View style={s.ctaCardAction}>
-                <Text style={s.ctaCardActionText}>Acessar Dashboard</Text>
-                <Ionicons name="arrow-forward-circle" size={20} color={colors.primary} />
-              </View>
-            </LinearGradient>
-          </PressScaleButton>
-        </View>
-
-        {/* ===== FOOTER ===== */}
-        <View style={s.footer}>
-          <Text style={s.footerText}>
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
             EcoSense © {new Date().getFullYear()} — Monitoramento Inteligente de Energia
           </Text>
         </View>
@@ -353,37 +74,32 @@ export default function HomeScreen({ navigation }) {
   );
 }
 
-const s = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  scrollContent: { flexGrow: 1, justifyContent: 'space-between' },
+  hero: {
+    paddingTop: 48,
+    paddingBottom: 64,
+    paddingHorizontal: 24,
   },
-
-  /* HERO */
-  heroWrap: {
-    paddingTop: 40,
-    paddingBottom: 40,
-    paddingHorizontal: 20,
-  },
-  heroInner: {
-    alignItems: 'center',
-  },
-  heroLogo: {
-    width: 80,
-    height: 56,
-    marginBottom: 16,
-  },
+  heroInner: { alignItems: 'center' },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: colors.secondaryBg,
+    backgroundColor: `${colors.secondary}1F`,
     borderWidth: 1,
-    borderColor: 'rgba(59,130,246,0.25)',
+    borderColor: `${colors.secondary}40`,
     borderRadius: 100,
     paddingHorizontal: 14,
     paddingVertical: 6,
     marginBottom: 20,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
   },
   badgeText: {
     fontSize: 11,
@@ -392,41 +108,47 @@ const s = StyleSheet.create({
     letterSpacing: 0.3,
   },
   heroTitle: {
-    fontSize: isSmall ? 26 : 32,
+    fontSize: 28,
     fontWeight: '800',
     color: colors.textPrimary,
     textAlign: 'center',
-    lineHeight: isSmall ? 34 : 42,
+    lineHeight: 36,
     marginBottom: 14,
   },
-  heroGradient: {
-    color: colors.primary,
-  },
+  heroGradient: { color: colors.primary },
   heroSub: {
     fontSize: 14,
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
-    marginBottom: 24,
     maxWidth: 320,
+    marginBottom: 16,
   },
-
-  /* CTA HERO BUTTON */
-  ctaButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+  welcome: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  cta: {
     borderRadius: 14,
+    overflow: 'hidden',
+    marginTop: 4,
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 16,
     elevation: 8,
   },
-  ctaButtonText: {
+  ctaGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+  },
+  ctaText: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: '700',
@@ -436,291 +158,13 @@ const s = StyleSheet.create({
     color: colors.textMuted,
     textAlign: 'center',
     marginTop: 12,
-    letterSpacing: 0.2,
   },
-
-  /* PANEL */
-  panel: {
-    marginTop: 32,
-    backgroundColor: 'rgba(15,23,42,0.85)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.borderBlue,
-    padding: 20,
-    overflow: 'hidden',
-  },
-  panelGlow: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'transparent',
-  },
-  panelTitle: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.textMuted,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-    marginBottom: 16,
-  },
-  panelError: {
-    fontSize: 13,
-    color: colors.danger,
-    textAlign: 'center',
-    paddingVertical: 20,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-
-  /* STATUS */
-  statusSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 28,
-    backgroundColor: colors.backgroundAlt,
-  },
-  statusCard: {
-    backgroundColor: colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    borderRadius: 16,
-    padding: 18,
-    gap: 14,
-  },
-  statusHeader: {
-    marginBottom: 4,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  statusLabel: {
-    flex: 1,
-    fontSize: 13,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  statusValue: {
-    fontSize: 13,
-    color: colors.textPrimary,
-    fontWeight: '600',
-  },
-  statusIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-
-  /* SAVINGS */
-  savingsSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 28,
-  },
-  savingsCard: {
-    backgroundColor: colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    borderRadius: 16,
-    padding: 18,
-  },
-  savingsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  savingsIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: colors.successBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  savingsHeaderText: {
-    flex: 1,
-  },
-  savingsValue: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.textPrimary,
-  },
-  savingsLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  savingsDivider: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginVertical: 14,
-  },
-  savingsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 10,
-  },
-  savingsRowText: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  progressTrack: {
-    height: 8,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderRadius: 6,
-    overflow: 'hidden',
-    marginTop: 6,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 6,
-    backgroundColor: colors.primary,
-  },
-  progressLabel: {
-    fontSize: 11,
-    color: colors.textMuted,
-    marginTop: 6,
-    fontWeight: '500',
-  },
-
-  /* WHY */
-  whySection: {
-    paddingHorizontal: 20,
-    paddingVertical: 48,
-    backgroundColor: colors.backgroundAlt,
-  },
-  sectionCenter: {
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  sectionTag: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: colors.primary,
-    backgroundColor: colors.successBg,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 100,
-    overflow: 'hidden',
-    marginBottom: 12,
-    alignSelf: 'flex-start',
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  sectionSub: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-    maxWidth: 320,
-  },
-  cardsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 14,
-  },
-  whyCard: {
-    width: (width - 54) / 2,
-    backgroundColor: colors.surfaceLight,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    borderRadius: 14,
-    padding: 18,
-    alignItems: 'center',
-  },
-  whyCardIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
-  },
-  whyCardIconText: {
-    fontSize: 20,
-  },
-  whyCardTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.textPrimary,
-    textAlign: 'center',
-    marginBottom: 6,
-  },
-  whyCardDesc: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 17,
-  },
-
-  /* DASHBOARD CTA */
-  ctaSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 40,
-  },
-  ctaCard: {
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(35,197,94,0.2)',
-    padding: 28,
-    alignItems: 'center',
-    overflow: 'hidden',
-  },
-  ctaCardGlow: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'transparent',
-  },
-  ctaIconBox: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    backgroundColor: colors.successBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 16,
-  },
-  ctaCardTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  ctaCardDesc: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 18,
-    marginBottom: 20,
-    maxWidth: 280,
-  },
-  ctaCardAction: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  ctaCardActionText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.primary,
-  },
-
-  /* FOOTER */
   footer: {
     paddingVertical: 24,
     alignItems: 'center',
-    backgroundColor: '#080E1A',
   },
   footerText: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textInactive,
     textAlign: 'center',
     paddingHorizontal: 20,
