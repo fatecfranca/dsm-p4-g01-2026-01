@@ -58,7 +58,7 @@ function FloatingLabelInput({ label, icon, secureTextEntry, value, onChangeText,
 }
 
 export default function RegisterScreen({ navigation }) {
-  const { login, cadastro } = useAuth();
+  const { cadastro } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -83,11 +83,12 @@ export default function RegisterScreen({ navigation }) {
     setError('');
     try {
       await cadastro(name, email, password);
-      await login(email, password);
       navigation?.navigate('MainTabs');
     } catch (err) {
-      if (err.response?.status === 400) {
-        setError(err.response.data.error || 'Erro ao criar conta.');
+      const status = err?.status;
+      const msg = err?.data?.error;
+      if (status === 400) {
+        setError(msg || 'Erro ao criar conta.');
       } else {
         setError('Erro ao criar conta. Tente novamente.');
       }

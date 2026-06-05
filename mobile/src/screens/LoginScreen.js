@@ -75,7 +75,7 @@ export default function LoginScreen({ navigation }) {
       await login(email, password);
       navigation?.navigate('MainTabs');
     } catch (err) {
-      const msg = err.response?.data?.error || 'Erro ao fazer login. Verifique suas credenciais.';
+      const msg = err?.data?.error || 'Erro ao fazer login. Verifique suas credenciais.';
       setError(msg);
     } finally {
       setLoading(false);

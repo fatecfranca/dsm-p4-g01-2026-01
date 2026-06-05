@@ -15,9 +15,9 @@ SplashScreen.preventAutoHideAsync()
 const Stack = createNativeStackNavigator()
 
 function MainApp() {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, ready } = useAuth()
 
-  if (loading) return null
+  if (!ready) return null
 
   return (
     <SafeAreaProvider>
@@ -49,14 +49,10 @@ export default function App() {
   const [showApp, setShowApp] = useState(false)
 
   useEffect(() => {
-    async function prepare() {
-      if (fontsLoaded) {
-        await SplashScreen.hideAsync()
-        await new Promise((resolve) => setTimeout(resolve, 2500))
-        setAppIsReady(true)
-      }
+    if (fontsLoaded) {
+      SplashScreen.hideAsync()
+      setAppIsReady(true)
     }
-    prepare()
   }, [fontsLoaded])
 
   if (!showApp) {
