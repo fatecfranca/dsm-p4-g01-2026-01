@@ -36,6 +36,9 @@ async function request(endpoint, options = {}) {
       } catch {
         error.data = null;
       }
+      if (response.status !== 404) {
+        console.error(`Falha ao chamar ${endpoint}:`, error);
+      }
       throw error;
     }
     return await response.json();
