@@ -4,7 +4,7 @@ import Svg, { Defs, LinearGradient, Stop, Polygon, Polyline, Line, Text as SvgTe
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 
-const PADDING = { top: 24, right: 16, bottom: 28, left: 16 };
+const PADDING = { top: 24, right: 16, bottom: 28, left: 40 };
 const CHART_HEIGHT = 200;
 
 function formatBRL(value) {
@@ -125,7 +125,7 @@ export default function ForecastChart({ preditiva }) {
           return (
             <SvgText
               key={`y-tick-${i}`}
-              x={PADDING.left + chartWidth - 2}
+              x={PADDING.left - 4}
               y={y + 3}
               fontSize={9}
               fill={colors.textMuted}

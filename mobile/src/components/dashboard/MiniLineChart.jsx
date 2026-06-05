@@ -12,7 +12,7 @@ import Svg, {
 } from 'react-native-svg';
 import { colors } from '../../theme/colors';
 
-const PADDING = { top: 24, right: 16, bottom: 36, left: 16 };
+const PADDING = { top: 24, right: 16, bottom: 36, left: 40 };
 const CHART_HEIGHT = 180;
 const MAX_POINTS = 32;
 
@@ -211,7 +211,7 @@ export default function MiniLineChart({
         {ticks.map((t, i) => (
           <SvgText
             key={`y-tick-${i}`}
-            x={PADDING.left + chartWidth - 4}
+            x={PADDING.left - 4}
             y={t.y + 3}
             fontSize={9}
             fill={colors.textMuted}

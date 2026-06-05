@@ -7,7 +7,6 @@ const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', '
 
 const PRESETS = [
   { key: 'all', label: 'Todas' },
-  { key: 'today', label: 'Hoje' },
   { key: '7d', label: '7 dias' },
   { key: '30d', label: '30 dias' },
 ];
@@ -46,7 +45,6 @@ export default function FilterBar({ readings, dateRange, onDateRangeChange }) {
     if (!isCustom) return 'all';
     const now = new Date();
     const s = toDateInput(now.toISOString());
-    if (dateRange.start === s && dateRange.end === s) return 'today';
     const d7 = new Date();
     d7.setDate(d7.getDate() - 7);
     if (dateRange.start === toDateInput(d7.toISOString()) && dateRange.end === s) return '7d';
@@ -62,9 +60,6 @@ export default function FilterBar({ readings, dateRange, onDateRangeChange }) {
     switch (key) {
       case 'all':
         onDateRangeChange({ start: '', end: '' });
-        return;
-      case 'today':
-        onDateRangeChange({ start: t, end: t });
         return;
       case '7d': {
         const d7 = new Date();
