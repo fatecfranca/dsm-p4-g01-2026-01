@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { getEstatisticas } from "../services/telemetryService";
 
 const INITIAL = {
@@ -36,13 +37,15 @@ export default function useEstatisticas(
     }
   }, [dispositivoId, dataInicio, dataFim]);
 
-  useEffect(() => {
-    setState(INITIAL);
-    dispositivoRef.current = dispositivoId;
-    refresh();
-    const interval = setInterval(refresh, 10000);
-    return () => clearInterval(interval);
-  }, [refresh, dispositivoId, dataInicio, dataFim]);
+  useFocusEffect(
+    useCallback(() => {
+      setState(INITIAL);
+      dispositivoRef.current = dispositivoId;
+      refresh();
+      const interval = setInterval(refresh, 30000);
+      return () => clearInterval(interval);
+    }, [refresh, dispositivoId, dataInicio, dataFim]),
+  );
 
   return { ...state, refresh };
 }
