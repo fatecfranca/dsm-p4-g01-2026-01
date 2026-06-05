@@ -39,28 +39,8 @@ function PulsingDot({ color, pulsing }) {
   );
 }
 
-function DevicePill({ deviceOn }) {
-  const color = deviceOn ? colors.success : colors.textInactive;
-  const label = deviceOn ? 'Aparelho Ligado' : 'Aparelho Desligado';
-  return (
-    <View
-      style={[
-        styles.deviceBadge,
-        {
-          background: deviceOn ? `${colors.success}14` : 'rgba(100,116,139,0.14)',
-          borderColor: deviceOn ? `${colors.success}33` : `${colors.textMuted}55`,
-        },
-      ]}
-    >
-      <PulsingDot color={color} pulsing={deviceOn} />
-      <Text style={[styles.deviceLabel, { color }]}>{label}</Text>
-    </View>
-  );
-}
-
 export default function DashboardHeader({
   status = 'offline',
-  deviceOn = null,
   lastUpdate = '—',
   refreshing,
   onRefresh,
@@ -83,8 +63,6 @@ export default function DashboardHeader({
       </View>
 
       <View style={styles.right}>
-        {deviceOn !== null ? <DevicePill deviceOn={deviceOn} /> : null}
-
         <View
           style={[
             styles.statusBadge,
@@ -139,16 +117,6 @@ const styles = StyleSheet.create({
   right: { alignItems: 'flex-end', gap: 6 },
   title: { fontSize: 22, fontWeight: '800', color: colors.textPrimary, marginBottom: 4 },
   subtitle: { fontSize: 13, color: colors.textSecondary, fontWeight: '500' },
-  deviceBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderWidth: 1,
-    borderRadius: 100,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  deviceLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 0.3 },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',

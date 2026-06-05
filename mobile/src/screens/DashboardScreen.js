@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, ScrollView, ActivityIndicator, TouchableOpacity
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import DashboardHeader from '../components/dashboard/DashboardHeader';
+import DeviceStatusBanner from '../components/dashboard/DeviceStatusBanner';
 import KPIEnergyBar from '../components/dashboard/KPIEnergyBar';
 import FilterBar from '../components/dashboard/FilterBar';
 import TimeSeriesChart from '../components/dashboard/TimeSeriesChart';
@@ -50,7 +51,6 @@ export default function DashboardScreen() {
   const showCharts = !loading && !error;
 
   const lastReading = data.length > 0 ? data[data.length - 1] : null;
-  const deviceOn = lastReading != null && Number(lastReading.potenciaKw) > 0;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -60,11 +60,12 @@ export default function DashboardScreen() {
       >
         <DashboardHeader
           status={status}
-          deviceOn={showCharts ? deviceOn : null}
           lastUpdate={lastUpdate}
           refreshing={refreshing}
           onRefresh={handleRefresh}
         />
+
+        {showCharts && lastReading ? <DeviceStatusBanner lastReading={lastReading} /> : null}
 
         {error ? (
           <View style={styles.errorBox}>
