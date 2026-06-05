@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import Svg, { Path } from 'react-native-svg';
 import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../theme/colors';
 
@@ -102,7 +103,19 @@ function MockupBrowser() {
 
         <View style={styles.mockupChartArea}>
           <View style={styles.chartGrid} />
-          <View style={styles.chartLine} />
+          <Svg width="100%" height="100%" viewBox="0 0 300 100" preserveAspectRatio="none">
+            <Path
+              d="M0,80 C40,70 60,55 90,60 C130,68 150,40 180,45 C220,52 240,25 270,30 C285,32 295,18 300,20"
+              fill="none"
+              stroke="#22C55E"
+              strokeWidth={2.2}
+              strokeLinecap="round"
+            />
+            <Path
+              d="M0,80 C40,70 60,55 90,60 C130,68 150,40 180,45 C220,52 240,25 270,30 C285,32 295,18 300,20 L300,100 L0,100 Z"
+              fill="rgba(34,197,94,0.18)"
+            />
+          </Svg>
         </View>
 
         <View style={styles.mockupDevices}>
@@ -422,11 +435,12 @@ const styles = StyleSheet.create({
   mockupStats: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    justifyContent: 'space-between',
+    rowGap: 8,
     marginBottom: 14,
   },
   mockupStat: {
-    width: (width - 76) / 2,
+    width: '48.5%',
     backgroundColor: 'rgba(30,41,59,0.3)',
     borderWidth: 1,
     borderColor: 'rgba(51,65,85,0.25)',
@@ -447,12 +461,12 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   statValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '800',
     color: colors.textPrimary,
   },
   statUnit: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
     color: colors.textSecondary,
   },
@@ -462,7 +476,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   mockupChartArea: {
-    height: 100,
+    height: 110,
     backgroundColor: 'rgba(30,41,59,0.2)',
     borderWidth: 1,
     borderColor: 'rgba(51,65,85,0.2)',
@@ -473,26 +487,12 @@ const styles = StyleSheet.create({
   },
   chartGrid: {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'transparent',
-    borderColor: 'rgba(51,65,85,0.15)',
-    borderTopWidth: 1,
-  },
-  chartLine: {
-    position: 'absolute',
-    bottom: 12,
+    top: 12,
     left: 12,
     right: 12,
-    height: 2,
-    backgroundColor: colors.success,
-    borderRadius: 1,
-    transform: [{ scaleY: 1 }],
-    shadowColor: colors.success,
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
+    bottom: 12,
+    borderColor: 'rgba(51,65,85,0.15)',
+    borderTopWidth: 1,
   },
   mockupDevices: {
     gap: 8,

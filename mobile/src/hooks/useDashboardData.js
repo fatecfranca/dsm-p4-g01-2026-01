@@ -29,11 +29,12 @@ export default function useDashboardData() {
       const data = await fetchEstatisticas(undefined, start, end);
       setKpis({ loading: false, error: null, data });
     } catch (err) {
-      setKpis({
+      const is404 = err?.status === 404;
+      setKpis((prev) => ({
         loading: false,
-        error: err?.message || 'Erro ao carregar estatísticas',
-        data: null,
-      });
+        error: is404 ? null : err?.message || 'Erro ao carregar estatísticas',
+        data: is404 ? prev.data : null,
+      }));
     }
   }, []);
 
