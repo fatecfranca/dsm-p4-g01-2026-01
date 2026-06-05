@@ -131,7 +131,7 @@ export default function DashboardScreen() {
 
                 <View style={styles.footer}>
                   <Text style={styles.footerText}>
-                    EcoSense © {new Date().getFullYear()} — Monitoramento Inteligente de Energia
+                    P.I 4º Semestre — EcoSense — Monitoramento inteligente para um futuro sustentável
                   </Text>
                 </View>
               </>

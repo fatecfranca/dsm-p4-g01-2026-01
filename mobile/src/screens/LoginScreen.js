@@ -17,7 +17,6 @@ import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import FadeInView from '../components/FadeInView';
-import PulseDot from '../components/PulseDot';
 import { useAuth } from '../contexts/AuthContext';
 
 function FloatingLabelInput({ label, icon, secureTextEntry, value, onChangeText, rightAccessory }) {
@@ -108,10 +107,6 @@ export default function LoginScreen({ navigation }) {
 
           {/* TITLE + SUB */}
           <FadeInView delay={150} style={s.titleWrap}>
-            <View style={s.badge}>
-              <PulseDot />
-              <Text style={s.badgeText}>Plataforma IoT de Monitoramento</Text>
-            </View>
             <Text style={[s.title, { fontSize: isSmall ? 24 : 28 }]}>Acesse sua conta</Text>
             <Text style={s.subtitle}>
               Monitore seu consumo de energia em tempo real
@@ -180,7 +175,7 @@ export default function LoginScreen({ navigation }) {
 
         <View style={s.footer}>
           <Text style={s.footerText}>
-            EcoSense © {new Date().getFullYear()} — Monitoramento Inteligente de Energia
+            P.I 4º Semestre — EcoSense — Monitoramento inteligente para um futuro sustentável
           </Text>
         </View>
       </ScrollView>
@@ -217,27 +212,6 @@ const s = StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     letterSpacing: 1,
-  },
-
-  /* BADGE */
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(59,130,246,0.12)',
-    borderWidth: 1,
-    borderColor: 'rgba(59,130,246,0.25)',
-    borderRadius: 100,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    marginBottom: 16,
-    alignSelf: 'center',
-  },
-  badgeText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#3B82F6',
-    letterSpacing: 0.3,
   },
 
   /* TITLE */

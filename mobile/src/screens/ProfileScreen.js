@@ -192,9 +192,8 @@ export default function ProfileScreen({ navigation }) {
 
           <View style={styles.footer}>
             <Text style={styles.footerText}>
-              EcoSense © {new Date().getFullYear()}
+              P.I 4º Semestre — EcoSense — Monitoramento inteligente para um futuro sustentável
             </Text>
-            <Text style={styles.footerSub}>Monitoramento Inteligente de Energia</Text>
           </View>
         </View>
       </ScrollView>
@@ -374,10 +373,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.textInactive,
     fontWeight: '600',
-  },
-  footerSub: {
-    fontSize: 10,
-    color: colors.textInactive,
-    marginTop: 2,
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });
