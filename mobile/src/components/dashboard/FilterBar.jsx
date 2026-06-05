@@ -11,6 +11,16 @@ const PRESETS = [
   { key: '30d', label: '30 dias' },
 ];
 
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+function isValidDate(str) {
+  if (!DATE_REGEX.test(str)) return false;
+  const d = new Date(str);
+  if (Number.isNaN(d.getTime())) return false;
+  const [y, m, day] = str.split('-').map(Number);
+  return d.getFullYear() === y && d.getMonth() + 1 === m && d.getDate() === day;
+}
+
 function toDateInput(iso) {
   if (!iso) return '';
   return iso.slice(0, 10);
@@ -138,22 +148,36 @@ export default function FilterBar({ readings, dateRange, onDateRangeChange }) {
         <View style={styles.dateGroup}>
           <Text style={styles.dateLabel}>De</Text>
           <TextInput
-            style={styles.dateInput}
+            style={[
+              styles.dateInput,
+              dateRange.start && !isValidDate(dateRange.start) && styles.dateInputInvalid,
+            ]}
             value={dateRange.start}
             placeholder="AAAA-MM-DD"
             placeholderTextColor={colors.textMuted}
             maxLength={10}
-            onChangeText={(v) => onDateRangeChange({ ...dateRange, start: v })}
+            keyboardType="numbers-and-punctuation"
+            onChangeText={(v) => {
+              const sanitized = v.replace(/[^\d-]/g, '');
+              onDateRangeChange({ ...dateRange, start: sanitized });
+            }}
           />
           <Text style={styles.dateDash}>–</Text>
           <Text style={styles.dateLabel}>Até</Text>
           <TextInput
-            style={styles.dateInput}
+            style={[
+              styles.dateInput,
+              dateRange.end && !isValidDate(dateRange.end) && styles.dateInputInvalid,
+            ]}
             value={dateRange.end}
             placeholder="AAAA-MM-DD"
             placeholderTextColor={colors.textMuted}
             maxLength={10}
-            onChangeText={(v) => onDateRangeChange({ ...dateRange, end: v })}
+            keyboardType="numbers-and-punctuation"
+            onChangeText={(v) => {
+              const sanitized = v.replace(/[^\d-]/g, '');
+              onDateRangeChange({ ...dateRange, end: sanitized });
+            }}
           />
         </View>
       </View>
@@ -236,6 +260,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textPrimary,
     minWidth: 0,
+  },
+  dateInputInvalid: {
+    borderColor: colors.danger,
   },
   dateDash: { color: colors.textMuted, fontSize: 12 },
   tagRow: {

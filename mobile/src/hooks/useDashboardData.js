@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchTelemetria, fetchEstatisticas } from '../services/telemetriaService';
+import { HISTORY_LIMIT } from '../constants/config';
 
 function formatLastUpdate(timestamp) {
   if (!timestamp) return '—';
@@ -18,17 +19,20 @@ export default function useDashboardData() {
     loading: true,
     error: null,
     data: [],
-    meta: null,
   });
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [refreshing, setRefreshing] = useState(false);
+  const reqIdRef = useRef(0);
 
   const loadKpis = useCallback(async ({ start, end } = {}) => {
+    const myId = ++reqIdRef.current;
     setKpis((prev) => ({ ...prev, loading: true }));
     try {
       const data = await fetchEstatisticas(undefined, start, end);
+      if (myId !== reqIdRef.current) return;
       setKpis({ loading: false, error: null, data });
     } catch (err) {
+      if (myId !== reqIdRef.current) return;
       const is404 = err?.status === 404;
       setKpis((prev) => ({
         loading: false,
@@ -39,19 +43,20 @@ export default function useDashboardData() {
   }, []);
 
   const loadGraficoLinha = useCallback(async ({ start, end } = {}) => {
+    const myId = ++reqIdRef.current;
     setGraficoLinha((prev) => ({ ...prev, loading: true }));
     try {
-      const result = await fetchTelemetria(undefined, 1000, start, end);
+      const result = await fetchTelemetria(undefined, HISTORY_LIMIT, start, end);
+      if (myId !== reqIdRef.current) return;
       const data = result?.history || [];
-      const meta = result?.insights || null;
-      setGraficoLinha({ loading: false, error: null, data, meta });
+      setGraficoLinha({ loading: false, error: null, data });
     } catch (err) {
+      if (myId !== reqIdRef.current) return;
       const is404 = err?.status === 404;
       setGraficoLinha((prev) => ({
         loading: false,
         error: is404 ? null : err?.message || 'Erro ao carregar dados',
         data: is404 ? [] : prev.data,
-        meta: is404 ? prev.meta : null,
       }));
     }
   }, []);

@@ -50,9 +50,40 @@ export default function DeviceStatusBanner({ lastReading }) {
     );
   }
 
-  const deviceOn = Number(lastReading.potenciaKw) > 0;
+  const powerNum = Number(lastReading.potenciaKw);
+  const deviceOn = Number.isFinite(powerNum) && powerNum > 0;
+  const deviceInvalid = Number.isFinite(powerNum) && powerNum < 0;
   const powerKw = lastReading.potenciaKw;
   const ago = timeAgo(lastReading.timestamp);
+
+  if (deviceInvalid) {
+    return (
+      <View style={[styles.banner, styles.bannerInvalid]}>
+        <View style={[styles.iconBox, styles.iconBoxInvalid]}>
+          <Ionicons name="alert-circle" size={28} color={colors.danger} />
+        </View>
+        <View style={styles.content}>
+          <Text style={[styles.label, { color: colors.danger }]}>STATUS DO APARELHO</Text>
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            Leitura Inválida
+          </Text>
+          <View style={styles.metaRow}>
+            <View style={styles.metaItem}>
+              <Ionicons name="flash" size={11} color={colors.danger} />
+              <Text style={[styles.metaValue, { color: colors.danger }]}>
+                {fmtKw(powerKw)} kW
+              </Text>
+            </View>
+            <View style={styles.metaDivider} />
+            <View style={styles.metaItem}>
+              <Ionicons name="time-outline" size={11} color={colors.textMuted} />
+              <Text style={styles.metaLabel}>Última leitura {ago}</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   if (deviceOn) {
     return (
@@ -136,6 +167,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceLight,
     borderColor: colors.borderLight,
   },
+  bannerInvalid: {
+    backgroundColor: 'rgba(239,68,68,0.10)',
+    borderColor: 'rgba(239,68,68,0.35)',
+  },
   bannerIdle: {
     backgroundColor: colors.surfaceLight,
     borderColor: colors.borderLight,
@@ -168,6 +203,10 @@ const styles = StyleSheet.create({
   iconBoxOff: {
     backgroundColor: 'rgba(100,116,139,0.10)',
     borderColor: 'rgba(100,116,139,0.30)',
+  },
+  iconBoxInvalid: {
+    backgroundColor: 'rgba(239,68,68,0.18)',
+    borderColor: 'rgba(239,68,68,0.45)',
   },
   iconBoxIdle: {
     backgroundColor: 'rgba(100,116,139,0.10)',

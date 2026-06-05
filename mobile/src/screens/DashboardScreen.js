@@ -82,6 +82,15 @@ export default function DashboardScreen() {
           </View>
         ) : (
           <>
+            {kpis.error ? (
+              <View style={styles.kpiErrorBanner}>
+                <Ionicons name="alert-circle-outline" size={16} color={colors.warning} />
+                <Text style={styles.kpiErrorText} numberOfLines={2}>
+                  Estatísticas parciais: {kpis.error}
+                </Text>
+              </View>
+            ) : null}
+
             <KPIEnergyBar
               preditiva={kpis.data?.preditiva}
               voltageStats={kpis.data?.descritiva?.voltagem}
@@ -198,6 +207,25 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   chartsPair: { paddingHorizontal: 0 },
+  kpiErrorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginHorizontal: 20,
+    marginTop: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: `${colors.warning}1A`,
+    borderWidth: 1,
+    borderColor: `${colors.warning}4D`,
+  },
+  kpiErrorText: {
+    flex: 1,
+    fontSize: 11,
+    color: colors.warning,
+    fontWeight: '600',
+  },
   footer: {
     paddingVertical: 24,
     alignItems: 'center',
