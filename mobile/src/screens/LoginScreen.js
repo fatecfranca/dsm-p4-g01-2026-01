@@ -102,7 +102,6 @@ export default function LoginScreen({ navigation }) {
               style={s.logo}
               resizeMode="contain"
             />
-            <Text style={s.appName}>EcoSense</Text>
           </FadeInView>
 
           {/* TITLE + SUB */}
@@ -206,12 +205,6 @@ const s = StyleSheet.create({
     width: 72,
     height: 50,
     marginBottom: 8,
-  },
-  appName: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: 1,
   },
 
   /* TITLE */
