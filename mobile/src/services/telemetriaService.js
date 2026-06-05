@@ -14,7 +14,9 @@ export async function fetchTelemetria(
   return get(endpoint);
 }
 
-export async function fetchEstatisticas(dispositivoId = DEFAULT_DEVICE) {
-  const endpoint = `/telemetria/estatisticas/${dispositivoId}`;
+export async function fetchEstatisticas(dispositivoId = DEFAULT_DEVICE, start, end) {
+  let endpoint = `/telemetria/estatisticas/${dispositivoId}`;
+  if (start) endpoint += `?dataInicio=${start}`;
+  if (end) endpoint += start ? `&dataFim=${end}` : `?dataFim=${end}`;
   return get(endpoint);
 }

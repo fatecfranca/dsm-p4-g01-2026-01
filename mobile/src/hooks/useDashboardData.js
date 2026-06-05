@@ -23,10 +23,10 @@ export default function useDashboardData() {
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadKpis = useCallback(async () => {
+  const loadKpis = useCallback(async ({ start, end } = {}) => {
     setKpis((prev) => ({ ...prev, loading: true }));
     try {
-      const data = await fetchEstatisticas();
+      const data = await fetchEstatisticas(undefined, start, end);
       setKpis({ loading: false, error: null, data });
     } catch (err) {
       setKpis({
@@ -61,17 +61,17 @@ export default function useDashboardData() {
   }, [loadKpis, loadGraficoLinha]);
 
   useEffect(() => {
-    loadKpis();
-    if (dateRange.start || dateRange.end) {
-      loadGraficoLinha(dateRange);
-    }
+    const params =
+      dateRange.start || dateRange.end ? dateRange : undefined;
+    loadKpis(params);
+    loadGraficoLinha(params);
   }, [dateRange, loadKpis, loadGraficoLinha]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     const params =
       dateRange.start || dateRange.end ? dateRange : undefined;
-    await Promise.all([loadKpis(), loadGraficoLinha(params)]);
+    await Promise.all([loadKpis(params), loadGraficoLinha(params)]);
     setRefreshing(false);
   }, [loadKpis, loadGraficoLinha, dateRange]);
 

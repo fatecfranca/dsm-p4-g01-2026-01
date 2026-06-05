@@ -7,9 +7,9 @@ function fmt(value, decimals = 2) {
   return Number(value).toFixed(decimals).replace('.', ',');
 }
 
-function SkeletonCard({ accent }) {
+function SkeletonCard({ accent, fullWidth }) {
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, fullWidth ? styles.cardFull : styles.cardHalf]}>
       <View style={[styles.accent, { background: accent, opacity: 0.35 }]} />
       <View style={styles.cardBody}>
         <View style={styles.skelIcon} />
@@ -42,9 +42,11 @@ export default function KPIEnergyBar({ preditiva, voltageStats, loading }) {
   if (loading) {
     return (
       <View style={styles.grid}>
-        <SkeletonCard accent={colors.danger} />
-        <SkeletonCard accent={colors.warning} />
-        <SkeletonCard accent={colors.primary} />
+        <View style={styles.topRow}>
+          <SkeletonCard accent={colors.danger} />
+          <SkeletonCard accent={colors.warning} />
+        </View>
+        <SkeletonCard accent={colors.primary} fullWidth />
       </View>
     );
   }
@@ -65,63 +67,69 @@ export default function KPIEnergyBar({ preditiva, voltageStats, loading }) {
 
   return (
     <View style={styles.grid}>
-      {/* Card 1: Custo Real Acumulado */}
-      <View style={styles.card}>
-        <View style={[styles.accent, { background: colors.danger }]} />
-        <View style={styles.cardBody}>
-          <View style={[styles.iconBox, { background: `${colors.danger}1A`, borderColor: `${colors.danger}33` }]}>
-            <Ionicons name="cash-outline" size={20} color={colors.danger} />
-          </View>
-          <View style={styles.content}>
-            <Text style={styles.label}>Custo Real Acumulado</Text>
-            <View style={styles.valueRow}>
-              <Text style={styles.prefix}>R$</Text>
-              <Text style={styles.value}>{fmt(custoReal)}</Text>
+      <View style={styles.topRow}>
+        {/* Card 1: Custo Real Acumulado */}
+        <View style={[styles.card, styles.cardHalf]}>
+          <View style={[styles.accent, { background: colors.danger }]} />
+          <View style={styles.cardBody}>
+            <View style={[styles.iconBox, { background: `${colors.danger}1A`, borderColor: `${colors.danger}33` }]}>
+              <Ionicons name="cash-outline" size={20} color={colors.danger} />
             </View>
-          </View>
-        </View>
-      </View>
-
-      {/* Card 2: Previsão Mensal */}
-      <View style={styles.card}>
-        <View style={[styles.accent, { background: colors.warning }]} />
-        <View style={styles.cardBody}>
-          <View style={[styles.iconBox, { background: `${colors.warning}1A`, borderColor: `${colors.warning}33` }]}>
-            <Ionicons name="trending-up-outline" size={20} color={colors.warning} />
-          </View>
-          <View style={styles.content}>
-            <Text style={styles.label}>Previsão Mensal</Text>
-            <View style={styles.valueRow}>
-              <Text style={styles.prefix}>R$</Text>
-              <Text style={styles.value}>{fmt(previsao)}</Text>
-            </View>
-            {trend && (
-              <View
-                style={[
-                  styles.badge,
-                  {
-                    borderColor: `${trendColor}4D`,
-                    background: `${trendColor}1A`,
-                    alignSelf: 'flex-start',
-                  },
-                ]}
-              >
-                {isIncreasing ? <ArrowUp color={trendColor} /> : <Minus color={trendColor} />}
-                <Text style={[styles.badgeText, { color: trendColor }]}>{trend}</Text>
+            <View style={styles.content}>
+              <Text style={styles.label}>Custo Real</Text>
+              <View style={styles.valueRow}>
+                <Text style={styles.prefix}>R$</Text>
+                <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>
+                  {fmt(custoReal)}
+                </Text>
               </View>
-            )}
+            </View>
+          </View>
+        </View>
+
+        {/* Card 2: Previsão Mensal */}
+        <View style={[styles.card, styles.cardHalf]}>
+          <View style={[styles.accent, { background: colors.warning }]} />
+          <View style={styles.cardBody}>
+            <View style={[styles.iconBox, { background: `${colors.warning}1A`, borderColor: `${colors.warning}33` }]}>
+              <Ionicons name="trending-up-outline" size={20} color={colors.warning} />
+            </View>
+            <View style={styles.content}>
+              <Text style={styles.label}>Previsão Mensal</Text>
+              <View style={styles.valueRow}>
+                <Text style={styles.prefix}>R$</Text>
+                <Text style={styles.value} numberOfLines={1} adjustsFontSizeToFit>
+                  {fmt(previsao)}
+                </Text>
+              </View>
+              {trend && (
+                <View
+                  style={[
+                    styles.badge,
+                    {
+                      borderColor: `${trendColor}4D`,
+                      background: `${trendColor}1A`,
+                      alignSelf: 'flex-start',
+                    },
+                  ]}
+                >
+                  {isIncreasing ? <ArrowUp color={trendColor} /> : <Minus color={trendColor} />}
+                  <Text style={[styles.badgeText, { color: trendColor }]}>{trend}</Text>
+                </View>
+              )}
+            </View>
           </View>
         </View>
       </View>
 
-      {/* Card 3: Qualidade da Tensão */}
-      <View style={styles.card}>
+      {/* Card 3: Qualidade da Tensão (full-width) */}
+      <View style={[styles.card, styles.cardFull]}>
         <View style={[styles.accent, { background: colors.primary }]} />
         <View style={styles.cardBody}>
           <View style={[styles.iconBox, { background: `${colors.primary}1A`, borderColor: `${colors.primary}33` }]}>
             <Ionicons name="flash-outline" size={20} color={colors.primary} />
           </View>
-          <View style={[styles.content, { flex: 1 }]}>
+          <View style={styles.content}>
             <Text style={styles.label}>Qualidade da Tensão</Text>
             {voltageStats ? (
               <View style={styles.statsGrid}>
@@ -161,19 +169,27 @@ export default function KPIEnergyBar({ preditiva, voltageStats, loading }) {
 
 const styles = StyleSheet.create({
   grid: {
-    flexDirection: 'row',
     gap: 10,
     paddingHorizontal: 20,
     marginTop: 12,
   },
+  topRow: {
+    flexDirection: 'row',
+    gap: 10,
+  },
   card: {
-    flex: 1,
     backgroundColor: colors.surfaceLight,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.borderLight,
     overflow: 'hidden',
-    minHeight: 110,
+    minHeight: 96,
+  },
+  cardHalf: {
+    flex: 1,
+  },
+  cardFull: {
+    width: '100%',
   },
   accent: { height: 3, width: '100%' },
   cardBody: {
@@ -201,7 +217,7 @@ const styles = StyleSheet.create({
   },
   valueRow: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
   prefix: { fontSize: 11, fontWeight: '600', color: colors.textSecondary },
-  value: { fontSize: 18, fontWeight: '800', color: colors.textPrimary },
+  value: { fontSize: 18, fontWeight: '800', color: colors.textPrimary, flexShrink: 1 },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',

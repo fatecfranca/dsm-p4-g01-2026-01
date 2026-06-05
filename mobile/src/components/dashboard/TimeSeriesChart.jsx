@@ -1,20 +1,27 @@
 import { useMemo } from 'react';
 import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
-import Svg, { G, Polyline, Line, Text as SvgText, Rect } from 'react-native-svg';
+import Svg, { G, Polyline, Line, Text as SvgText } from 'react-native-svg';
 import { colors } from '../../theme/colors';
 
-const PADDING = { top: 16, right: 36, bottom: 24, left: 40 };
+const PADDING = { top: 16, right: 44, bottom: 32, left: 48 };
 
 function formatTick(value) {
   if (value >= 100) return value.toFixed(0);
-  if (value >= 1) return value.toFixed(1);
-  return value.toFixed(2);
+  if (value >= 10) return value.toFixed(1);
+  if (value >= 1) return value.toFixed(2);
+  return value.toFixed(3);
 }
 
 function formatTime(iso) {
   if (!iso) return '';
   const d = new Date(iso);
   return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function formatDateTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
 export default function TimeSeriesChart({ readings }) {
@@ -25,10 +32,14 @@ export default function TimeSeriesChart({ readings }) {
   const innerHeight = chartHeight - PADDING.top - PADDING.bottom;
 
   const data = useMemo(() => {
-    if (!readings?.length) return { points: [], multiDay: false, kw: { min: 0, max: 1 }, v: { min: 0, max: 1 } };
+    if (!readings?.length) return { points: [], multiDay: false, kw: { min: 0, max: 1 }, v: { min: 0, max: 1 }, tMin: 0, tMax: 1 };
     const sorted = [...readings]
       .filter((r) => r.potenciaKw != null && r.voltagem != null)
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    if (sorted.length === 0) {
+      return { points: [], multiDay: false, kw: { min: 0, max: 1 }, v: { min: 0, max: 1 }, tMin: 0, tMax: 1 };
+    }
 
     const first = sorted[0]?.timestamp;
     const last = sorted[sorted.length - 1]?.timestamp;
@@ -41,11 +52,16 @@ export default function TimeSeriesChart({ readings }) {
     const vMin = Math.min(...vs);
     const vMax = Math.max(...vs);
 
+    const tMin = new Date(first).getTime();
+    const tMax = new Date(last).getTime();
+
     return {
-      points: sorted,
+      points: sorted.map((r) => ({ ...r, t: new Date(r.timestamp).getTime() })),
       multiDay,
       kw: { min: kwMin, max: kwMax === kwMin ? kwMin + 1 : kwMax },
       v: { min: vMin, max: vMax === vMin ? vMin + 1 : vMax },
+      tMin,
+      tMax: tMax === tMin ? tMin + 1 : tMax,
     };
   }, [readings]);
 
@@ -62,10 +78,8 @@ export default function TimeSeriesChart({ readings }) {
     );
   }
 
-  const xFor = (i) => {
-    if (data.points.length === 1) return PADDING.left + chartWidth / 2;
-    return PADDING.left + (i / (data.points.length - 1)) * chartWidth;
-  };
+  const tRange = data.tMax - data.tMin;
+  const xFor = (t) => PADDING.left + ((t - data.tMin) / tRange) * chartWidth;
   const yKwFor = (v) => {
     const { min, max } = data.kw;
     return PADDING.top + innerHeight * (1 - (v - min) / (max - min));
@@ -75,17 +89,19 @@ export default function TimeSeriesChart({ readings }) {
     return PADDING.top + innerHeight * (1 - (v - min) / (max - min));
   };
 
-  const kwPoints = data.points.map((r, i) => `${xFor(i)},${yKwFor(r.potenciaKw)}`).join(' ');
-  const vPoints = data.points.map((r, i) => `${xFor(i)},${yVFor(r.voltagem)}`).join(' ');
+  const kwPoints = data.points.map((r) => `${xFor(r.t)},${yKwFor(r.potenciaKw)}`).join(' ');
+  const vPoints = data.points.map((r) => `${xFor(r.t)},${yVFor(r.voltagem)}`).join(' ');
 
   const yTicks = 4;
   const kwTicks = Array.from({ length: yTicks + 1 }, (_, i) => data.kw.min + ((data.kw.max - data.kw.min) * i) / yTicks);
   const vTicks = Array.from({ length: yTicks + 1 }, (_, i) => data.v.min + ((data.v.max - data.v.min) * i) / yTicks);
 
-  const labelStep = Math.max(1, Math.floor(data.points.length / 6));
-  const xLabels = data.points
-    .map((r, i) => ({ i, label: formatTime(r.timestamp) }))
-    .filter((_, i) => i % labelStep === 0);
+  const xTickCount = 5;
+  const xLabels = Array.from({ length: xTickCount + 1 }, (_, i) => {
+    const t = data.tMin + (tRange * i) / xTickCount;
+    const iso = new Date(t).toISOString();
+    return { x: xFor(t), label: data.multiDay ? formatDateTime(iso) : formatTime(iso) };
+  });
 
   return (
     <View style={styles.wrapper}>
@@ -127,7 +143,7 @@ export default function TimeSeriesChart({ readings }) {
           return (
             <SvgText
               key={`kw-tick-${i}`}
-              x={PADDING.left - 6}
+              x={PADDING.left - 8}
               y={y + 3}
               fontSize={9}
               fill={colors.primary}
@@ -145,7 +161,7 @@ export default function TimeSeriesChart({ readings }) {
           return (
             <SvgText
               key={`v-tick-${i}`}
-              x={PADDING.left + chartWidth + 6}
+              x={PADDING.left + chartWidth + 8}
               y={y + 3}
               fontSize={9}
               fill={colors.secondary}
@@ -158,16 +174,16 @@ export default function TimeSeriesChart({ readings }) {
         })}
 
         {/* X axis labels */}
-        {xLabels.map(({ i, label }) => (
+        {xLabels.map((l, i) => (
           <SvgText
             key={`x-label-${i}`}
-            x={xFor(i)}
-            y={chartHeight - 6}
+            x={l.x}
+            y={chartHeight - 8}
             fontSize={9}
             fill={colors.textMuted}
             textAnchor="middle"
           >
-            {label}
+            {l.label}
           </SvgText>
         ))}
 

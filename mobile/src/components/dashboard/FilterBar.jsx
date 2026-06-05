@@ -40,7 +40,6 @@ function fmtRange(start, end) {
 
 export default function FilterBar({ readings, dateRange, onDateRangeChange }) {
   const months = useMemo(() => extractMonths(readings), [readings]);
-  const today = toDateInput(new Date().toISOString());
   const isCustom = dateRange.start || dateRange.end;
 
   const activeKey = (() => {
@@ -92,6 +91,11 @@ export default function FilterBar({ readings, dateRange, onDateRangeChange }) {
 
   return (
     <View style={styles.bar}>
+      <View style={styles.labelRow}>
+        <Ionicons name="calendar-outline" size={12} color={colors.textMuted} />
+        <Text style={styles.labelText}>Período</Text>
+      </View>
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -135,7 +139,7 @@ export default function FilterBar({ readings, dateRange, onDateRangeChange }) {
         )}
       </ScrollView>
 
-      <View style={styles.controls}>
+      <View style={styles.dateRow}>
         <View style={styles.dateGroup}>
           <Text style={styles.dateLabel}>De</Text>
           <TextInput
@@ -157,20 +161,21 @@ export default function FilterBar({ readings, dateRange, onDateRangeChange }) {
             onChangeText={(v) => onDateRangeChange({ ...dateRange, end: v })}
           />
         </View>
-
-        {isCustom ? (
-          <View style={styles.tagRow}>
-            <Text style={styles.tag}>{fmtRange(dateRange.start, dateRange.end)}</Text>
-            <TouchableOpacity
-              style={styles.clearBtn}
-              onPress={() => onDateRangeChange({ start: '', end: '' })}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="close" size={14} color={colors.textPrimary} />
-            </TouchableOpacity>
-          </View>
-        ) : null}
       </View>
+
+      {isCustom ? (
+        <View style={styles.tagRow}>
+          <Ionicons name="filter" size={11} color={colors.secondary} />
+          <Text style={styles.tag}>{fmtRange(dateRange.start, dateRange.end)}</Text>
+          <TouchableOpacity
+            style={styles.clearBtn}
+            onPress={() => onDateRangeChange({ start: '', end: '' })}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="close" size={12} color={colors.textPrimary} />
+          </TouchableOpacity>
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -180,6 +185,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 8,
     gap: 8,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  labelText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: colors.textMuted,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   presetsRow: {
     flexDirection: 'row',
@@ -202,20 +219,19 @@ const styles = StyleSheet.create({
   pillText: { fontSize: 12, fontWeight: '600', color: colors.textMuted },
   pillTextActive: { color: colors.secondary },
   divider: { width: 1, height: 18, backgroundColor: colors.borderLight, marginHorizontal: 4 },
-  controls: {
+  dateRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
   },
   dateGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    flexShrink: 1,
+    flex: 1,
   },
   dateLabel: { fontSize: 11, color: colors.textMuted, fontWeight: '600' },
   dateInput: {
+    flex: 1,
     height: 34,
     borderRadius: 8,
     backgroundColor: colors.surfaceLight,
@@ -224,18 +240,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     fontSize: 12,
     color: colors.textPrimary,
-    minWidth: 90,
+    minWidth: 0,
   },
   dateDash: { color: colors.textMuted, fontSize: 12 },
-  tagRow: { flexDirection: 'row', alignItems: 'center', gap: 6, flexShrink: 0 },
-  tag: { fontSize: 11, color: colors.textSecondary, fontWeight: '500' },
-  clearBtn: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    backgroundColor: colors.surfaceLight,
+  tagRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: `${colors.secondary}1A`,
+    borderColor: `${colors.secondary}4D`,
     borderWidth: 1,
-    borderColor: colors.borderLight,
+    borderRadius: 100,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  tag: { fontSize: 11, color: colors.secondary, fontWeight: '600' },
+  clearBtn: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: `${colors.secondary}33`,
     alignItems: 'center',
     justifyContent: 'center',
   },
