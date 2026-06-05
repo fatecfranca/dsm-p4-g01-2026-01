@@ -1,8 +1,10 @@
 import { useState, useCallback, useRef } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import { getTelemetria, getTarifa } from "../services/telemetryService";
+import useWebSocket from "./useWebSocket";
 
 const TARIFA = getTarifa();
+const MAX_READINGS = 500;
 
 function getPeakIndex(data) {
   if (!data || data.length === 0) return 0;
@@ -23,6 +25,69 @@ function buildSeries(readings, field, fallback = 0) {
       value: r[field] ?? fallback,
     };
   });
+}
+
+function buildStateFromReadings(readings) {
+  const sorted = [...readings];
+  const latest = sorted[sorted.length - 1];
+
+  if (!latest) return null;
+
+  const voltageData = buildSeries(sorted, "voltagem");
+  const currentData = buildSeries(sorted, "corrente");
+  const activePowerData = buildSeries(sorted, "potenciaAtiva");
+  const apparentPowerData = buildSeries(sorted, "potenciaAparente");
+  const reactivePowerData = buildSeries(sorted, "potenciaReativa");
+  const powerFactorData = buildSeries(sorted, "fatorPotencia");
+  const frequencyData = buildSeries(sorted, "frequencia");
+  const powerKwData = buildSeries(sorted, "potenciaKw");
+  const costHourData = buildSeries(sorted, "custoHora");
+
+  const lastTimestamp = latest.timestamp
+    ? new Date(latest.timestamp).toLocaleString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
+    : "";
+
+  const latestKw = latest.potenciaKw ?? latest.potenciaAtiva / 1000;
+  const monthlyCost = +(latest.custoHora * 24 * 30).toFixed(2) || 0;
+
+  return {
+    voltageData,
+    currentData,
+    activePowerData,
+    apparentPowerData,
+    reactivePowerData,
+    powerFactorData,
+    frequencyData,
+    powerKwData,
+    costHourData,
+    voltage: latest.voltagem ?? 0,
+    current: latest.corrente ?? 0,
+    power: latest.potenciaAtiva ?? 0,
+    powerKw: latestKw,
+    costHora: latest.custoHora ?? 0,
+    powerFactor: latest.fatorPotencia ?? 0,
+    frequency: latest.frequencia ?? 0,
+    lastTimestamp,
+    peakVoltageIndex: getPeakIndex(voltageData),
+    peakCurrentIndex: getPeakIndex(currentData),
+    peakPowerIndex: getPeakIndex(activePowerData),
+    peakApparentPowerIndex: getPeakIndex(apparentPowerData),
+    peakReactivePowerIndex: getPeakIndex(reactivePowerData),
+    peakPowerKwIndex: getPeakIndex(powerKwData),
+    peakCostHourIndex: getPeakIndex(costHourData),
+    monthlyCost,
+    readings: sorted,
+    loading: false,
+    error: null,
+  };
 }
 
 const INITIAL = {
@@ -64,6 +129,7 @@ export default function useTelemetryData(
 ) {
   const [state, setState] = useState(INITIAL);
   const stateRef = useRef(state);
+  const [isFocused, setIsFocused] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
@@ -78,63 +144,8 @@ export default function useTelemetryData(
         throw new Error("Nenhuma leitura disponível");
       }
 
-      const sorted = [...readings];
-      const latest = sorted[sorted.length - 1];
-
-      const voltageData = buildSeries(sorted, "voltagem");
-      const currentData = buildSeries(sorted, "corrente");
-      const activePowerData = buildSeries(sorted, "potenciaAtiva");
-      const apparentPowerData = buildSeries(sorted, "potenciaAparente");
-      const reactivePowerData = buildSeries(sorted, "potenciaReativa");
-      const powerFactorData = buildSeries(sorted, "fatorPotencia");
-      const frequencyData = buildSeries(sorted, "frequencia");
-
-      // MAPEAMENTO CORRIGIDO: Puxa direto das novas colunas oficiais do Prisma
-      const powerKwData = buildSeries(sorted, "potenciaKw");
-      const costHourData = buildSeries(sorted, "custoHora");
-
-      const lastTimestamp = latest.timestamp
-        ? new Date(latest.timestamp).toLocaleString("pt-BR", {
-            timeZone: "America/Sao_Paulo",
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          })
-        : "";
-
-      const latestKw = latest.potenciaKw ?? latest.potenciaAtiva / 1000;
-      const monthlyCost = +(latest.custoHora * 24 * 30).toFixed(2) || 0;
-
       const newState = {
-        voltageData,
-        currentData,
-        activePowerData,
-        apparentPowerData,
-        reactivePowerData,
-        powerFactorData,
-        frequencyData,
-        powerKwData,
-        costHourData,
-        voltage: latest.voltagem ?? 0,
-        current: latest.corrente ?? 0,
-        power: latest.potenciaAtiva ?? 0,
-        powerKw: latestKw,
-        costHora: latest.custoHora ?? 0,
-        powerFactor: latest.fatorPotencia ?? 0,
-        frequency: latest.frequencia ?? 0,
-        lastTimestamp,
-        peakVoltageIndex: getPeakIndex(voltageData),
-        peakCurrentIndex: getPeakIndex(currentData),
-        peakPowerIndex: getPeakIndex(activePowerData),
-        peakApparentPowerIndex: getPeakIndex(apparentPowerData),
-        peakReactivePowerIndex: getPeakIndex(reactivePowerData),
-        peakPowerKwIndex: getPeakIndex(powerKwData),
-        peakCostHourIndex: getPeakIndex(costHourData),
-        monthlyCost,
-        readings: sorted,
+        ...buildStateFromReadings(readings),
         loading: false,
         error: null,
       };
@@ -153,11 +164,40 @@ export default function useTelemetryData(
 
   useFocusEffect(
     useCallback(() => {
+      setIsFocused(true);
       refresh();
-      const interval = setInterval(refresh, 30000);
-      return () => clearInterval(interval);
+      return () => setIsFocused(false);
     }, [refresh]),
   );
+
+  const handleWsMessage = useCallback(
+    (msg) => {
+      if (msg.tipo !== "novaLeitura") return;
+      const leitura = msg.dados;
+      if (leitura.dispositivoId !== dispositivoId) return;
+
+      setState((prev) => {
+        if (prev.readings.length === 0) return prev;
+
+        const readings = [...prev.readings, leitura];
+        if (readings.length > MAX_READINGS) {
+          readings.splice(0, readings.length - MAX_READINGS);
+        }
+
+        const newState = {
+          ...buildStateFromReadings(readings),
+          loading: false,
+          error: null,
+        };
+
+        stateRef.current = newState;
+        return newState;
+      });
+    },
+    [dispositivoId],
+  );
+
+  useWebSocket(handleWsMessage, isFocused);
 
   return { ...state, refresh };
 }

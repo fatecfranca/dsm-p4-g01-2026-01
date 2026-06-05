@@ -1,4 +1,5 @@
 import { prisma } from "../database/client.js";
+import { broadcastLeitura } from "../websocket.js";
 import {
   calcularMedia,
   calcularQuartis,
@@ -86,6 +87,8 @@ export const registrarTelemetria = async (req, res) => {
         custoHora,
       },
     });
+
+    broadcastLeitura(novaLeitura);
 
     return res.status(201).json(novaLeitura);
   } catch (error) {
