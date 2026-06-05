@@ -1,51 +1,13 @@
-import { useState, useCallback, useRef } from "react";
-import { useFocusEffect } from "@react-navigation/native";
-import { getEstatisticas } from "../services/telemetryService";
+// STUB TEMPORÁRIO: será removido quando DashboardScreen for refeito na Fase 4.
+// Mantido só pra build do Metro passar.
 
-const INITIAL = {
-  descritiva: null,
-  estratificada: null,
-  preditiva: null,
-  loading: true,
-  error: null,
-};
-
-export default function useEstatisticas(
-  dispositivoId = "ESP32_VENTILADOR",
-  dataInicio,
-  dataFim,
-) {
-  const [state, setState] = useState(INITIAL);
-  const dispositivoRef = useRef(dispositivoId);
-
-  const refresh = useCallback(async () => {
-    try {
-      const data = await getEstatisticas(dispositivoId, dataInicio, dataFim);
-      setState({
-        descritiva: data.descritiva || null,
-        estratificada: data.estratificada || null,
-        preditiva: data.preditiva || null,
-        loading: false,
-        error: null,
-      });
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: err.message || "Falha ao carregar estatísticas",
-      }));
-    }
-  }, [dispositivoId, dataInicio, dataFim]);
-
-  useFocusEffect(
-    useCallback(() => {
-      setState(INITIAL);
-      dispositivoRef.current = dispositivoId;
-      refresh();
-      const interval = setInterval(refresh, 30000);
-      return () => clearInterval(interval);
-    }, [refresh, dispositivoId, dataInicio, dataFim]),
-  );
-
-  return { ...state, refresh };
+export default function useEstatisticas() {
+  return {
+    descritiva: null,
+    estratificada: null,
+    preditiva: null,
+    loading: false,
+    error: null,
+    refresh: () => {},
+  };
 }
