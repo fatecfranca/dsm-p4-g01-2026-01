@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { login } from "../../services/authService";
 import { useAuth } from "../../contexts/AuthContext";
+import logoIcon from "../../assets/images/logo-icon.png";
 import styles from "./Login.module.css";
 
 const SAFE_REDIRECT_PREFIX = "/";
@@ -53,9 +54,6 @@ export default function Login() {
 
   return (
     <div className={styles.page}>
-      <div className={styles.bgGlow} />
-      <div className={styles.bgGrid} />
-
       <motion.div
         className={styles.card}
         initial={{ opacity: 0, y: 30, scale: 0.97 }}
@@ -63,10 +61,7 @@ export default function Login() {
         transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <div className={styles.cardHeader}>
-          <div className={styles.brandIcon}>
-            <div className={styles.brandDot} />
-            <div className={styles.brandRing} />
-          </div>
+          <img src={logoIcon} alt="EcoSense" className={styles.logo} />
           <h1 className={styles.title}>Acessar plataforma</h1>
           <p className={styles.subtitle}>Entre com suas credenciais</p>
         </div>

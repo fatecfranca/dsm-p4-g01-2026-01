@@ -1,8 +1,6 @@
 import { useLocation } from "react-router-dom";
-import { Outlet } from "react-router-dom";
+import { Outlet, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import logoFull from "../../assets/images/logo-full.png";
-import { Link } from "react-router-dom";
 import styles from "./AuthLayout.module.css";
 
 export default function AuthLayout() {
@@ -10,12 +8,6 @@ export default function AuthLayout() {
 
   return (
     <div className={styles.layout}>
-      <header className={styles.brandHeader}>
-        <Link to="/" className={styles.brandLink} aria-label="EcoSense — voltar para o início">
-          <img src={logoFull} alt="EcoSense" className={styles.logo} />
-        </Link>
-      </header>
-
       <main className={styles.content}>
         <AnimatePresence mode="wait">
           <motion.div
