@@ -35,7 +35,6 @@ function fmtRange(start, end) {
 
 const PRESETS = [
   { key:"all",    label:"Todas" },
-  { key:"today",  label:"Hoje" },
   { key:"7d",     label:"7 dias" },
   { key:"30d",    label:"30 dias" },
 ];
