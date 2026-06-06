@@ -63,9 +63,8 @@ O projeto foi dividido em 4 camadas principais:
 - Axios (Integração HTTP)
 - Recharts / Chart.js (Visualização de Dados)
 
-👥 Equipe de Desenvolvimento
-[Pedro Henrique Xavier Constancio] - Backend & Banco de Dados, IoT - Ph-Xavier
+## 👥 Equipe de Desenvolvimento
 
-[Iago Rodrigues Pinheiro] - Frontend & Mobile - iago-pinheiro
-
-[Kaio Leandro Rissato] - Mobile & IoT - kaiorss
+- Pedro Henrique Xavier Constancio - Backend & Banco de Dados, IoT - Github: Ph-Xavier
+- Iago Rodrigues Pinheiro - Frontend & Mobile - Github: iago-pinheiro
+- Kaio Leandro Rissato - Mobile & IoT - Github: kaiorss
