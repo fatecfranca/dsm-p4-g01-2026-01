@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import styles from "./DashboardHeader.module.css";
 
 function RefreshIcon({ spinning }) {
@@ -20,7 +20,7 @@ function RefreshIcon({ spinning }) {
   );
 }
 
-export default function DashboardHeader({ status = "offline", lastUpdate = "—", refreshing, onRefresh }) {
+export default function DashboardHeader({ status = "offline", lastUpdate = "—", refreshing, onRefresh, live = false }) {
   const [time, setTime] = useState(() => new Date().toLocaleTimeString("pt-BR"));
 
   useEffect(() => {
@@ -67,9 +67,27 @@ export default function DashboardHeader({ status = "offline", lastUpdate = "—"
             <RefreshIcon spinning={refreshing} />
           </button>
         </div>
-        <span className={styles.timestamp}>
-          {isOnline ? `Última leitura: ${lastUpdate}` : `Atualizado: ${time}`}
-        </span>
+
+        <div className={styles.meta}>
+          <AnimatePresence>
+            {live && (
+              <motion.span
+                key="live"
+                className={styles.liveBadge}
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 8 }}
+                transition={{ duration: 0.2 }}
+              >
+                <span className={styles.livePulse} />
+                AO VIVO
+              </motion.span>
+            )}
+          </AnimatePresence>
+          <span className={styles.timestamp}>
+            {isOnline ? `Última leitura: ${lastUpdate}` : `Atualizado: ${time}`}
+          </span>
+        </div>
       </div>
     </motion.header>
   );

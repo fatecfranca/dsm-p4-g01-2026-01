@@ -197,20 +197,26 @@
 }
 
 /* ===========================
-   SKELETONS
+   SKELETONS (shimmer)
    =========================== */
 
 .skelAccent {
   height: 3px;
-  background: rgba(255, 255, 255, 0.04);
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.12), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
 }
+
 .skelIcon {
   width: 44px;
   height: 44px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.04);
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.12), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
   flex-shrink: 0;
 }
+
 .skelContent {
   flex: 1;
   display: flex;
@@ -218,24 +224,28 @@
   gap: 8px;
   justify-content: center;
 }
+
 .skelLabel {
   height: 10px;
   width: 60%;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  animation: pulse 1.5s ease-in-out infinite;
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.04), rgba(148, 163, 184, 0.16), rgba(148, 163, 184, 0.04));
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
 }
+
 .skelValue {
   height: 22px;
   width: 45%;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.04);
-  animation: pulse 1.5s ease-in-out infinite 0.2s;
+  background: linear-gradient(90deg, rgba(148, 163, 184, 0.04), rgba(148, 163, 184, 0.16), rgba(148, 163, 184, 0.04));
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite 0.15s;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* ===========================
