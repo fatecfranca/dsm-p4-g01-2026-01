@@ -37,12 +37,16 @@ function fmtKw(value) {
   return n.toFixed(4);
 }
 
-export default function DeviceStatusCard({ lastReading }) {
+export default function DeviceStatusCard({ lastReading, flex }) {
   if (!lastReading) {
     return (
       <motion.div
         className={styles.card}
-        style={{ borderLeftColor: "var(--color-text-secondary)" }}
+        style={{
+          background: "rgba(148, 163, 184, 0.08)",
+          borderColor: "rgba(148, 163, 184, 0.2)",
+          ...(flex ? { flex } : {}),
+        }}
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.2, ease: "easeOut" }}
@@ -92,6 +96,7 @@ export default function DeviceStatusCard({ lastReading }) {
       style={{
         borderLeftColor: accent,
         background: `linear-gradient(135deg, ${accent}08 0%, transparent 60%), var(--color-surface)`,
+        ...(flex ? { flex } : {}),
       }}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}

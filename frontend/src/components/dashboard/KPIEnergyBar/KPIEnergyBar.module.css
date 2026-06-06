@@ -257,8 +257,8 @@
     flex-wrap: wrap;
   }
   .kpiRow > * {
-    flex: 1 1 calc(33.333% - 0.6rem) !important;
-    min-width: 180px;
+    flex: 1 1 calc(33.333% - 0.6rem);
+    min-width: 0;
   }
 }
 
@@ -267,7 +267,7 @@
     flex-wrap: wrap;
   }
   .kpiRow > * {
-    flex: 1 1 calc(50% - 0.5rem) !important;
+    flex: 1 1 calc(50% - 0.5rem);
   }
   .statsGrid {
     grid-template-columns: repeat(2, 1fr);
@@ -279,9 +279,17 @@
     flex-direction: column;
   }
   .kpiRow > * {
-    flex: 1 1 auto !important;
+    flex: 1 1 auto;
   }
   .value {
     font-size: 1.5rem;
+  }
+  .iconBox {
+    width: 38px;
+    height: 38px;
+  }
+  .iconBox svg {
+    width: 20px;
+    height: 20px;
   }
 }

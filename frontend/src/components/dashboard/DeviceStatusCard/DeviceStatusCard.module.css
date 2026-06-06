@@ -98,3 +98,50 @@
   font-size: 0.6875rem;
   font-weight: 500;
 }
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+
+@media (max-width: 1100px) {
+  .iconBox {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+  }
+  .iconBox svg {
+    width: 22px;
+    height: 22px;
+  }
+  .card {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+  .value {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .card {
+    padding: 0.875rem 1rem;
+    gap: 0.75rem;
+  }
+  .iconBox {
+    width: 38px;
+    height: 38px;
+  }
+  .iconBox svg {
+    width: 20px;
+    height: 20px;
+  }
+  .value {
+    font-size: 1.125rem;
+  }
+  .subValue {
+    font-size: 0.6875rem;
+  }
+  .kwUnit {
+    display: none;
+  }
+}

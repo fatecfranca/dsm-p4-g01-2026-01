@@ -291,7 +291,7 @@ export default function KPIEnergyBar({ preditiva, voltageStats, fatorPotenciaSta
         />
 
         {/* 5. Status do Aparelho */}
-        <DeviceStatusCard lastReading={lastReading} />
+        <DeviceStatusCard lastReading={lastReading} flex={1.2} />
       </div>
 
       {/* 6. Qualidade da Tensão (full-width) */}
