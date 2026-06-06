@@ -33,8 +33,14 @@ export const cadastro = async (req, res) => {
     });
 
     const { senha: _, ...usuarioSemSenha } = novoUsuario;
+
+    const token = jwt.sign({ userId: novoUsuario.id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
     return res.status(201).json({
       message: "Usuário cadastrado com sucesso!",
+      token,
       usuario: usuarioSemSenha,
     });
   } catch (error) {
@@ -57,12 +63,12 @@ export const login = async (req, res) => {
 
     const usuario = await prisma.usuario.findUnique({ where: { email } });
     if (!usuario) {
-      return res.status(404).json({ error: "Usuário não encontrado." });
+      return res.status(401).json({ error: "Credenciais inválidas." });
     }
 
     const senhaValida = await bcrypt.compare(senha, usuario.senha);
     if (!senhaValida) {
-      return res.status(401).json({ error: "Senha incorreta." });
+      return res.status(401).json({ error: "Credenciais inválidas." });
     }
 
     const token = jwt.sign({ userId: usuario.id }, process.env.JWT_SECRET, {
@@ -72,7 +78,7 @@ export const login = async (req, res) => {
     return res.status(200).json({
       message: "Login realizado com sucesso!",
       token,
-      usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email },
+      usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, createdAt: usuario.createdAt },
     });
   } catch (error) {
     console.error("Erro no login:", error);

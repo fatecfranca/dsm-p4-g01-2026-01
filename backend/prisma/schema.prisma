@@ -21,8 +21,8 @@ model Telemetria {
   potenciaReativa  Float?   // Energia "perdida" em motores/indutores (VAR)
   fatorPotencia    Float?   // Eficiência do uso da energia (de 0.0 a 1.0)
   frequencia       Float?   // Frequência da rede (Hz) - ideal 60Hz
-  consumokWh       Float?   // Consumo em kWh daquela leitura
-  custoReais       Float?   // Previsão de custo baseada no kWh
+  potenciaKw       Float?   // Potência instantânea em kW (potenciaAtiva / 1000)
+  custoHora        Float?   // Cesto por hora ao ritmo atual (potenciaKw * tarifa)
   timestamp        DateTime @default(now()) // Tempo exato da leitura
 }
 

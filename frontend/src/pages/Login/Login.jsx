@@ -1,0 +1,140 @@
+import { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { motion } from "framer-motion";
+import { login } from "../../services/authService";
+import { useAuth } from "../../contexts/AuthContext";
+import styles from "./Login.module.css";
+
+const SAFE_REDIRECT_PREFIX = "/";
+
+function getSafeRedirect(params) {
+  const raw = params.get("redirect");
+  if (!raw) return "/dashboard";
+  if (typeof raw !== "string") return "/dashboard";
+  if (!raw.startsWith(SAFE_REDIRECT_PREFIX)) return "/dashboard";
+  if (raw.startsWith("//")) return "/dashboard";
+  return raw;
+}
+
+export default function Login() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { login: loginContext } = useAuth();
+
+  const [form, setForm] = useState({ email: "", senha: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  function handleChange(e) {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (error) setError("");
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const data = await login(form.email.trim(), form.senha);
+      loginContext(data.token, data.usuario);
+      navigate(getSafeRedirect(searchParams), { replace: true });
+    } catch (err) {
+      if (err?.status === 401) {
+        setError("Email ou senha inválidos.");
+      } else if (err?.status >= 500) {
+        setError("Servidor indisponível. Tente novamente em instantes.");
+      } else {
+        setError("Email ou senha inválidos.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.bgGlow} />
+      <div className={styles.bgGrid} />
+
+      <motion.div
+        className={styles.card}
+        initial={{ opacity: 0, y: 30, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      >
+        <div className={styles.cardHeader}>
+          <div className={styles.brandIcon}>
+            <div className={styles.brandDot} />
+            <div className={styles.brandRing} />
+          </div>
+          <h1 className={styles.title}>Acessar plataforma</h1>
+          <p className={styles.subtitle}>Entre com suas credenciais</p>
+        </div>
+
+        {error && (
+          <motion.div
+            className={styles.error}
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            role="alert"
+          >
+            {error}
+          </motion.div>
+        )}
+
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="login-email">
+              Email
+            </label>
+            <input
+              id="login-email"
+              className={styles.input}
+              type="email"
+              name="email"
+              placeholder="seu@email.com"
+              value={form.email}
+              onChange={handleChange}
+              autoComplete="email"
+              required
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="login-senha">
+              Senha
+            </label>
+            <input
+              id="login-senha"
+              className={styles.input}
+              type="password"
+              name="senha"
+              placeholder="••••••••"
+              value={form.senha}
+              onChange={handleChange}
+              autoComplete="current-password"
+              required
+            />
+          </div>
+
+          <motion.button
+            className={styles.btn}
+            type="submit"
+            disabled={loading}
+            whileHover={{ scale: loading ? 1 : 1.01 }}
+            whileTap={{ scale: loading ? 1 : 0.99 }}
+          >
+            {loading ? "Entrando..." : "Entrar"}
+          </motion.button>
+        </form>
+
+        <p className={styles.footer}>
+          Não tem conta?{" "}
+          <Link to="/cadastro" className={styles.link}>
+            Criar conta
+          </Link>
+        </p>
+      </motion.div>
+    </div>
+  );
+}

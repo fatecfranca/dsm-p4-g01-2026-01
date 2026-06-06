@@ -18,6 +18,10 @@ const options = {
         url: "http://localhost:3000/api",
         description: "Servidor Local (Desenvolvimento)",
       },
+      {
+        url: "https://ecosense.chilecentral.cloudapp.azure.com/api",
+        description: "Servidor Azure (Produção)",
+      },
     ],
     components: {
       securitySchemes: {
@@ -140,9 +144,86 @@ const options = {
           },
         },
       },
+      "/telemetria/estatisticas/{dispositivoId}": {
+        get: {
+          tags: ["Telemetria"],
+          summary: "Obter estatísticas descritivas e preditivas do dispositivo",
+          description:
+            "Retorna cálculos matemáticos baseados na população de dados (descritiva) e previsões de custo projetadas para 30 dias usando Amostragem Aleatória Simples (preditiva).",
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: "dispositivoId",
+              in: "path",
+              required: true,
+              description: "ID único do dispositivo (ex: ESP32_VENTILADOR)",
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            200: {
+              description: "Estatísticas calculadas com sucesso.",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      descritiva: {
+                        type: "object",
+                        description:
+                          "Média, Moda, Mediana e Desvio Padrão dos componentes elétricos.",
+                        example: {
+                          voltagem: {
+                            media: "127.05",
+                            desvioPadrao: "0.58",
+                            boxPlot: { q1: 126.5, mediana: 127.1, q3: 127.6 },
+                            moda: 127.1,
+                            mediana: "127.10",
+                          },
+                        },
+                      },
+                      estratificada: {
+                        type: "object",
+                        description:
+                          "Consumo total de energia dividido por turnos do dia.",
+                        example: {
+                          consumoPorTurno: {
+                            madrugada: 2.5,
+                            manha: 1.2,
+                            tarde: 4.8,
+                            noite: 6.1,
+                          },
+                        },
+                      },
+                      preditiva: {
+                        type: "object",
+                        description:
+                          "Previsão de fatura baseada em regressão linear de amostra.",
+                        example: {
+                          metodo: "Amostragem Aleatória Simples",
+                          tamanhoAmostra: 500,
+                          tendenciaDeCusto: "Aumentando",
+                          custoAtualReal: "12.50",
+                          previsaoFaturaMensal: "85.00",
+                          intervaloConfianca95: {
+                            minimoEsperado: "81.50",
+                            maximoEsperado: "88.50",
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            401: { description: "Não autorizado. Token ausente ou inválido." },
+            404: { description: "Sem dados suficientes para estatística." },
+            500: { description: "Erro interno ao processar dados." },
+          },
+        },
+      },
     },
   },
-
   apis: [],
 };
 

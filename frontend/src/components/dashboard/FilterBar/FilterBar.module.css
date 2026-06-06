@@ -1,0 +1,243 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+/* ─── Presets ──────────────────────────────────────────────── */
+.presets {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+  font-family: "Inter", sans-serif;
+}
+
+.pill:hover {
+  color: var(--color-text-primary);
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.12);
+}
+
+.pill:active {
+  transform: scale(0.96);
+}
+
+.pillActive {
+  color: #22C55E;
+  background: rgba(34,197,94,0.1);
+  border-color: rgba(34,197,94,0.25);
+  box-shadow: 0 0 0 1px rgba(34,197,94,0.15);
+}
+
+.pillChevron {
+  padding-right: 0.5rem;
+}
+
+.pillChevron svg {
+  transition: transform 0.2s;
+}
+
+.pillOpen svg {
+  transform: rotate(180deg);
+}
+
+/* ─── Month dropdown ──────────────────────────────────────── */
+.monthWrap {
+  position: relative;
+}
+
+.monthMenu {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  min-width: 145px;
+  background: #162032;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+  overflow: hidden;
+  z-index: 100;
+  transform-origin: top center;
+}
+
+.monthItem {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 34px;
+  padding: 0 0.75rem;
+  font-size: 0.78125rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  font-family: "Inter", sans-serif;
+}
+
+.monthItem:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--color-text-primary);
+}
+
+/* ─── Active filter tag ────────────────────────────────────── */
+.sep {
+  width: 1px;
+  height: 18px;
+  background: rgba(255,255,255,0.08);
+  flex-shrink: 0;
+}
+
+.tag {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+  background: rgba(255,255,255,0.03);
+  padding: 0.1875rem 0.5rem;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+
+/* ─── Controls ─────────────────────────────────────────────── */
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dateGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.dateLabel {
+  font-size: 0.6875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.dateDash {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  opacity: 0.4;
+}
+
+.dateInput {
+  height: 30px;
+  padding: 0 0.5rem;
+  font-size: 0.75rem;
+  font-family: "Inter", sans-serif;
+  color: var(--color-text-primary);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 120px;
+  color-scheme: dark;
+  cursor: pointer;
+}
+
+.dateInput:focus {
+  border-color: #22C55E;
+}
+
+.dateInput::-webkit-calendar-picker-indicator {
+  filter: invert(0.65);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.dateInput::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Clear button */
+.clearBtn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  color: #EF4444;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.clearBtn:hover {
+  background: rgba(239,68,68,0.15);
+  border-color: rgba(239,68,68,0.25);
+}
+
+.clearBtn:active {
+  transform: scale(0.92);
+}
+
+/* ─── Responsive ───────────────────────────────────────────── */
+@media (max-width: 820px) {
+  .bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .presets {
+    justify-content: center;
+  }
+
+  .controls {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .dateGroup {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .dateInput {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .dateInput {
+    width: 100%;
+  }
+
+  .dateGroup {
+    flex-wrap: wrap;
+  }
+}

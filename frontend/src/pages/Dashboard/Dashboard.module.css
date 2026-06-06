@@ -1,0 +1,181 @@
+.container {
+  display: grid;
+  grid-template-areas:
+    "header"
+    "filter"
+    "kpi"
+    "charts";
+  gap: 1.25rem;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header { grid-area: header; }
+.filter { grid-area: filter; }
+
+.chartsGrid {
+  grid-area: charts;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.chartsPair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 1023px) {
+  .chartsPair {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 639px) {
+  .container {
+    padding: 1rem;
+    gap: 1rem;
+  }
+}
+
+/* ===========================
+   ERROR
+   =========================== */
+
+.errorBox {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.errorIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.12);
+  color: #EF4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.25rem;
+}
+
+.errorText {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary, #E2E8F0);
+}
+
+.errorDetail {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary, #94A3B8);
+}
+
+/* ===========================
+   EMPTY STATE
+   =========================== */
+
+.emptyBox {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.01) 100%);
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 3rem 2rem;
+}
+
+.emptyInner {
+  max-width: 360px;
+  margin: 0 auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.emptyArt {
+  width: 160px;
+  height: 112px;
+  margin-bottom: 0.5rem;
+  opacity: 0.85;
+}
+
+.emptyArt svg {
+  width: 100%;
+  height: 100%;
+}
+
+.emptyTitle {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+}
+
+.emptyText {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.emptyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: var(--color-primary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.emptyBtn:hover {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(34, 197, 94, 0.5);
+  transform: translateY(-1px);
+}
+
+/* ===========================
+   SKELETON (shimmer)
+   =========================== */
+
+.skelBlock {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.skelBlock::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(148, 163, 184, 0.06) 40%,
+    rgba(148, 163, 184, 0.12) 50%,
+    rgba(148, 163, 184, 0.06) 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

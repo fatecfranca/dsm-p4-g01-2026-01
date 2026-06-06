@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import swaggerUi from "swagger-ui-express";
 import specs from "./swaggerConfig.js";
+import { initWebSocket } from "./websocket.js";
 
 // Importação das rotas
 import telemetriaRoutes from "./routes/telemetriaRoutes.js";
@@ -12,7 +13,11 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}));
 app.use(express.json());
 
 // Rota para a interface visual do Swagger
@@ -23,9 +28,11 @@ app.use("/api/telemetria", telemetriaRoutes);
 app.use("/api/auth", authRoutes);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`API de Monitoramento de Energia rodando na porta ${PORT}`);
   console.log(
     `Documentação Swagger disponível em: http://localhost:${PORT}/api-docs`,
   );
 });
+
+initWebSocket(server);
