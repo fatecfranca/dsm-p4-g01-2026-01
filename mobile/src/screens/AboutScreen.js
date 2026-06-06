@@ -47,7 +47,7 @@ const TECHS = [
 ];
 
 const TEAM = [
-  { initials: 'IR', name: 'Iago Rodrigues Pinheiro', role: 'Desenvolvedor Front-end', color: colors.success },
+  { initials: 'IR', name: 'Iago Rodrigues Pinheiro', role: 'Desenvolvedor Front-end / Mobile', color: colors.success },
   { initials: 'PC', name: 'Pedro Henrique Xavier Constancio', role: 'Desenvolvedor Back-end / IoT', color: colors.secondary },
   { initials: 'KR', name: 'Kaio Leandro Rissato', role: 'Desenvolvedor Mobile / IoT', color: colors.info },
 ];
