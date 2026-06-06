@@ -19,9 +19,9 @@ function avatarColor(name) {
     colors.primary,
     colors.info,
     colors.warning,
-    "#8B5CF6",
-    "#EC4899",
-    "#14B8A6",
+    colors.purple,
+    colors.pink,
+    colors.teal,
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++)

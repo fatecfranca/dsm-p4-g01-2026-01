@@ -535,10 +535,14 @@
 }
 
 .statBadge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 0.75rem;
   font-weight: 500;
 }
+
+.statBadge svg { flex-shrink: 0; }
 
 .statBadge[data-trend="down"] { color: var(--color-success); }
 .statBadge[data-trend="up"] { color: var(--color-success); }

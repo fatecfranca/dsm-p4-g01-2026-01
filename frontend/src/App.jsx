@@ -2,7 +2,9 @@ import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import ScrollToTop from "./components/ScrollToTop/ScrollToTop";
+import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary";
 import MainLayout from "./layouts/MainLayout/MainLayout";
+import AuthLayout from "./layouts/AuthLayout/AuthLayout";
 import Home from "./pages/Home/Home";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Sobre from "./pages/Sobre/Sobre";
@@ -15,22 +17,28 @@ import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ToastProvider>
-        <ScrollToTop />
-        <Routes>
-          <Route element={<MainLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/sobre" element={<Sobre />} />
-            <Route path="/glossario" element={<Glossario />} />
-            <Route path="/iot" element={<IoT />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/cadastro" element={<Cadastro />} />
+    <ErrorBoundary>
+      <AuthProvider>
+        <ToastProvider>
+          <ScrollToTop />
+          <Routes>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/sobre" element={<Sobre />} />
+              <Route path="/glossario" element={<Glossario />} />
+              <Route path="/iot" element={<IoT />} />
+            </Route>
+
+            <Route element={<AuthLayout />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/cadastro" element={<Cadastro />} />
+            </Route>
+
             <Route path="*" element={<NotFound />} />
-          </Route>
-        </Routes>
-      </ToastProvider>
-    </AuthProvider>
+          </Routes>
+        </ToastProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }

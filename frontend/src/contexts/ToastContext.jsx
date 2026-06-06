@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useRef } from "react";
+import { createContext, useContext, useState, useCallback, useRef, useEffect } from "react";
 
 const ToastContext = createContext(null);
 
@@ -6,20 +6,16 @@ let toastId = 0;
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
-  const timers = useRef({});
 
   const remove = useCallback((id) => {
-    clearTimeout(timers.current[id]);
-    delete timers.current[id];
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   const add = useCallback((message, type = "success", duration = 4000) => {
     const id = ++toastId;
-    setToasts((prev) => [...prev, { id, message, type }]);
-    timers.current[id] = setTimeout(() => remove(id), duration);
+    setToasts((prev) => [...prev, { id, message, type, duration }]);
     return id;
-  }, [remove]);
+  }, []);
 
   return (
     <ToastContext.Provider value={{ add, remove }}>
@@ -37,14 +33,15 @@ export function ToastProvider({ children }) {
         }}
       >
         {toasts.map((t) => (
-          <ToastItem key={t.id} toast={t} timers={timers} onDismiss={() => remove(t.id)} />
+          <ToastItem key={t.id} toast={t} onDismiss={() => remove(t.id)} />
         ))}
       </div>
     </ToastContext.Provider>
   );
 }
 
-function ToastItem({ toast, timers, onDismiss }) {
+function ToastItem({ toast, onDismiss }) {
+  const timerRef = useRef(null);
   const bg = {
     success: "#22C55E",
     error: "#EF4444",
@@ -54,26 +51,47 @@ function ToastItem({ toast, timers, onDismiss }) {
 
   const icons = {
     success: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M20 6L9 17l-5-5" />
       </svg>
     ),
     error: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <circle cx="12" cy="12" r="10" /><path d="M15 9l-6 6M9 9l6 6" />
       </svg>
     ),
     info: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" />
       </svg>
     ),
     warning: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0zM12 9v4M12 17h.01" />
       </svg>
     ),
   };
+
+  const startTimer = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => {
+      timerRef.current = null;
+      onDismiss();
+    }, toast.duration || 4000);
+  };
+
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    startTimer();
+    return () => stopTimer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
@@ -95,11 +113,8 @@ function ToastItem({ toast, timers, onDismiss }) {
         maxWidth: 400,
         animation: "toastIn 0.3s ease-out",
       }}
-      onMouseEnter={() => { clearTimeout(timers.current[toast.id]); }}
-      onMouseLeave={() => {
-        // eslint-disable-next-line react-hooks/immutability
-        timers.current[toast.id] = setTimeout(onDismiss, 4000);
-      }}
+      onMouseEnter={stopTimer}
+      onMouseLeave={startTimer}
     >
       <div style={{ width: 28, height: 28, borderRadius: "50%", background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         {icons[toast.type]}

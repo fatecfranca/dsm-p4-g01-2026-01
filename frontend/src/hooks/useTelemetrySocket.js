@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function getWsUrl() {
   const apiBase = import.meta.env.VITE_API_URL || "/api";
@@ -8,68 +8,71 @@ function getWsUrl() {
   } else {
     origin = window.location.origin;
   }
-  return `${origin.replace(/^http/, "ws")}`;
+  return origin.replace(/^http/, "ws");
 }
 
 export function useTelemetrySocket({ onLeitura, enabled = true } = {}) {
   const [connected, setConnected] = useState(false);
+  const onLeituraRef = useRef(onLeitura);
   const wsRef = useRef(null);
-  const reconnectRef = useRef(null);
-  const handlerRef = useRef(onLeitura);
-  const stoppedRef = useRef(false);
+  const stoppedFlagRef = useRef(null);
+  const connectRef = useRef(null);
 
-  handlerRef.current = onLeitura;
+  useEffect(() => {
+    onLeituraRef.current = onLeitura;
+  }, [onLeitura]);
 
-  const connect = useCallback(() => {
-    if (stoppedRef.current) return;
-    try {
-      const ws = new WebSocket(getWsUrl());
+  useEffect(() => {
+    if (!enabled) return undefined;
+
+    stoppedFlagRef.current = { stopped: false };
+    connectRef.current?.(stoppedFlagRef.current);
+
+    return () => {
+      if (stoppedFlagRef.current) stoppedFlagRef.current.stopped = true;
+      if (wsRef.current) {
+        wsRef.current.onclose = null;
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+      setConnected(false);
+    };
+  }, [enabled]);
+
+  useEffect(() => {
+    connectRef.current = (stoppedFlag) => {
+      if (stoppedFlag.stopped) return;
+
+      let ws;
+      try {
+        ws = new WebSocket(getWsUrl());
+      } catch {
+        setTimeout(() => connectRef.current?.(stoppedFlag), 3000);
+        return;
+      }
       wsRef.current = ws;
 
       ws.onopen = () => setConnected(true);
-
       ws.onmessage = (evt) => {
         try {
           const msg = JSON.parse(evt.data);
           if (msg?.tipo === "novaLeitura" && msg.dados) {
-            handlerRef.current?.(msg.dados);
+            onLeituraRef.current?.(msg.dados);
           }
         } catch {
-          // payload inválido, ignora
+          // payload inválido
         }
       };
-
-      ws.onerror = () => {
-        setConnected(false);
-      };
-
+      ws.onerror = () => setConnected(false);
       ws.onclose = () => {
         setConnected(false);
-        if (!stoppedRef.current) {
-          reconnectRef.current = setTimeout(connect, 3000);
+        wsRef.current = null;
+        if (!stoppedFlag.stopped) {
+          setTimeout(() => connectRef.current?.(stoppedFlag), 3000);
         }
       };
-    } catch {
-      setConnected(false);
-      if (!stoppedRef.current) {
-        reconnectRef.current = setTimeout(connect, 3000);
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!enabled) return undefined;
-    stoppedRef.current = false;
-    connect();
-    return () => {
-      stoppedRef.current = true;
-      if (reconnectRef.current) clearTimeout(reconnectRef.current);
-      if (wsRef.current) {
-        wsRef.current.onclose = null;
-        wsRef.current.close();
-      }
     };
-  }, [connect, enabled]);
+  }, []);
 
   return { connected };
 }

@@ -1,13 +1,26 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { cadastro } from "../../services/authService";
 import { useAuth } from "../../contexts/AuthContext";
 import styles from "./Cadastro.module.css";
 
+const SAFE_REDIRECT_PREFIX = "/";
+
+function getSafeRedirect(params) {
+  const raw = params.get("redirect");
+  if (!raw) return "/dashboard";
+  if (typeof raw !== "string") return "/dashboard";
+  if (!raw.startsWith(SAFE_REDIRECT_PREFIX)) return "/dashboard";
+  if (raw.startsWith("//")) return "/dashboard";
+  return raw;
+}
+
 export default function Cadastro() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login: loginContext } = useAuth();
+
   const [form, setForm] = useState({
     nome: "",
     email: "",
@@ -26,11 +39,21 @@ export default function Cadastro() {
     e.preventDefault();
     setError("");
 
+    const nome = form.nome.trim();
+    const email = form.email.trim();
+
+    if (nome.length < 2) {
+      setError("Informe seu nome completo.");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("Informe um email válido.");
+      return;
+    }
     if (form.senha.length < 6) {
       setError("A senha deve ter no mínimo 6 caracteres.");
       return;
     }
-
     if (form.senha !== form.confirmarSenha) {
       setError("As senhas não coincidem.");
       return;
@@ -38,13 +61,15 @@ export default function Cadastro() {
 
     setLoading(true);
     try {
-      const data = await cadastro(form.nome, form.email, form.senha);
+      const data = await cadastro(nome, email, form.senha);
       loginContext(data.token, data.usuario);
-      navigate("/dashboard");
+      navigate(getSafeRedirect(searchParams), { replace: true });
     } catch (err) {
       const msg = err?.message || "";
-      if (msg.includes("400") || msg.includes("em uso")) {
+      if (err?.status === 400 || msg.includes("em uso")) {
         setError("Este e-mail já está em uso.");
+      } else if (err?.status >= 500) {
+        setError("Servidor indisponível. Tente novamente em instantes.");
       } else {
         setError("Erro ao criar conta. Tente novamente.");
       }
@@ -80,12 +105,13 @@ export default function Cadastro() {
             className={styles.error}
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
+            role="alert"
           >
             {error}
           </motion.div>
         )}
 
-        <form className={styles.form} onSubmit={handleSubmit}>
+        <form className={styles.form} onSubmit={handleSubmit} noValidate>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="cad-nome">
               Nome
@@ -98,6 +124,7 @@ export default function Cadastro() {
               placeholder="Seu nome"
               value={form.nome}
               onChange={handleChange}
+              autoComplete="name"
               required
             />
           </div>
@@ -114,6 +141,7 @@ export default function Cadastro() {
               placeholder="seu@email.com"
               value={form.email}
               onChange={handleChange}
+              autoComplete="email"
               required
             />
           </div>
@@ -130,6 +158,7 @@ export default function Cadastro() {
               placeholder="Mínimo 6 caracteres"
               value={form.senha}
               onChange={handleChange}
+              autoComplete="new-password"
               required
               minLength={6}
             />
@@ -147,6 +176,7 @@ export default function Cadastro() {
               placeholder="Repita a senha"
               value={form.confirmarSenha}
               onChange={handleChange}
+              autoComplete="new-password"
               required
             />
           </div>

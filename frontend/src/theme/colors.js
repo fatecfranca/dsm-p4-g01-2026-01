@@ -15,4 +15,6 @@ export const colors = {
   danger: "#EF4444",
   info: "#06B6D4",
   purple: "#8B5CF6",
+  pink: "#EC4899",
+  teal: "#14B8A6",
 };

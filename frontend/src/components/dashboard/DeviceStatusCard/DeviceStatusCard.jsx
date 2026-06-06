@@ -65,23 +65,20 @@ export default function DeviceStatusCard({ lastReading }) {
   const isInvalid = !Number.isFinite(powerNum) || powerNum < 0;
   const isOn = !isInvalid && powerNum > 0;
 
-  let stateKey, accent, iconColor, iconBg, stateText, subText;
+  let accent, iconColor, iconBg, stateText, subText;
   if (isInvalid) {
-    stateKey = "invalid";
     accent = colors.danger;
     iconColor = colors.danger;
     iconBg = "rgba(239, 68, 68, 0.12)";
     stateText = "Leitura Inválida";
     subText = "Sensor reportou valor negativo";
   } else if (isOn) {
-    stateKey = "on";
     accent = colors.success;
     iconColor = colors.success;
     iconBg = "rgba(34, 197, 94, 0.12)";
     stateText = "Ligado";
     subText = "Consumindo energia agora";
   } else {
-    stateKey = "off";
     accent = "var(--color-text-secondary)";
     iconColor = "var(--color-text-secondary)";
     iconBg = "rgba(148, 163, 184, 0.1)";

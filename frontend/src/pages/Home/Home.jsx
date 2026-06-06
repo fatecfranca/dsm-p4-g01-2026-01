@@ -253,7 +253,10 @@ export default function Home() {
                     2.4<span className={styles.statUnit}>kW</span>
                   </span>
                   <span className={styles.statBadge} data-trend="down">
-                    ▼ 12%
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    12%
                   </span>
                 </div>
                 <div className={styles.mockupStat}>
@@ -262,21 +265,32 @@ export default function Home() {
                     R$ 3,80
                   </span>
                   <span className={styles.statBadge} data-trend="up">
-                    ▲ economia
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M2 8l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    economia
                   </span>
                 </div>
                 <div className={styles.mockupStat}>
                   <span className={styles.statLabel}>Dispositivos</span>
                   <span className={styles.statValue}>8</span>
                   <span className={styles.statBadge} data-trend="info">
-                    ● online
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="currentColor" aria-hidden="true">
+                      <circle cx="4" cy="4" r="3" />
+                    </svg>
+                    online
                   </span>
                 </div>
                 <div className={styles.mockupStat}>
                   <span className={styles.statLabel}>Alertas Hoje</span>
                   <span className={styles.statValue}>2</span>
                   <span className={styles.statBadge} data-trend="warn">
-                    ⚠ 1 pendente
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                      <path d="M6 2L11 10H1L6 2z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                      <line x1="6" y1="5" x2="6" y2="7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                      <circle cx="6" cy="8.5" r="0.6" fill="currentColor" />
+                    </svg>
+                    1 pendente
                   </span>
                 </div>
               </div>

@@ -19,7 +19,7 @@ const members = [
   {
     initials: "IR",
     name: "Iago Rodrigues Pinheiro",
-    role: "Desenvolvedor Front-end",
+    role: "Desenvolvedor Front-End e Mobile",
     color: "var(--color-primary)",
   },
   {
