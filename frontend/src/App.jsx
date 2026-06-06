@@ -7,6 +7,7 @@ import Home from "./pages/Home/Home";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Sobre from "./pages/Sobre/Sobre";
 import IoT from "./pages/IoT/IoT";
+import Glossario from "./pages/Glossario/Glossario";
 import Login from "./pages/Login/Login";
 import Cadastro from "./pages/Cadastro/Cadastro";
 import NotFound from "./pages/NotFound/NotFound";
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/sobre" element={<Sobre />} />
+            <Route path="/glossario" element={<Glossario />} />
             <Route path="/iot" element={<IoT />} />
             <Route path="/login" element={<Login />} />
             <Route path="/cadastro" element={<Cadastro />} />

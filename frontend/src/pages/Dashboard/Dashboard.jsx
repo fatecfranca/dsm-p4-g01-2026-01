@@ -106,12 +106,15 @@ export default function Dashboard() {
           lastUpdate={lastUpdate}
           refreshing={refreshing}
           onRefresh={handleRefresh}
+          lastReading={lastReading}
         />
       </div>
 
       <KPIEnergyBar
         preditiva={kpis.data?.preditiva}
         voltageStats={kpis.data?.descritiva?.voltagem}
+        fatorPotenciaStats={kpis.data?.descritiva?.fatorPotencia}
+        frequenciaStats={kpis.data?.descritiva?.frequencia}
         loading={kpis.loading || graficoLinha.loading}
       />
 

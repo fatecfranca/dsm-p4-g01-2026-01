@@ -41,6 +41,14 @@
   gap: 0.5rem;
 }
 
+.badgesRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .refreshBtn {
   flex-shrink: 0;
   width: 22px;
