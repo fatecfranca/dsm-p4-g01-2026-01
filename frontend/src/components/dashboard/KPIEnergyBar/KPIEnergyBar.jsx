@@ -1,6 +1,12 @@
 import { motion } from "framer-motion";
 import { colors } from "../../../theme/colors";
-import { TARIFA_KWH, FATOR_POTENCIA_LIMITE, FREQUENCIA_ESTAVEL_MIN, FREQUENCIA_ESTAVEL_MAX } from "../../../constants/config";
+import {
+  TARIFA_KWH,
+  FATOR_POTENCIA_LIMITE,
+  FREQUENCIA_ESTAVEL_MIN,
+  FREQUENCIA_ESTAVEL_MAX,
+} from "../../../constants/config";
+import DeviceStatusCard from "../DeviceStatusCard/DeviceStatusCard";
 import styles from "./KPIEnergyBar.module.css";
 
 function fmt(value, decimals = 2) {
@@ -93,9 +99,40 @@ function AlertIcon({ color }) {
   );
 }
 
+function KPICard({ accent, icon, label, value, prefix, sub, badge, delay = 0, flex = 1 }) {
+  return (
+    <motion.div
+      className={styles.card}
+      style={{ flex }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay, ease: "easeOut" }}
+    >
+      <div className={styles.accent} style={{ background: accent }} />
+      <div className={styles.cardBody}>
+        <div
+          className={styles.iconBox}
+          style={{ color: accent, background: `${accent}1A` }}
+        >
+          {icon}
+        </div>
+        <div className={styles.content}>
+          <span className={styles.label}>{label}</span>
+          <span className={styles.valueRow}>
+            {prefix && <span className={styles.prefix}>{prefix}</span>}
+            <span className={styles.value}>{value}</span>
+          </span>
+          {sub}
+          {badge}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 function SkeletonCard() {
   return (
-    <div className={styles.card}>
+    <div className={styles.card} style={{ flex: 1 }}>
       <div className={styles.skelAccent} />
       <div className={styles.cardBody}>
         <div className={styles.skelIcon} />
@@ -108,18 +145,14 @@ function SkeletonCard() {
   );
 }
 
-export default function KPIEnergyBar({ preditiva, voltageStats, fatorPotenciaStats, frequenciaStats, loading }) {
+export default function KPIEnergyBar({ preditiva, voltageStats, fatorPotenciaStats, frequenciaStats, loading, lastReading }) {
   if (loading) {
     return (
-      <div className={styles.grid}>
-        <div className={styles.row}>
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
-        <div className={styles.row}>
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
+      <div className={styles.kpiRow}>
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
         <SkeletonCard />
       </div>
     );
@@ -138,9 +171,8 @@ export default function KPIEnergyBar({ preditiva, voltageStats, fatorPotenciaSta
   const desvioAlert = media != null && desvio != null ? (desvio / media) > 0.05 : false;
 
   const custoRealNum = safeFloat(custoReal);
-  const consumoKwh = custoRealNum != null
-    ? (custoRealNum / TARIFA_KWH).toFixed(2).replace(".", ",")
-    : null;
+  const consumoKwh =
+    custoRealNum != null ? (custoRealNum / TARIFA_KWH).toFixed(2).replace(".", ",") : null;
 
   const fpMedia = safeFloat(fatorPotenciaStats?.media);
   const fpEficiente = fpMedia != null && fpMedia >= FATOR_POTENCIA_LIMITE;
@@ -148,180 +180,178 @@ export default function KPIEnergyBar({ preditiva, voltageStats, fatorPotenciaSta
   const fpLabel = fpEficiente ? "Eficiente" : "Atenção";
 
   const freqMedia = safeFloat(frequenciaStats?.media);
-  const freqEstavel = freqMedia != null && freqMedia >= FREQUENCIA_ESTAVEL_MIN && freqMedia <= FREQUENCIA_ESTAVEL_MAX;
+  const freqEstavel =
+    freqMedia != null && freqMedia >= FREQUENCIA_ESTAVEL_MIN && freqMedia <= FREQUENCIA_ESTAVEL_MAX;
   const freqColor = freqEstavel ? colors.success : colors.danger;
   const freqLabel = freqEstavel ? "Estável" : "Instável";
 
   return (
-    <div className={styles.grid}>
-      <div className={styles.row}>
-        {/* 1. Custo Real Acumulado (com kWh sub) */}
-        <motion.div
-          className={styles.card}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0, ease: "easeOut" }}
-        >
-          <div className={styles.accent} style={{ background: colors.danger }} />
-          <div className={styles.cardBody}>
-            <div className={styles.iconBox} style={{ color: colors.danger, background: `${colors.danger}14` }}>
-              <DollarIcon />
-            </div>
-            <div className={styles.content}>
-              <span className={styles.label}>Custo Real</span>
-              <span className={styles.valueRow}>
-                <span className={styles.prefix}>R$</span>
-                <span className={styles.value}>{fmt(custoReal)}</span>
+    <>
+      <div className={styles.kpiRow}>
+        {/* 1. Custo Real Acumulado */}
+        <KPICard
+          flex={1.4}
+          delay={0}
+          accent={colors.danger}
+          icon={<DollarIcon />}
+          label="Custo Real"
+          prefix="R$"
+          value={fmt(custoReal)}
+          sub={
+            consumoKwh !== null ? (
+              <span className={styles.subValue}>
+                Acumulado:{" "}
+                <span className={styles.subValueStrong}>{consumoKwh} kWh</span>
               </span>
-              {consumoKwh !== null && (
-                <span className={styles.subValue}>
-                  Acumulado: <span className={styles.subValueStrong}>{consumoKwh} kWh</span>
-                </span>
-              )}
-            </div>
-          </div>
-        </motion.div>
+            ) : null
+          }
+        />
 
         {/* 2. Previsão Mensal */}
-        <motion.div
-          className={styles.card}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.08, ease: "easeOut" }}
-        >
-          <div className={styles.accent} style={{ background: colors.warning }} />
-          <div className={styles.cardBody}>
-            <div className={styles.iconBox} style={{ color: colors.warning, background: `${colors.warning}14` }}>
-              <TrendUpIcon />
-            </div>
-            <div className={styles.content}>
-              <span className={styles.label}>Previsão Mensal</span>
-              <span className={styles.valueRow}>
-                <span className={styles.prefix}>R$</span>
-                <span className={styles.value}>{fmt(previsao)}</span>
+        <KPICard
+          flex={1.2}
+          delay={0.05}
+          accent={colors.warning}
+          icon={<TrendUpIcon />}
+          label="Previsão Mensal"
+          prefix="R$"
+          value={fmt(previsao)}
+          badge={
+            trend ? (
+              <span
+                className={styles.badge}
+                style={{
+                  color: trendColor,
+                  borderColor: `${trendColor}40`,
+                  background: `${trendColor}10`,
+                }}
+              >
+                {isIncreasing ? <ArrowUpIcon color={trendColor} /> : <MinusIcon color={trendColor} />}
+                {trend}
               </span>
-              {trend && (
-                <span
-                  className={styles.badge}
-                  style={{ color: trendColor, borderColor: `${trendColor}30`, background: `${trendColor}0d` }}
-                >
-                  {isIncreasing ? <ArrowUpIcon color={trendColor} /> : <MinusIcon color={trendColor} />}
-                  {trend}
-                </span>
-              )}
-            </div>
-          </div>
-        </motion.div>
-      </div>
+            ) : null
+          }
+        />
 
-      <div className={styles.row}>
         {/* 3. Fator de Potência */}
-        <motion.div
-          className={styles.card}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.16, ease: "easeOut" }}
-        >
-          <div className={styles.accent} style={{ background: "#8B5CF6" }} />
-          <div className={styles.cardBody}>
-            <div className={styles.iconBox} style={{ color: "#8B5CF6", background: "#8B5CF614" }}>
-              <PulseIcon />
-            </div>
-            <div className={styles.content}>
-              <span className={styles.label}>Fator de Potência</span>
-              <span className={styles.valueRow}>
-                <span className={styles.value}>{fpMedia != null ? fpMedia.toFixed(2) : "—"}</span>
-              </span>
-              {fpMedia != null && (
-                <span
-                  className={styles.badge}
-                  style={{ color: fpColor, borderColor: `${fpColor}30`, background: `${fpColor}0d` }}
-                  title={fpEficiente
+        <KPICard
+          flex={1}
+          delay={0.1}
+          accent={colors.purple}
+          icon={<PulseIcon />}
+          label="Fator de Potência"
+          value={fpMedia != null ? fpMedia.toFixed(2) : "—"}
+          badge={
+            fpMedia != null ? (
+              <span
+                className={styles.badge}
+                style={{
+                  color: fpColor,
+                  borderColor: `${fpColor}40`,
+                  background: `${fpColor}10`,
+                }}
+                title={
+                  fpEficiente
                     ? `Acima de ${FATOR_POTENCIA_LIMITE} — sem cobrança de multa`
-                    : `Abaixo de ${FATOR_POTENCIA_LIMITE} — passível de multa pela concessionária`}
-                >
-                  {fpEficiente ? <CheckIcon color={fpColor} /> : <AlertIcon color={fpColor} />}
-                  {fpLabel}
-                </span>
-              )}
-            </div>
-          </div>
-        </motion.div>
-
-        {/* 4. Frequência da Rede */}
-        <motion.div
-          className={styles.card}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, delay: 0.24, ease: "easeOut" }}
-        >
-          <div className={styles.accent} style={{ background: colors.info || "#06B6D4" }} />
-          <div className={styles.cardBody}>
-            <div className={styles.iconBox} style={{ color: "#06B6D4", background: "#06B6D414" }}>
-              <SpeedometerIcon />
-            </div>
-            <div className={styles.content}>
-              <span className={styles.label}>Frequência da Rede</span>
-              <span className={styles.valueRow}>
-                <span className={styles.value}>{freqMedia != null ? freqMedia.toFixed(2) : "—"}</span>
-                <span className={styles.prefix}>Hz</span>
+                    : `Abaixo de ${FATOR_POTENCIA_LIMITE} — passível de multa pela concessionária`
+                }
+              >
+                {fpEficiente ? <CheckIcon color={fpColor} /> : <AlertIcon color={fpColor} />}
+                {fpLabel}
               </span>
-              {freqMedia != null && (
-                <span
-                  className={styles.badge}
-                  style={{ color: freqColor, borderColor: `${freqColor}30`, background: `${freqColor}0d` }}
-                  title={`Faixa estável: ${FREQUENCIA_ESTAVEL_MIN}–${FREQUENCIA_ESTAVEL_MAX} Hz`}
-                >
-                  {freqEstavel ? <CheckIcon color={freqColor} /> : <AlertIcon color={freqColor} />}
-                  {freqLabel}
-                </span>
-              )}
-            </div>
-          </div>
-        </motion.div>
+            ) : null
+          }
+        />
+
+        {/* 4. Frequência */}
+        <KPICard
+          flex={1}
+          delay={0.15}
+          accent={colors.info}
+          icon={<SpeedometerIcon />}
+          label="Frequência"
+          value={freqMedia != null ? freqMedia.toFixed(2) : "—"}
+          prefix={freqMedia != null ? "Hz" : null}
+          badge={
+            freqMedia != null ? (
+              <span
+                className={styles.badge}
+                style={{
+                  color: freqColor,
+                  borderColor: `${freqColor}40`,
+                  background: `${freqColor}10`,
+                }}
+                title={`Faixa estável: ${FREQUENCIA_ESTAVEL_MIN}–${FREQUENCIA_ESTAVEL_MAX} Hz`}
+              >
+                {freqEstavel ? <CheckIcon color={freqColor} /> : <AlertIcon color={freqColor} />}
+                {freqLabel}
+              </span>
+            ) : null
+          }
+        />
+
+        {/* 5. Status do Aparelho */}
+        <DeviceStatusCard lastReading={lastReading} />
       </div>
 
-      {/* 5. Qualidade da Tensão (full-width) */}
+      {/* 6. Qualidade da Tensão (full-width) */}
       <motion.div
-        className={styles.card}
+        className={styles.voltageCard}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.32, ease: "easeOut" }}
+        transition={{ duration: 0.35, delay: 0.25, ease: "easeOut" }}
       >
         <div className={styles.accent} style={{ background: colors.primary }} />
-        <div className={styles.cardBody}>
-          <div className={styles.iconBox} style={{ color: colors.primary, background: `${colors.primary}14` }}>
-            <ZapIcon />
+        <div className={styles.voltageBody}>
+          <div className={styles.voltageHeader}>
+            <div
+              className={styles.iconBox}
+              style={{ color: colors.primary, background: `${colors.primary}1A` }}
+            >
+              <ZapIcon />
+            </div>
+            <div>
+              <span className={styles.label}>Qualidade da Tensão</span>
+              <p className={styles.voltageDesc}>
+                Distribuição estatística das leituras de voltagem da rede elétrica
+              </p>
+            </div>
           </div>
-          <div className={styles.content}>
-            <span className={styles.label}>Qualidade da Tensão</span>
-            {voltageStats ? (
-              <div className={styles.statsGrid}>
-                <div className={styles.statRow}>
-                  <span className={styles.statLabel}>Média</span>
-                  <span className={styles.statValue}>{fmt(media, 1)} V</span>
-                </div>
-                <div className={styles.statRow}>
-                  <span className={styles.statLabel}>Mediana</span>
-                  <span className={styles.statValue}>{fmt(mediana, 1)} V</span>
-                </div>
-                <div className={styles.statRow}>
-                  <span className={styles.statLabel}>Moda</span>
-                  <span className={styles.statValue}>{fmt(moda, 1)} V</span>
-                </div>
-                <div className={styles.statRow}>
-                  <span className={styles.statLabel}>Desvio</span>
-                  <span className={styles.statValue} style={{ color: desvioAlert ? colors.danger : colors.textPrimary }}>
-                    ±{fmt(desvio, 2)} V
-                  </span>
-                </div>
+
+          {voltageStats ? (
+            <div className={styles.statsGrid}>
+              <div className={styles.statBox}>
+                <span className={styles.statLabel}>Média</span>
+                <span className={styles.statValue}>{fmt(media, 1)} V</span>
               </div>
-            ) : (
-              <span className={styles.noData}>Sem dados de tensão</span>
-            )}
-          </div>
+              <div className={styles.statBox}>
+                <span className={styles.statLabel}>Mediana</span>
+                <span className={styles.statValue}>{fmt(mediana, 1)} V</span>
+              </div>
+              <div className={styles.statBox}>
+                <span className={styles.statLabel}>Moda</span>
+                <span className={styles.statValue}>{fmt(moda, 1)} V</span>
+              </div>
+              <div className={styles.statBox}>
+                <span className={styles.statLabel}>Desvio</span>
+                <span
+                  className={styles.statValue}
+                  style={{ color: desvioAlert ? colors.danger : colors.textPrimary }}
+                >
+                  ±{fmt(desvio, 2)} V
+                </span>
+                {desvioAlert && (
+                  <span className={styles.statHint} style={{ color: colors.danger }}>
+                    Oscilação acima de 5%
+                  </span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <span className={styles.noData}>Sem dados de tensão</span>
+          )}
         </div>
       </motion.div>
-    </div>
+    </>
   );
 }

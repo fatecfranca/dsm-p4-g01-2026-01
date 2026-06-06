@@ -100,7 +100,6 @@ export default function Dashboard() {
           lastUpdate={lastUpdate}
           refreshing={refreshing}
           onRefresh={handleRefresh}
-          lastReading={lastReading}
         />
       </div>
 
@@ -110,6 +109,7 @@ export default function Dashboard() {
         fatorPotenciaStats={kpis.data?.descritiva?.fatorPotencia}
         frequenciaStats={kpis.data?.descritiva?.frequencia}
         loading={kpis.loading || graficoLinha.loading}
+        lastReading={lastReading}
       />
 
       <FilterBar
