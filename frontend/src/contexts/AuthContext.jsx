@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
+import { onUnauthorized } from "../services/api";
 
 const AuthContext = createContext(null);
 
@@ -33,6 +34,12 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("user");
     setAuth({ token: null, user: null });
   }, []);
+
+  useEffect(() => {
+    return onUnauthorized(() => {
+      logout();
+    });
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{ token, user, isAuthenticated: !!token, login, logout, ready }}>

@@ -1,5 +1,26 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
+const unauthorizedListeners = new Set();
+
+export function onUnauthorized(cb) {
+  unauthorizedListeners.add(cb);
+  return () => unauthorizedListeners.delete(cb);
+}
+
+function emitUnauthorized() {
+  unauthorizedListeners.forEach((cb) => {
+    try { cb(); } catch { /* ignore */ }
+  });
+}
+
+function getAuthHeaders() {
+  try {
+    const token = localStorage.getItem("token");
+    if (token) return { Authorization: `Bearer ${token}` };
+  } catch { /* ignore */ }
+  return {};
+}
+
 async function request(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
 
@@ -7,6 +28,7 @@ async function request(endpoint, options = {}) {
     ...options,
     headers: {
       "Content-Type": "application/json",
+      ...getAuthHeaders(),
       ...options.headers,
     },
   };
@@ -14,11 +36,26 @@ async function request(endpoint, options = {}) {
   try {
     const response = await fetch(url, config);
     if (!response.ok) {
-      throw new Error(`Erro na requisição: ${response.status}`);
+      const error = new Error(`Erro na requisição: ${response.status}`);
+      error.status = response.status;
+      try {
+        error.data = await response.json();
+      } catch {
+        error.data = null;
+      }
+      if (response.status === 401) {
+        emitUnauthorized();
+      }
+      if (import.meta.env.DEV && response.status !== 404) {
+        console.error(`Falha ao chamar ${endpoint}:`, error);
+      }
+      throw error;
     }
     return await response.json();
   } catch (error) {
-    console.error(`Falha ao chamar ${endpoint}:`, error);
+    if (error.name !== "AbortError" && import.meta.env.DEV) {
+      console.error(`Falha ao chamar ${endpoint}:`, error);
+    }
     throw error;
   }
 }

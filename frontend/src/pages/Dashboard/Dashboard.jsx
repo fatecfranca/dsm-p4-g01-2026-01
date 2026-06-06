@@ -46,20 +46,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     loadKpis();
-    loadGraficoLinha();
-  }, [loadKpis, loadGraficoLinha]);
-
-  useEffect(() => {
-    loadKpis();
-    if (dateRange.start || dateRange.end) loadGraficoLinha(dateRange);
+    const params = dateRange.start || dateRange.end ? dateRange : undefined;
+    loadGraficoLinha(params);
   }, [dateRange, loadKpis, loadGraficoLinha]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    await Promise.all([
-      loadKpis(),
-      loadGraficoLinha(dateRange.start || dateRange.end ? dateRange : undefined),
-    ]);
+    const params = dateRange.start || dateRange.end ? dateRange : undefined;
+    await Promise.all([loadKpis(), loadGraficoLinha(params)]);
     setRefreshing(false);
   }, [loadKpis, loadGraficoLinha, dateRange]);
 
