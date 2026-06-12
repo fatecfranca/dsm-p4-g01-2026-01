@@ -22,13 +22,17 @@ export const calcularQuartis = (dados) => {
   };
 };
 
-export const calcularModa = (dados, casasDecimais = 1) => {
-  if (dados.length === 0) return 0;
+export const calcularModa = (dados, casasDecimais = 1, ignorarZeros = true) => {
+  // Filtra os zeros se ignorarZeros for true
+  const dadosValidos = ignorarZeros ? dados.filter((v) => v > 0) : dados;
+
+  if (dadosValidos.length === 0) return 0;
+
   const frequencias = {};
   let maxFreq = 0;
-  let moda = dados[0];
+  let moda = dadosValidos[0];
 
-  dados.forEach((val) => {
+  dadosValidos.forEach((val) => {
     // Preserva casas decimais para não quebrar corrente e fator de potência
     const fator = Math.pow(10, casasDecimais);
     const valorArredondado = Math.round(val * fator) / fator;
@@ -39,6 +43,7 @@ export const calcularModa = (dados, casasDecimais = 1) => {
       moda = valorArredondado;
     }
   });
+
   return moda;
 };
 
